@@ -1,7 +1,7 @@
 import * as React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Board, boardFromWords, createBoard, ROWS, COLS} from "./Board";
+import { Board, boardFromWords, createBoard, ROWS, COLS} from "./components/Board";
 
 export class App extends React.Component {
   board;

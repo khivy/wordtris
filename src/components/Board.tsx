@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Letter } from "./Letter";
-import { Cell } from "./components/Cell";
+import { Cell } from "./Cell";
 
 export let ROWS = 5
 export let COLS = 5

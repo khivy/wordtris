@@ -1,16 +1,18 @@
 import * as React from "react";
+import styled from 'styled-components';
 import { Letter } from "./Letter";
 import { Cell } from "./Cell";
 
-export let ROWS = 5
-export let COLS = 5
+
+export let BOARD_ROWS = 5
+export let BOARD_COLS = 5
 
 export function createBoard() {
     // Init cells.
     let cells = new Array();
-    for (let r = 0; r < ROWS; ++r) {
+    for (let r = 0; r < BOARD_ROWS; ++r) {
         cells.push(new Array());
-        for (let c = 0; c < ROWS; ++c) {
+        for (let c = 0; c < BOARD_ROWS; ++c) {
             cells[r].push(new Cell(r,c));
         }
     }
@@ -19,6 +21,15 @@ export function createBoard() {
     };
     return board;
 }
+
+export const BoardStyled = styled.div`
+  display: grid;
+  grid-template-rows: repeat(${BOARD_ROWS}, 30px);
+  grid-template-columns: repeat(${BOARD_COLS}, 30px);
+  grid-gap: 1px;
+  border: 1px solid black;
+  background: gray;
+`;
 
 function Row({ row }: { row: (string | undefined)[] }) {
     return <div>

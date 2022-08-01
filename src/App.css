@@ -2,13 +2,6 @@
   text-align: center;
 }
 
-.App-cell {
-  height: 50px;
-  width: 50px;
-  background-color: lightblue;
-  border: black;
-}
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;

@@ -1,3 +1,5 @@
+import styled from 'styled-components';
+
 export class Cell {
     x: number;
     y: number;
@@ -7,3 +9,9 @@ export class Cell {
         this.y = y;
     }
 }
+
+export const CellStyled = styled.div`
+  width: auto;
+  background: rgba(${props => props.color}, 0.8);
+  border: 4px solid;
+`;

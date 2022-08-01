@@ -13,7 +13,7 @@ export class BoardCell {
 export const BoardCellStyled = styled.div`
   width: auto;
   background: rgba(${props => props.color}, 0.8);
-  border: 4px solid;
+  border: 2px solid;
   grid-row: ${props => props.x};
   grid-column: ${props => props.y};
 `;

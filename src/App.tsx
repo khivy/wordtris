@@ -7,11 +7,13 @@ import { BoardCellStyled } from "./components/BoardCell";
 
 export const UserCellStyled = styled.div`
   background: blue;
-  border: 4px solid;
+  border: 2px solid;
   grid-row: ${props => props.x};
   grid-column: ${props => props.y};
   display: flex;
-  z-index: 4;
+  margin-top: -50%;
+  margin-bottom: 50%;
+  z-index: 1;
 `;
 
 function UserBlock(props) {

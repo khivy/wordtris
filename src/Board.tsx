@@ -1,19 +1,9 @@
 import * as React from "react";
 import { Letter } from "./Letter";
+import { Cell } from "./components/Cell";
 
 export let ROWS = 5
 export let COLS = 5
-
-class Cell {
-    x: number;
-    y: number;
-
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-}
 
 export function createBoard() {
     // Init cells.

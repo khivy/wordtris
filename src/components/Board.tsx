@@ -3,21 +3,20 @@ import styled from 'styled-components';
 import { Letter } from "./Letter";
 import { Cell } from "./Cell";
 
-
 export let BOARD_ROWS = 5
 export let BOARD_COLS = 5
 
 export function createBoard() {
     // Init cells.
-    let cells = new Array();
+    const cells = [];
     for (let r = 0; r < BOARD_ROWS; ++r) {
-        cells.push(new Array());
+        cells.push([]);
         for (let c = 0; c < BOARD_ROWS; ++c) {
             cells[r].push(new Cell(r,c));
         }
     }
-    let board = {
-        cells: cells
+    const board = {
+        cells
     };
     return board;
 }

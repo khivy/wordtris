@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from 'styled-components';
 import { Letter } from "./Letter";
-import { Cell } from "./Cell";
+import { BoardCell } from "./BoardCell";
 
 export let BOARD_ROWS = 5
 export let BOARD_COLS = 5
@@ -12,7 +12,7 @@ export function createBoard() {
     for (let r = 0; r < BOARD_ROWS; ++r) {
         cells.push([]);
         for (let c = 0; c < BOARD_ROWS; ++c) {
-            cells[r].push(new Cell(r,c));
+            cells[r].push(new BoardCell(r,c));
         }
     }
     const board = {

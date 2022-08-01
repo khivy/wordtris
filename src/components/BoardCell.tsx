@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export class Cell {
+export class BoardCell {
     x: number;
     y: number;
 
@@ -10,8 +10,10 @@ export class Cell {
     }
 }
 
-export const CellStyled = styled.div`
+export const BoardCellStyled = styled.div`
   width: auto;
   background: rgba(${props => props.color}, 0.8);
   border: 4px solid;
+  grid-row: ${props => props.x};
+  grid-column: ${props => props.y};
 `;

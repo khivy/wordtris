@@ -70,7 +70,7 @@ export function App(props) {
         return renderCell("cell(" + r.toString() + ',' + c.toString() + ')', r + 1, c + 1);
       })
     ));
-    return <div tabIndex="0" onKeyDown={() => updatePlayerPos(1, 0)}>
+    return <div tabIndex={0} onKeyDown={() => updatePlayerPos(1, 0)}>
       <BoardStyled key="board">
         {cells}
         {renderPlayerBlock()}

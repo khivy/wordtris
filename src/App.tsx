@@ -17,17 +17,17 @@ export const UserCellStyled = styled.div`
 
 function usePlayer() {
   // This function contains player information.
-  const [pos, setPos] = useState([2,2]);
+  const [pos, setPos] = useState([2, 2]);
   const layout = [
-    [0,0,0,0,0],
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
   ]
 
   function updatePlayerPos(dx: number, dy: number) {
-    setPos([pos[0]+dx, pos[1]+dy]);
+    setPos([pos[0] + dx, pos[1] + dy]);
   }
 
   function renderPlayerCell(key: string, x, y) {
@@ -37,7 +37,7 @@ function usePlayer() {
     x -= Math.floor(layout[0].length / 2);
     y -= Math.floor(layout.length / 2);
     // Note: the `{x,y}+1` is b.c. CSS grids' rows & cols are 1-indexed.
-    return <UserCellStyled key={key} x={x+1} y={y+1}></UserCellStyled>
+    return <UserCellStyled key={key} x={x + 1} y={y + 1}></UserCellStyled>
   }
 
   function renderPlayerBlock() {
@@ -53,24 +53,24 @@ function usePlayer() {
     return cellsRendered;
   }
 
-  return {updatePlayerPos, renderPlayerBlock}
+  return { updatePlayerPos, renderPlayerBlock }
 }
 
 export function App(props) {
   const [board, setBoard] = useState(createBoard);
   const [userBlock, setUserBlock] = useState(null);
 
-  const {updatePlayerPos, renderPlayerBlock} = usePlayer();
+  const { updatePlayerPos, renderPlayerBlock } = usePlayer();
 
   function renderBoard() {
     const cells = board.cells.map((row, r) => (
-        row.map((col, c) => {
-          // Note: Each component in a list should have a key.
-          // See https://reactjs.org/docs/lists-and-keys.html#keys
-          return renderCell("cell(" + r.toString() + ',' + c.toString() + ')', r+1, c+1);
-        })
+      row.map((col, c) => {
+        // Note: Each component in a list should have a key.
+        // See https://reactjs.org/docs/lists-and-keys.html#keys
+        return renderCell("cell(" + r.toString() + ',' + c.toString() + ')', r + 1, c + 1);
+      })
     ));
-    return <div tabIndex="0" onKeyDown={() => updatePlayerPos(1,0)}>
+    return <div tabIndex="0" onKeyDown={() => updatePlayerPos(1, 0)}>
       <BoardStyled key="board">
         {cells}
         {renderPlayerBlock()}

@@ -105,16 +105,9 @@ function usePlayer () {
     }
 
     function renderPlayerBlock () {
-        const cellsRendered = [];
-        for (let r = 0; r < BOARD_ROWS; ++r) {
-            cellsRendered.push([]);
-            for (let c = 0; c < BOARD_ROWS; ++c) {
-                if (matrix[r][c].char != EMPTY) {
-                    cellsRendered[r].push(renderPlayerCell(matrix[r][c].uid, c, r, matrix[r][c].char));
-                }
-            }
-        }
-        return cellsRendered;
+        return matrix.map((row, r) => row.map((cell, c) => {
+            return renderPlayerCell(cell.uid, c, r, cell.char);
+        }));
     }
     return { updatePlayerPos, renderPlayerBlock }
 }

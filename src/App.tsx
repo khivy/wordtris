@@ -26,6 +26,7 @@ function usePlayer() {
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
   ] as const;
+  rotateMatrix(layout);
 
   function updatePlayerPos({ keyCode, repeat }: { keyCode: number; repeat: boolean }): void {
     if (keyCode === 37) {
@@ -39,6 +40,30 @@ function usePlayer() {
       setPos([pos[0], pos[1] + 1]);
     } else if (keyCode === 38) {
       setPos([pos[0], pos[1] - 1]);
+    }
+  }
+
+  function rotateMatrix(matrix) {
+    console.assert(matrix.length === matrix[0].length);
+    // inplace
+    let l = 0;
+    let r = matrix.length - 1;
+
+    console.log(matrix);
+    while (l < r) {
+
+      for (let i = 0; i < r-l; ++i) {
+        let bottom = r;
+        let top = l;
+        let topLeft = matrix[top][l+i];
+
+        matrix[top][l+i] = matrix[bottom-i][l];
+        matrix[bottom-i][l] = matrix[bottom][r-i];
+        matrix[bottom][r-i] = matrix[top+i][r];
+        matrix[top+i][r] = topLeft;
+      }
+      ++l;
+      --r;
     }
   }
 

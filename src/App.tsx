@@ -48,6 +48,7 @@ function usePlayer () {
         } else if (keyCode == 32) {
             // Space bar.
             setMatrix(rotateMatrix(matrix));
+            setPos([pos[0], pos[1]]);
         }
     }
 

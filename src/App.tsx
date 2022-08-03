@@ -57,25 +57,21 @@ function usePlayer() {
     function generateCharMatrix(): UserCell[][] {
         // Return random starting block matrix with seed.
         // TODO: Make it pseudo-random.
-        const res = [
+        return [
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        ] as const;
-        res.forEach((_, r) =>
-            res[r] = res[r].map((ch, c) => {
-                const uid = "user(" + r + "," + c + ")";
+        ].map((row, r) => row.map((ch, c) => {
+            const uid = "user(" + r + "," + c + ")";
                 return ch === TBD
                     ? new UserCell(
                         String.fromCharCode(Math.random(26) * 10 + 97),
                         uid,
                     )
                     : new UserCell(EMPTY, uid);
-            })
-        );
-        return res;
+        }));
     }
 
     function rotateMatrix(matrix: UserCell[][]): UserCell[][] {

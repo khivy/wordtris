@@ -19,13 +19,13 @@ export const UserCellStyled = styled.div`
 function usePlayer() {
   // This function contains player information.
   const [pos, setPos] = useState([2, 2] as [number, number]);
-  const layout = [
+  const [layout, setLayout] = useState([
     [0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
-  ] as const;
+  ] as const);
   rotateMatrix(layout);
 
   function updatePlayerPos({ keyCode, repeat }: { keyCode: number; repeat: boolean }): void {

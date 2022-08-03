@@ -73,6 +73,10 @@ export function App(props) {
 
   const { updatePlayerPos, renderPlayerBlock } = usePlayer();
 
+    useEffect(() => {
+        window.addEventListener("keydown", updatePlayerPos);
+    });
+
   function renderBoard() {
     const cells = board.cells.map((row, r) => (
       row.map((col, c) => {

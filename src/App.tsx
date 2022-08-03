@@ -69,7 +69,6 @@ function usePlayer() {
 
 export function App(props) {
   const [board, setBoard] = useState(createBoard);
-  const [userBlock, setUserBlock] = useState(null);
 
   const { updatePlayerPos, renderPlayerBlock } = usePlayer();
 
@@ -85,12 +84,11 @@ export function App(props) {
         return renderCell("cell(" + r.toString() + ',' + c.toString() + ')', r + 1, c + 1);
       })
     ));
-    return <div tabIndex={0} onKeyDown={updatePlayerPos}>
-      <BoardStyled key="board">
+    return <BoardStyled key="board" >
         {cells}
         {renderPlayerBlock()}
       </BoardStyled>
-    </div>;
+    ;
   }
 
   function renderCell(key: string, x: number, y: number) {

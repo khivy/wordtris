@@ -16,14 +16,9 @@ export const UserCellStyled = styled.div`
   z-index: 1;
 `;
 
-class UserCell {
+interface UserCell {
     char: string;
     uid: string;
-
-    constructor(char: string, uid: string) {
-        this.char = char;
-        this.uid = uid;
-    }
 }
 
 function usePlayer() {
@@ -63,15 +58,17 @@ function usePlayer() {
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        ].map((row, r) => row.map((ch, c) => {
-            const uid = "user(" + r + "," + c + ")";
+        ].map((row, r) =>
+            row.map((ch, c) => {
+                const uid = "user(" + r + "," + c + ")";
                 return ch === TBD
-                    ? new UserCell(
-                        String.fromCharCode(Math.random(26) * 10 + 97),
+                    ? {
+                        char: String.fromCharCode(Math.random(26) * 10 + 97),
                         uid,
-                    )
-                    : new UserCell(EMPTY, uid);
-        }));
+                    }
+                    : { char: EMPTY, uid };
+            })
+        );
     }
 
     function rotateMatrix(matrix: UserCell[][]): UserCell[][] {

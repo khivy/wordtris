@@ -74,6 +74,10 @@ export function App(props) {
 
     useEffect(() => {
         window.addEventListener("keydown", updatePlayerPos);
+        // Cleanup to prevent flooding.
+        return () => {
+            window.removeEventListener("keydown", updatePlayerPos);
+        };
     });
 
   function renderBoard() {

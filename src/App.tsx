@@ -132,16 +132,8 @@ export function App(props) {
     });
 
     function renderBoard() {
-        const cells = board.cells.map((row, r) => (
-            row.map((col, c) => {
-                // Note: Each component in a list should have a key.
-                // See https://reactjs.org/docs/lists-and-keys.html#keys
-                return renderCell(
-                    "cell(" + r.toString() + "," + c.toString() + ")",
-                    r + 1,
-                    c + 1,
-                );
-            })
+        const cells = board.cells.map((row, r) => row.map((col, c) =>
+            <BoardCellStyled key={"cell(" + r.toString() + "," + c.toString() + ")"} x={r + 1} y={c + 1} />
         ));
         return (
             <BoardStyled key="board">
@@ -149,10 +141,6 @@ export function App(props) {
                 {renderPlayerBlock()}
             </BoardStyled>
         );
-    }
-
-    function renderCell(key: string, x: number, y: number) {
-        return <BoardCellStyled key={key} x={x} y={y} />;
     }
 
     return renderBoard();

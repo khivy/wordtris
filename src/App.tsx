@@ -31,7 +31,7 @@ function usePlayer() {
     const TBD = "@";
     const EMPTY = "!";
     const [pos, setPos] = useState([2, 2] as [number, number]);
-    const [matrix, setMatrix] = useState(generateCharMatrix() as const);
+    const [matrix, setMatrix] = useState(generateCharMatrix());
 
     function updatePlayerPos(
         { keyCode, repeat }: { keyCode: number; repeat: boolean },

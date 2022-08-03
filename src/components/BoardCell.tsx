@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export class BoardCell {
     x: number;
@@ -12,8 +12,8 @@ export class BoardCell {
 
 export const BoardCellStyled = styled.div`
   width: auto;
-  background: rgba(${props => props.color}, 0.8);
+  background: rgba(${(props) => props.color}, 0.8);
   border: 2px solid;
-  grid-row: ${props => props.x};
-  grid-column: ${props => props.y};
+  grid-row: ${(props) => props.x};
+  grid-column: ${(props) => props.y};
 `;

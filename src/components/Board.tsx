@@ -1,10 +1,10 @@
 import * as React from "react";
-import styled from 'styled-components';
+import styled from "styled-components";
 import { Letter } from "./Letter";
 import { BoardCell } from "./BoardCell";
 
-export let BOARD_ROWS = 5
-export let BOARD_COLS = 5
+export let BOARD_ROWS = 5;
+export let BOARD_COLS = 5;
 
 export function createBoard() {
     // Init cells.
@@ -12,11 +12,11 @@ export function createBoard() {
     for (let r = 0; r < BOARD_ROWS; ++r) {
         cells.push([]);
         for (let c = 0; c < BOARD_ROWS; ++c) {
-            cells[r].push(new BoardCell(r,c));
+            cells[r].push(new BoardCell(r, c));
         }
     }
     const board = {
-        cells
+        cells,
     };
     return board;
 }
@@ -30,18 +30,26 @@ export const BoardStyled = styled.div`
 `;
 
 function Row({ row }: { row: (string | undefined)[] }) {
-    return <div>
-        {row.map((letter, i) => letter && <Letter key={i} letter={letter} />)}
-    </div>;
+    return (
+        <div>
+            {row.map((letter, i) =>
+                letter && <Letter key={i} letter={letter} />
+            )}
+        </div>
+    );
 }
 
 export function Board({ rows }: { rows: (string | undefined)[][] }) {
-    return <div>
-        {rows.map((row, i) => <Row key={i} row={row} />)}
-    </div>;
+    return (
+        <div>
+            {rows.map((row, i) => <Row key={i} row={row} />)}
+        </div>
+    );
 }
 
 export function boardFromWords(words: string[]) {
-    const rows = words.map(word => [...word].map(letter => letter === " " ? undefined : letter));
+    const rows = words.map((word) =>
+        [...word].map((letter) => letter === " " ? undefined : letter)
+    );
     return Board({ rows });
 }

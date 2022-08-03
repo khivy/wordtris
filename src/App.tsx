@@ -26,8 +26,19 @@ function usePlayer() {
     [0, 0, 0, 0, 0],
   ] as const;
 
-  function updatePlayerPos(dx: number, dy: number) {
-    setPos([pos[0] + dx, pos[1] + dy]);
+  function updatePlayerPos({ keyCode, repeat }: { keyCode: number; repeat: boolean }): void {
+    if (keyCode === 37) {
+      setPos([pos[0] - 1, pos[1]]);
+    } else if (keyCode === 39) {
+      setPos([pos[0] + 1, pos[1]]);
+    } else if (keyCode === 40) {
+      if (repeat) {
+        // TODO: Handle repeated downkey.
+      }
+      setPos([pos[0], pos[1] + 1]);
+    } else if (keyCode === 38) {
+      setPos([pos[0], pos[1] - 1]);
+    }
   }
 
   function renderPlayerCell(key: string, x, y) {
@@ -70,7 +81,7 @@ export function App(props) {
         return renderCell("cell(" + r.toString() + ',' + c.toString() + ')', r + 1, c + 1);
       })
     ));
-    return <div tabIndex={0} onKeyDown={() => updatePlayerPos(1, 0)}>
+    return <div tabIndex={0} onKeyDown={updatePlayerPos}>
       <BoardStyled key="board">
         {cells}
         {renderPlayerBlock()}

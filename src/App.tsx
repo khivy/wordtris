@@ -10,8 +10,9 @@ export const UserCellStyled = styled.div`
   grid-row: ${props => props.y};
   grid-column: ${props => props.x};
   display: flex;
-  margin-top: -50%;
-  margin-bottom: 50%;
+  // margin-top: -50%;
+  // margin-bottom: 50%;
+  justify-content: center;
   z-index: 1;
 `;
 
@@ -41,23 +42,24 @@ function usePlayer() {
     }
   }
 
-  function renderPlayerCell(key: string, x, y) {
+  function renderPlayerCell(key: string, x: number, y: number, text: string) {
     x += pos[0];
     y += pos[1];
     // Center on the pivot.
     x -= Math.floor(layout[0].length / 2);
     y -= Math.floor(layout.length / 2);
     // Note: the `{x,y}+1` is b.c. CSS grids' rows & cols are 1-indexed.
-    return <UserCellStyled key={key} x={x + 1} y={y + 1}></UserCellStyled>
+    return <UserCellStyled key={key} x={x + 1} y={y + 1}>{text}</UserCellStyled>
   }
 
   function renderPlayerBlock() {
     const cellsRendered = [];
+    let i = 0; // Placeholder for block characters.
     for (let r = 0; r < BOARD_ROWS; ++r) {
       cellsRendered.push([]);
       for (let c = 0; c < BOARD_ROWS; ++c) {
         if (layout[r][c] === 1) {
-          cellsRendered[r].push(renderPlayerCell("test", c, r));
+          cellsRendered[r].push(renderPlayerCell("test", c, r, String.fromCharCode(97+i++)));
         }
       }
     }

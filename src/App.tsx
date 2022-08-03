@@ -26,7 +26,6 @@ function usePlayer() {
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
   ] as const);
-  rotateMatrix(layout);
 
   function updatePlayerPos({ keyCode, repeat }: { keyCode: number; repeat: boolean }): void {
     if (keyCode === 37) {
@@ -40,6 +39,9 @@ function usePlayer() {
       setPos([pos[0], pos[1] + 1]);
     } else if (keyCode === 38) {
       setPos([pos[0], pos[1] - 1]);
+    } else if (keyCode == 32) {
+      // Space bar.
+      rotateMatrix(layout);
     }
   }
 

@@ -22,7 +22,7 @@ interface UserCell {
     uid: string;
 }
 
-function UsePlayer() {
+function Player() {
     // This function contains player information.
     const TBD = "@";
     const EMPTY = "!";
@@ -148,7 +148,7 @@ export function App() {
     return (
         <BoardStyled key="board">
             {cells}
-            <UsePlayer />
+            <Player />
         </BoardStyled>
     );
 }

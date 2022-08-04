@@ -1,8 +1,8 @@
 import * as React from "react";
 import styled from "styled-components";
 
-export let BOARD_ROWS = 5;
-export let BOARD_COLS = 5;
+export const BOARD_ROWS = 5;
+export const BOARD_COLS = 5;
 
 export function createBoard() {
     // Init cells.

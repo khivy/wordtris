@@ -115,14 +115,15 @@ function usePlayer() {
         return (
             <div>
                 {matrix.map((row, r) =>
-                    row.map((cell, c) => (
-                        <PlayerCell
+                    row.map((cell, c) => {
+                        return cell.char != EMPTY ? <PlayerCell
                             key={cell.uid}
                             x={c}
                             y={r}
                             text={cell.char}
                         />
-                    ))
+                        : null
+                    })
                 )}
             </div>
         );

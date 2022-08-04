@@ -1,13 +1,8 @@
 import styled from "styled-components";
 
-export class BoardCell {
+export interface BoardCell {
     x: number;
     y: number;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
 }
 
 export const BoardCellStyled = styled.div`

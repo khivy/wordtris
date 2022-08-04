@@ -11,7 +11,7 @@ export function createBoard() {
     for (let r = 0; r < BOARD_ROWS; ++r) {
         cells.push([]);
         for (let c = 0; c < BOARD_ROWS; ++c) {
-            cells[r].push(new BoardCell(r, c));
+            cells[r].push({ x: r, y: c });
         }
     }
     const board = {

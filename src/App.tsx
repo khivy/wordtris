@@ -29,6 +29,14 @@ function usePlayer() {
     const [pos, setPos] = useState([2, 2] as [number, number]);
     const [matrix, setMatrix] = useState(generateCharMatrix());
 
+    useEffect(() => {
+        window.addEventListener("keydown", updatePlayerPos);
+        // Cleanup to prevent flooding.
+        return () => {
+            window.removeEventListener("keydown", updatePlayerPos);
+        };
+    });
+
     function updatePlayerPos(
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
@@ -124,21 +132,13 @@ function usePlayer() {
                     }));
     }
 
-    return { updatePlayerPos, PlayerBlock };
+    return PlayerBlock;
 }
 
 export function App() {
     const [board, _setBoard] = useState(createBoard);
 
-    const { updatePlayerPos, PlayerBlock } = usePlayer();
-
-    useEffect(() => {
-        window.addEventListener("keydown", updatePlayerPos);
-        // Cleanup to prevent flooding.
-        return () => {
-            window.removeEventListener("keydown", updatePlayerPos);
-        };
-    });
+    const PlayerBlock = usePlayer();
 
     const cells = board.cells.map((row, r) =>
         row.map((_col, c) => (

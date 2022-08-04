@@ -144,23 +144,19 @@ export function App() {
         };
     });
 
-    function renderBoard() {
-        const cells = board.cells.map((row, r) =>
-            row.map((col, c) => (
-                <BoardCellStyled
-                    key={`cell(${r.toString()},${c.toString()})`}
-                    x={r + 1}
-                    y={c + 1}
-                />
-            ))
-        );
-        return (
-            <BoardStyled key="board">
-                {cells}
-                <PlayerBlock />
-            </BoardStyled>
-        );
-    }
-
-    return renderBoard();
+    const cells = board.cells.map((row, r) =>
+        row.map((col, c) => (
+            <BoardCellStyled
+                key={`cell(${r.toString()},${c.toString()})`}
+                x={r + 1}
+                y={c + 1}
+            />
+        ))
+    );
+    return (
+        <BoardStyled key="board">
+            {cells}
+            <PlayerBlock />
+        </BoardStyled>
+    );
 }

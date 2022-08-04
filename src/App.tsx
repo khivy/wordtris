@@ -60,7 +60,7 @@ function usePlayer() {
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         ].map((row, r) =>
             row.map((ch, c) => {
-                const uid = "user(" + r + "," + c + ")";
+                const uid = `user(${r},${c})`;
                 return ch === TBD
                     ? {
                         char: String.fromCharCode(Math.random(26) * 10 + 97),
@@ -133,7 +133,7 @@ export function App(props) {
 
     function renderBoard() {
         const cells = board.cells.map((row, r) => row.map((col, c) =>
-            <BoardCellStyled key={"cell(" + r.toString() + "," + c.toString() + ")"} x={r + 1} y={c + 1} />
+            <BoardCellStyled key={`cell(${r.toString()},${c.toString()})`} x={r + 1} y={c + 1} />
         ));
         return (
             <BoardStyled key="board">

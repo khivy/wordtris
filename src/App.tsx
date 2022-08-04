@@ -22,7 +22,7 @@ interface UserCell {
     uid: string;
 }
 
-function usePlayer() {
+function UsePlayer() {
     // This function contains player information.
     const TBD = "@";
     const EMPTY = "!";
@@ -119,8 +119,8 @@ function usePlayer() {
         );
     }
 
-    function PlayerBlock() {
-        return matrix.map((row, r) =>
+    // Return only an array player cells & nulls.
+    return matrix.map((row, r) =>
                     row.map((cell, c) => {
                         return cell.char != EMPTY ? <PlayerCell
                             key={cell.uid}
@@ -130,15 +130,10 @@ function usePlayer() {
                         />
                         : null
                     }));
-    }
-
-    return PlayerBlock;
 }
 
 export function App() {
     const [board, _setBoard] = useState(createBoard);
-
-    const PlayerBlock = usePlayer();
 
     const cells = board.cells.map((row, r) =>
         row.map((_col, c) => (
@@ -152,7 +147,7 @@ export function App() {
     return (
         <BoardStyled key="board">
             {cells}
-            <PlayerBlock />
+            <UsePlayer />
         </BoardStyled>
     );
 }

@@ -1,6 +1,5 @@
 import * as React from "react";
 import styled from "styled-components";
-import { Letter } from "./Letter";
 import { BoardCell } from "./BoardCell";
 
 export let BOARD_ROWS = 5;
@@ -28,28 +27,3 @@ export const BoardStyled = styled.div`
   border: 1px solid black;
   background: gray;
 `;
-
-function Row({ row }: { row: (string | undefined)[] }) {
-    return (
-        <div>
-            {row.map((letter, i) =>
-                letter && <Letter key={i} letter={letter} />
-            )}
-        </div>
-    );
-}
-
-export function Board({ rows }: { rows: (string | undefined)[][] }) {
-    return (
-        <div>
-            {rows.map((row, i) => <Row key={i} row={row} />)}
-        </div>
-    );
-}
-
-export function boardFromWords(words: string[]) {
-    const rows = words.map((word) =>
-        [...word].map((letter) => letter === " " ? undefined : letter)
-    );
-    return Board({ rows });
-}

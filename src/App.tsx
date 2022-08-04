@@ -73,7 +73,7 @@ function UsePlayer() {
                 const uid = `user(${r},${c})`;
                 return ch === TBD
                     ? {
-                        char: String.fromCharCode(Math.random(26) * 10 + 97),
+                        char: String.fromCharCode(Math.floor(Math.random() * 26) + 97),
                         uid,
                     }
                     : { char: EMPTY, uid };

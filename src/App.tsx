@@ -118,7 +118,7 @@ function usePlayer() {
     return { updatePlayerPos, renderPlayerBlock };
 }
 
-export function App(props) {
+export function App() {
     const [board, setBoard] = useState(createBoard);
 
     const { updatePlayerPos, renderPlayerBlock } = usePlayer();

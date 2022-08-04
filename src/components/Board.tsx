@@ -1,6 +1,5 @@
 import * as React from "react";
 import styled from "styled-components";
-import { BoardCell } from "./BoardCell";
 
 export let BOARD_ROWS = 5;
 export let BOARD_COLS = 5;

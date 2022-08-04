@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
-import { BOARD_ROWS, BoardStyled, createBoard } from "./components/Board";
+import { BoardStyled, createBoard } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
 export const UserCellStyled = styled.div`
@@ -132,9 +132,15 @@ export function App(props) {
     });
 
     function renderBoard() {
-        const cells = board.cells.map((row, r) => row.map((col, c) =>
-            <BoardCellStyled key={`cell(${r.toString()},${c.toString()})`} x={r + 1} y={c + 1} />
-        ));
+        const cells = board.cells.map((row, r) =>
+            row.map((col, c) => (
+                <BoardCellStyled
+                    key={`cell(${r.toString()},${c.toString()})`}
+                    x={r + 1}
+                    y={c + 1}
+                />
+            ))
+        );
         return (
             <BoardStyled key="board">
                 {cells}

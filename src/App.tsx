@@ -132,7 +132,7 @@ function usePlayer() {
 }
 
 export function App() {
-    const [board, setBoard] = useState(createBoard);
+    const [board, _setBoard] = useState(createBoard);
 
     const { updatePlayerPos, PlayerBlock } = usePlayer();
 
@@ -145,7 +145,7 @@ export function App() {
     });
 
     const cells = board.cells.map((row, r) =>
-        row.map((col, c) => (
+        row.map((_col, c) => (
             <BoardCellStyled
                 key={`cell(${r.toString()},${c.toString()})`}
                 x={r + 1}

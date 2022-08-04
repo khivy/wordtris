@@ -95,7 +95,9 @@ function usePlayer() {
         return matrix;
     }
 
-    function renderPlayerCell(key: string, x: number, y: number, text: string) {
+    function PlayerCell(
+        { x, y, text }: { x: number; y: number; text: string },
+    ) {
         x += pos[0];
         y += pos[1];
         // Center on the pivot.
@@ -103,7 +105,7 @@ function usePlayer() {
         y -= Math.floor(matrix.length / 2);
         // Note: the `{x,y}+1` is b.c. CSS grids' rows & cols are 1-indexed.
         return (
-            <UserCellStyled key={key} x={x + 1} y={y + 1}>
+            <UserCellStyled x={x + 1} y={y + 1}>
                 {text}
             </UserCellStyled>
         );
@@ -111,9 +113,9 @@ function usePlayer() {
 
     function renderPlayerBlock() {
         return matrix.map((row, r) =>
-            row.map((cell, c) => {
-                return renderPlayerCell(cell.uid, c, r, cell.char);
-            })
+            row.map((cell, c) => (
+                <PlayerCell key={cell.uid} x={c} y={r} text={cell.char} />
+            ))
         );
     }
     return { updatePlayerPos, renderPlayerBlock };

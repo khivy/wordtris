@@ -8,15 +8,13 @@ export function createBoard() {
     // Init cells.
     const cells = [];
     for (let r = 0; r < BOARD_ROWS; ++r) {
-        cells.push([]);
+        let row = [];
         for (let c = 0; c < BOARD_ROWS; ++c) {
-            cells[r].push({ x: r, y: c });
+            row.push({ x: r, y: c });
         }
+        cells.push(row);
     }
-    const board = {
-        cells,
-    };
-    return board;
+    return { cells };
 }
 
 export const BoardStyled = styled.div`

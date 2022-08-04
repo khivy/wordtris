@@ -111,20 +111,30 @@ function usePlayer() {
         );
     }
 
-    function renderPlayerBlock() {
-        return matrix.map((row, r) =>
-            row.map((cell, c) => (
-                <PlayerCell key={cell.uid} x={c} y={r} text={cell.char} />
-            ))
+    function PlayerBlock() {
+        return (
+            <div>
+                {matrix.map((row, r) =>
+                    row.map((cell, c) => (
+                        <PlayerCell
+                            key={cell.uid}
+                            x={c}
+                            y={r}
+                            text={cell.char}
+                        />
+                    ))
+                )}
+            </div>
         );
     }
-    return { updatePlayerPos, renderPlayerBlock };
+
+    return { updatePlayerPos, PlayerBlock };
 }
 
 export function App() {
     const [board, setBoard] = useState(createBoard);
 
-    const { updatePlayerPos, renderPlayerBlock } = usePlayer();
+    const { updatePlayerPos, PlayerBlock } = usePlayer();
 
     useEffect(() => {
         window.addEventListener("keydown", updatePlayerPos);
@@ -147,7 +157,7 @@ export function App() {
         return (
             <BoardStyled key="board">
                 {cells}
-                {renderPlayerBlock()}
+                <PlayerBlock />
             </BoardStyled>
         );
     }

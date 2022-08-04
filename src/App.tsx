@@ -112,9 +112,7 @@ function usePlayer() {
     }
 
     function PlayerBlock() {
-        return (
-            <div>
-                {matrix.map((row, r) =>
+        return matrix.map((row, r) =>
                     row.map((cell, c) => {
                         return cell.char != EMPTY ? <PlayerCell
                             key={cell.uid}
@@ -123,10 +121,7 @@ function usePlayer() {
                             text={cell.char}
                         />
                         : null
-                    })
-                )}
-            </div>
-        );
+                    }));
     }
 
     return { updatePlayerPos, PlayerBlock };

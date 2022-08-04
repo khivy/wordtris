@@ -73,7 +73,9 @@ function Player() {
                 const uid = `user(${r},${c})`;
                 return ch === TBD
                     ? {
-                        char: String.fromCharCode(Math.floor(Math.random() * 26) + 97),
+                        char: String.fromCharCode(
+                            Math.floor(Math.random() * 26) + 97,
+                        ),
                         uid,
                     }
                     : { char: EMPTY, uid };
@@ -122,15 +124,19 @@ function Player() {
 
     // Return only an array player cells & nulls.
     return matrix.map((row, r) =>
-                    row.map((cell, c) => {
-                        return cell.char != EMPTY ? <PlayerCell
-                            key={cell.uid}
-                            x={c}
-                            y={r}
-                            text={cell.char}
-                        />
-                        : null
-                    }));
+        row.map((cell, c) => {
+            return cell.char != EMPTY
+                ? (
+                    <PlayerCell
+                        key={cell.uid}
+                        x={c}
+                        y={r}
+                        text={cell.char}
+                    />
+                )
+                : null;
+        })
+    );
 }
 
 export function App() {

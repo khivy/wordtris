@@ -11,4 +11,5 @@ export const BoardCellStyled = styled.div`
   border: 2px solid;
   grid-row: ${(props) => props.x};
   grid-column: ${(props) => props.y};
+  justify-content: center;
 `;

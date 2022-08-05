@@ -2,7 +2,12 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
-import { BoardStyled, createBoard } from "./components/Board";
+import {
+    BoardStyled,
+    createBoard,
+    EMPTY,
+    generateRandomChar,
+} from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
 export const UserCellStyled = styled.div`
@@ -25,7 +30,6 @@ interface UserCell {
 function Player() {
     // This function contains player information.
     const TBD = "@";
-    const EMPTY = "!";
     const [pos, setPos] = useState([2, 2] as [number, number]);
     const [matrix, setMatrix] = useState(generateCharMatrix());
 
@@ -73,9 +77,7 @@ function Player() {
                 const uid = `user(${r},${c})`;
                 return ch === TBD
                     ? {
-                        char: String.fromCharCode(
-                            Math.floor(Math.random() * 26) + 97,
-                        ),
+                        char: generateRandomChar(),
                         uid,
                     }
                     : { char: EMPTY, uid };
@@ -142,13 +144,15 @@ function Player() {
 export function App() {
     const [board, _setBoard] = useState(createBoard);
 
-    const cells = board.cells.map((row, r) =>
-        row.map((_col, c) => (
+    const cells = board.map((row, r) =>
+        row.map((cell, c) => (
             <BoardCellStyled
                 key={`cell(${r.toString()},${c.toString()})`}
-                x={r + 1}
-                y={c + 1}
-            />
+                x={cell.x + 1}
+                y={cell.y + 1}
+            >
+                {cell.char}
+            </BoardCellStyled>
         ))
     );
     return (

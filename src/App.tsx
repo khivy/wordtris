@@ -54,7 +54,7 @@ function Player() {
         } else if (keyCode == 32) {
             // Space bar.
             setMatrix(rotateMatrix(matrix));
-            // TODO: Remove this hack to have the block re-render.
+            // This is to prompt React to re-render component b.c. only sees changes in pointers.
             setPos([pos[0], pos[1]]);
         }
     }

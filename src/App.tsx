@@ -4,6 +4,7 @@ import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import {
+    BOARD_ROWS,
     BoardStyled,
     createBoard,
     EMPTY,
@@ -119,7 +120,6 @@ function Player() {
             const x = cell.x - mid; // 2,1 - 2,2, it's 0,-1, hoping to see 1,0
             const y = cell.y - mid; //
             if (x !== 0 || y !== 0) {
-                // Need to renorm.
                 cell.x = -y + mid;
                 cell.y = x + mid;
             }
@@ -139,8 +139,7 @@ function Player() {
 
     const adjustedCells = cells.map((cell) => getAdjustedUserCell(cell));
 
-    // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
-    return adjustedCells.map((cell) => {
+    const adjustedCellsStyled = adjustedCells.map((cell) => {
         return (
             <UserCellStyled
                 key={cell.uid}
@@ -151,12 +150,20 @@ function Player() {
             </UserCellStyled>
         );
     });
+
+    // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
+    return {
+        playerCellsStyled: adjustedCellsStyled,
+        playerCells: adjustedCells,
+    };
 }
 
 export function App() {
     const [board, _setBoard] = useState(createBoard);
+    const { playerCellsStyled, playerCells } = Player();
 
-    const cells = board.map((row, r) =>
+    // Create Board of locked or empty cells.
+    const boardCells = board.map((row, r) =>
         row.map((cell, c) => (
             <BoardCellStyled
                 key={`cell(${r.toString()},${c.toString()})`}
@@ -167,10 +174,34 @@ export function App() {
             </BoardCellStyled>
         ))
     );
+
+    function getGroundHeight(col: number) {
+        // Search for first non-EMPTY board cell from the top.
+        for (let row = 0; row < BOARD_ROWS; ++row) {
+            if (board[row][col].char !== EMPTY) {
+                return row;
+            }
+        }
+        return 0;
+    }
+
+    function handleStates() {
+        service.send({ type: "TOUCHINGBLOCK" }); // Do placed when cond heldGround
+        if (service.state.value == "placingBlock") {
+            // TODO: This needs testing.
+            const is_touching = playerCells.some((cell) => {
+                return cell.y - 1 >= getGroundHeight(cell.x);
+            });
+            if (is_touching) {
+                service.send("TOUCHINGBLOCK");
+            }
+        }
+    }
+
     return (
         <BoardStyled key="board">
-            {cells}
-            <Player />
+            {boardCells}
+            {playerCellsStyled}
         </BoardStyled>
     );
 }

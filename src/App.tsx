@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
+import { createMachine, interpret } from "xstate";
 import {
     BoardStyled,
     createBoard,
@@ -21,6 +22,22 @@ export const UserCellStyled = styled.div`
   justify-content: center;
   z-index: 1;
 `;
+
+// Terminology: https://tetris.fandom.com/wiki/Glossary
+const stateMachine = createMachine({
+    initial: "placingBlock",
+    states: {
+        placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
+        fallingLetters: { on: { GROUNDED: "placingBlock" } },
+        lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
+    },
+});
+
+// Handle states.
+const service = interpret(stateMachine).onTransition((state) => {
+    // TODO
+});
+service.start();
 
 interface UserCell {
     char: string;
@@ -123,6 +140,9 @@ function Player() {
             </UserCellStyled>
         );
     }
+
+    service.send({ type: "TOUCHINGBLOCK" }); // Do placed when cond heldGround
+    // Handle all Player Event Sends in one area, and handle transitions in one area.
 
     // Return only an array player cells & nulls.
     return matrix.map((row, r) =>

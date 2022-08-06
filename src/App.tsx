@@ -40,6 +40,8 @@ const service = interpret(stateMachine).onTransition((state) => {
 service.start();
 
 interface UserCell {
+    x: number;
+    y: number;
     char: string;
     uid: string;
 }
@@ -47,8 +49,15 @@ interface UserCell {
 function Player() {
     // This function contains player information.
     const TBD = "@";
+    const layout = [
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+    ];
     const [pos, setPos] = useState([2, 2] as [number, number]);
-    const [matrix, setMatrix] = useState(generateCharMatrix());
+    const [cells, setCells] = useState(generateUserCells()); // Note: cells is not adjusted to the board.
 
     useEffect(() => {
         window.addEventListener("keydown", updatePlayerPos);
@@ -74,91 +83,74 @@ function Player() {
             setPos([pos[0], pos[1] - 1]);
         } else if (keyCode == 32) {
             // Space bar.
-            setMatrix(rotateMatrix(matrix));
+            setCells(rotateCells(cells));
             // This is to prompt React to re-render component b.c. only sees changes in pointers.
             setPos([pos[0], pos[1]]);
         }
     }
 
-    function generateCharMatrix(): UserCell[][] {
-        // Return random starting block matrix with seed.
+    function generateUserCells(): UserCell[] {
+        // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
-        return [
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        ].map((row, r) =>
-            row.map((ch, c) => {
-                const uid = `user(${r},${c})`;
-                return ch === TBD
-                    ? {
+        let res = [];
+        layout.forEach((row, r) =>
+            row.forEach((ch, c) => {
+                if (ch === TBD) {
+                    res.push({
+                        x: c,
+                        y: r,
                         char: generateRandomChar(),
-                        uid,
-                    }
-                    : { char: EMPTY, uid };
+                        uid: `user(${r},${c})`,
+                    });
+                }
             })
         );
+        return res;
     }
 
-    function rotateMatrix(matrix: UserCell[][]): UserCell[][] {
+    function rotateCells(cells: UserCell[]): UserCell[] {
         // Inplace but returns itself.
-        console.assert(matrix.length === matrix[0].length);
-        let l = 0;
-        let r = matrix.length - 1;
-
-        while (l < r) {
-            for (let i = 0; i < r - l; ++i) {
-                let bottom = r;
-                let top = l;
-                let topLeft = matrix[top][l + i];
-
-                matrix[top][l + i] = matrix[bottom - i][l];
-                matrix[bottom - i][l] = matrix[bottom][r - i];
-                matrix[bottom][r - i] = matrix[top + i][r];
-                matrix[top + i][r] = topLeft;
+        console.assert(layout.length == layout[0].length);
+        console.assert(layout.length % 2 == 1);
+        let mid = Math.floor(layout.length / 2);
+        cells.forEach((cell) => {
+            // Center around mid.
+            // Remember, top-left is (0,0) and bot-right is (last,last).
+            const x = cell.x - mid; // 2,1 - 2,2, it's 0,-1, hoping to see 1,0
+            const y = cell.y - mid; //
+            if (x !== 0 || y !== 0) {
+                // Need to renorm.
+                cell.x = -y + mid;
+                cell.y = x + mid;
             }
-            ++l;
-            --r;
-        }
-        return matrix;
+        });
+        return cells;
     }
 
-    function PlayerCell(
-        { x, y, text }: { x: number; y: number; text: string },
-    ) {
-        x += pos[0];
-        y += pos[1];
-        // Center on the pivot.
-        x -= Math.floor(matrix[0].length / 2);
-        y -= Math.floor(matrix.length / 2);
-        // Note: the `{x,y}+1` is b.c. CSS grids' rows & cols are 1-indexed.
+    // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
+    function getAdjustedUserCell(cell: UserCell): UserCell {
+        return {
+            x: cell.x + pos[0] - Math.floor(layout[0].length / 2),
+            y: cell.y + pos[1] - Math.floor(layout.length / 2),
+            uid: cell.uid,
+            char: cell.char,
+        };
+    }
+
+    const adjustedCells = cells.map((cell) => getAdjustedUserCell(cell));
+
+    // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
+    return adjustedCells.map((cell) => {
         return (
-            <UserCellStyled x={x + 1} y={y + 1}>
-                {text}
+            <UserCellStyled
+                key={cell.uid}
+                x={cell.x + 1}
+                y={cell.y + 1}
+            >
+                {cell.char}
             </UserCellStyled>
         );
-    }
-
-    service.send({ type: "TOUCHINGBLOCK" }); // Do placed when cond heldGround
-    // Handle all Player Event Sends in one area, and handle transitions in one area.
-
-    // Return only an array player cells & nulls.
-    return matrix.map((row, r) =>
-        row.map((cell, c) => {
-            return cell.char != EMPTY
-                ? (
-                    <PlayerCell
-                        key={cell.uid}
-                        x={c}
-                        y={r}
-                        text={cell.char}
-                    />
-                )
-                : null;
-        })
-    );
+    });
 }
 
 export function App() {

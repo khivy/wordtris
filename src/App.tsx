@@ -47,73 +47,51 @@ interface UserCell {
     uid: string;
 }
 
-function Player() {
-    // This function contains player information.
-    const TBD = "@";
-    const layout = [
-        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-    ];
-    const [pos, setPos] = useState([2, 2] as [number, number]);
-    const [cells, setCells] = useState(generateUserCells()); // Note: cells is not adjusted to the board.
+const TBD = "@";
 
-    useEffect(() => {
-        window.addEventListener("keydown", updatePlayerPos);
-        // Cleanup to prevent flooding.
-        return () => {
-            window.removeEventListener("keydown", updatePlayerPos);
-        };
-    });
+class PlayerPhysics {
+    cells: UserCell[];
+    adjustedCells: UserCell[];
+    pos: number[];
+    layout: string[][];
 
-    function updatePlayerPos(
-        { keyCode, repeat }: { keyCode: number; repeat: boolean },
-    ): void {
-        if (keyCode === 37) {
-            setPos([pos[0] - 1, pos[1]]);
-        } else if (keyCode === 39) {
-            setPos([pos[0] + 1, pos[1]]);
-        } else if (keyCode === 40) {
-            if (repeat) {
-                // TODO: Handle repeated downkey.
-            }
-            setPos([pos[0], pos[1] + 1]);
-        } else if (keyCode === 38) {
-            setPos([pos[0], pos[1] - 1]);
-        } else if (keyCode == 32) {
-            // Space bar.
-            setCells(rotateCells(cells));
-            // This is to prompt React to re-render component b.c. only sees changes in pointers.
-            setPos([pos[0], pos[1]]);
-        }
-    }
-
-    function generateUserCells(): UserCell[] {
-        // Return starting block matrix of UserCells with randomly-assigned characters.
-        // TODO: Make it pseudo-random.
-        let res = [];
-        layout.forEach((row, r) =>
-            row.forEach((ch, c) => {
-                if (ch === TBD) {
-                    res.push({
-                        x: c,
-                        y: r,
-                        char: generateRandomChar(),
-                        uid: `user(${r},${c})`,
-                    });
-                }
-            })
+    constructor() {
+        this.layout = [
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        ];
+        this.pos = [2, 2];
+        this.cells = this.generateUserCells();
+        this.adjustedCells = this.cells.map((cell) =>
+            this.getAdjustedUserCell(cell)
         );
-        return res;
+        window.addEventListener(
+            "keydown",
+            this.updatePlayerPos.bind(this),
+            false,
+        ); // Without bind it loses context.
     }
 
-    function rotateCells(cells: UserCell[]): UserCell[] {
+    setPos(x: number, y: number) {
+        this.pos[0] = x;
+        this.pos[1] = y;
+    }
+
+    setCells(cells: UserCell[]) {
+        this.cells = cells;
+        this.adjustedCells = cells.map((cell) =>
+            this.getAdjustedUserCell(cell)
+        );
+    }
+
+    rotateCells(cells: UserCell[]): UserCell[] {
         // Inplace but returns itself.
-        console.assert(layout.length == layout[0].length);
-        console.assert(layout.length % 2 == 1);
-        let mid = Math.floor(layout.length / 2);
+        console.assert(this.layout.length == this.layout[0].length);
+        console.assert(this.layout.length % 2 == 1);
+        let mid = Math.floor(this.layout.length / 2);
         cells.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
@@ -127,19 +105,64 @@ function Player() {
         return cells;
     }
 
+    updatePlayerPos(
+        { keyCode, repeat }: { keyCode: number; repeat: boolean },
+    ): void {
+        if (keyCode === 37) {
+            this.setPos(this.pos[0] - 1, this.pos[1]);
+        } else if (keyCode === 39) {
+            this.setPos(this.pos[0] + 1, this.pos[1]);
+        } else if (keyCode === 40) {
+            if (repeat) {
+                // TODO: Handle repeated downkey.
+            }
+            this.setPos(this.pos[0], this.pos[1] + 1);
+        } else if (keyCode === 38) {
+            this.setPos(this.pos[0], this.pos[1] - 1);
+        } else if (keyCode == 32) {
+            // Space bar.
+            this.setCells(this.rotateCells(this.cells));
+            // This is to prompt React to re-render component b.c. only sees changes in pointers.
+            this.setPos(this.pos[0], this.pos[1]);
+        }
+    }
+
+    generateUserCells(): UserCell[] {
+        // Return starting block matrix of UserCells with randomly-assigned characters.
+        // TODO: Make it pseudo-random.
+        let res = [];
+        this.layout.forEach((row, r) =>
+            row.forEach((ch, c) => {
+                if (ch === TBD) {
+                    res.push({
+                        x: c,
+                        y: r,
+                        char: generateRandomChar(),
+                        uid: `user(${r},${c})`,
+                    });
+                }
+            })
+        );
+        return res;
+    }
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    function getAdjustedUserCell(cell: UserCell): UserCell {
+    getAdjustedUserCell(cell: UserCell): UserCell {
         return {
-            x: cell.x + pos[0] - Math.floor(layout[0].length / 2),
-            y: cell.y + pos[1] - Math.floor(layout.length / 2),
+            x: cell.x + this.pos[0] - Math.floor(this.layout[0].length / 2),
+            y: cell.y + this.pos[1] - Math.floor(this.layout.length / 2),
             uid: cell.uid,
             char: cell.char,
         };
     }
+}
 
-    const adjustedCells = cells.map((cell) => getAdjustedUserCell(cell));
+let playerPhysics = new PlayerPhysics();
 
-    const adjustedCellsStyled = adjustedCells.map((cell) => {
+function Player() {
+    // This function contains player information.
+    const [cells, setCells] = useState(playerPhysics.adjustedCells); // Note: cells is not adjusted to the board.
+
+    let adjustedCellsStyled = cells.map((cell) => {
         return (
             <UserCellStyled
                 key={cell.uid}
@@ -154,7 +177,7 @@ function Player() {
     // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
     return {
         playerCellsStyled: adjustedCellsStyled,
-        playerCells: adjustedCells,
+        playerCells: cells,
     };
 }
 

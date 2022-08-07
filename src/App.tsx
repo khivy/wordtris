@@ -1,17 +1,15 @@
 import * as React from "react";
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
-import {
-    BOARD_ROWS,
-    BoardStyled,
-    createBoard,
-    EMPTY,
-    generateRandomChar,
-} from "./components/Board";
+import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
-import { BoardStyled } from "./components/Board";
+
+const TBD = "@";
+const EMPTY = "";
+const BOARD_ROWS = 5;
+const BOARD_COLS = 5;
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -23,6 +21,14 @@ export const UserCellStyled = styled.div`
   // margin-bottom: 50%;
   justify-content: center;
   z-index: 1;
+`;
+
+export const BoardStyled = styled.div`
+  display: grid;
+  grid-template-rows: repeat(${BOARD_ROWS}, 30px);
+  grid-template-columns: repeat(${BOARD_COLS}, 30px);
+  border: 1px solid black;
+  background: gray;
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
@@ -48,15 +54,13 @@ interface UserCell {
     uid: string;
 }
 
-const TBD = "@";
-
 class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
     pos: number[];
     layout: string[][];
 
-    constructor () {
+    constructor() {
         this.layout = [
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -77,7 +81,7 @@ class PlayerPhysics {
         ); // Without bind it loses context.
     }
 
-    setPos (x: number, y: number) {
+    setPos(x: number, y: number) {
         this.pos[0] = x;
         this.pos[1] = y;
         this.adjustedCells = this.cells.map((cell) =>
@@ -85,14 +89,14 @@ class PlayerPhysics {
         );
     }
 
-    setCells (cells: UserCell[]) {
+    setCells(cells: UserCell[]) {
         this.cells = cells;
         this.adjustedCells = this.cells.map((cell) =>
             this.getAdjustedUserCell(cell)
         );
     }
 
-    rotateCells (cells: UserCell[]): UserCell[] {
+    rotateCells(cells: UserCell[]): UserCell[] {
         // Inplace but returns itself.
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
@@ -110,8 +114,7 @@ class PlayerPhysics {
         return cells;
     }
 
-
-    updatePlayerPos (
+    updatePlayerPos(
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
         if (keyCode === 37) {
@@ -134,7 +137,7 @@ class PlayerPhysics {
         }
     }
 
-    generateUserCells (): UserCell[] {
+    generateUserCells(): UserCell[] {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
         let res = [];
@@ -154,7 +157,7 @@ class PlayerPhysics {
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    getAdjustedUserCell (cell: UserCell): UserCell {
+    getAdjustedUserCell(cell: UserCell): UserCell {
         return {
             x: cell.x + this.pos[0] - Math.floor(this.layout[0].length / 2),
             y: cell.y + this.pos[1] - Math.floor(this.layout.length / 2),
@@ -164,9 +167,9 @@ class PlayerPhysics {
     }
 }
 
-function PlayerComponent ({ gameState }) {
+function PlayerComponent({ gameState, init }) {
     // This function contains player information.
-    const playerState = useState(gameState.playerCells); // Note: cells is not adjusted to the board.
+    const playerState = useState(init); // Note: cells is not adjusted to the board.
     gameState.setPlayerCells = playerState[1];
     const [playerCells, _setPlayerCells] = playerState;
 
@@ -186,10 +189,47 @@ function PlayerComponent ({ gameState }) {
     return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
 }
 
-function BoardComponent ({ gameState }) {
-    const boardState = useState(createBoard());
-    gameState.boardCells = boardState;
-    const [board, setBoard] = boardState;
+interface BoardCell {
+    x: number;
+    y: number;
+    char: string;
+}
+
+class BoardPhysics {
+    boardCellMatrix;
+
+    constructor(rows: number, cols: number) {
+        this.boardCellMatrix = this.createBoard(rows, cols);
+    }
+
+    createBoard(rows: number, cols: number): BoardCell[][] {
+        // Init cells.
+        const cells = [];
+        for (let r = 0; r < rows; ++r) {
+            let row = [];
+            for (let c = 0; c < cols; ++c) {
+                row.push({ x: c, y: r, char: EMPTY });
+            }
+            cells.push(row);
+        }
+        return cells;
+    }
+
+    getGroundHeight(col: number): number {
+        // Search for first non-EMPTY board cell from the top.
+        for (let row = 0; row < BOARD_ROWS; ++row) {
+            if (this.boardCellMatrix[row][col].char !== EMPTY) {
+                return row;
+            }
+        }
+        return 0;
+    }
+}
+
+function BoardComponent({ gameState, init }) {
+    const boardState = useState(init);
+    gameState.setBoardCells = boardState[1];
+    const [board, _setBoard] = boardState;
 
     // Create Board of locked or empty cells.
     const boardCells = board.map((row, r) =>
@@ -204,61 +244,59 @@ function BoardComponent ({ gameState }) {
         ))
     );
 
-    function getGroundHeight (col: number) {
-        // Search for first non-EMPTY board cell from the top.
-        for (let row = 0; row < BOARD_ROWS; ++row) {
-            if (board[row][col].char !== EMPTY) {
-                return row;
-            }
-        }
-        return 0;
-    }
+    return <React.Fragment>{boardCells}</React.Fragment>;
+}
 
-    function handleStates () {
+export function GameLoop() {
+    let playerPhysics = new PlayerPhysics();
+    let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+
+    // Idea: We init function component state objects using physics state and
+    // memoize the physics objects and their respective setter functions (from Components) here.
+    const gameState = {
+        setPlayerCells: null,
+        setBoardCells: null,
+    };
+
+    let res = (
+        <BoardStyled>
+            <BoardComponent
+                gameState={gameState}
+                init={boardPhysics.boardCellMatrix}
+            />
+            <PlayerComponent
+                gameState={gameState}
+                init={playerPhysics.adjustedCells}
+            />
+        </BoardStyled>
+    );
+
+    function loop(timestamp) {
+        // Update physics.
+        // TODO
+
+        // Update rendering.
+        if (gameState.setPlayerCells != null) {
+            gameState.setPlayerCells(playerPhysics.adjustedCells);
+        }
+        if (gameState.setBoardCells != null) {
+            gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        }
+        window.requestAnimationFrame(loop);
+    }
+    window.requestAnimationFrame(loop);
+
+    function handleStates() {
         service.send({ type: "TOUCHINGBLOCK" }); // Do placed when cond heldGround
         if (service.state.value == "placingBlock") {
             // TODO: This needs testing.
-            const is_touching = playerCells.some((cell) => {
-                return cell.y - 1 >= getGroundHeight(cell.x);
+            const is_touching = playerPhysics.adjustedCells.some((cell) => {
+                return cell.y - 1 >= boardPhysics.getGroundHeight(cell.x);
             });
             if (is_touching) {
                 service.send("TOUCHINGBLOCK");
             }
         }
     }
-
-    return <BoardStyled key="board">
-        {boardCells}
-    </BoardStyled>;
-}
-
-export function GameLoop () {
-
-    let playerPhysics = new PlayerPhysics();
-
-    // Idea: We init function component state objects using physics state and
-    // memoize the physics objects and their respective setter functions (from Components) here.
-    const gameState = {
-        playerCells: playerPhysics.adjustedCells,
-        setPlayerCells: null,
-        boardCells: null,
-    };
-
-    let res = <BoardStyled>
-        <BoardComponent gameState={gameState}/>
-        <PlayerComponent gameState={gameState}/>
-    </BoardStyled>;
-
-    function loop (timestamp) {
-        // Physics
-
-        // Render
-        if (gameState.setPlayerCells != null) {
-            gameState.setPlayerCells(playerPhysics.adjustedCells); // expensive, run only if change in level or rotation. the continuous dropping is anim only because
-        }
-        window.requestAnimationFrame(loop);
-    }
-    window.requestAnimationFrame(loop);
-
     return res;
 }

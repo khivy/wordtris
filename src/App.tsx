@@ -11,6 +11,7 @@ import {
     generateRandomChar,
 } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
+import { BoardStyled } from "./components/Board";
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -160,9 +161,9 @@ let playerPhysics = new PlayerPhysics();
 
 function Player() {
     // This function contains player information.
-    const [cells, setCells] = useState(playerPhysics.adjustedCells); // Note: cells is not adjusted to the board.
+    const [playerCells, setPlayerCells] = useState(playerPhysics.adjustedCells); // Note: cells is not adjusted to the board.
 
-    let adjustedCellsStyled = cells.map((cell) => {
+    let adjustedCellsStyled = playerCells.map((cell) => {
         return (
             <UserCellStyled
                 key={cell.uid}
@@ -177,13 +178,12 @@ function Player() {
     // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
     return {
         playerCellsStyled: adjustedCellsStyled,
-        playerCells: cells,
+        setPlayerCells,
     };
 }
 
-export function App() {
-    const [board, _setBoard] = useState(createBoard);
-    const { playerCellsStyled, playerCells } = Player();
+export function Board() {
+    const [board, setBoard] = useState(createBoard());
 
     // Create Board of locked or empty cells.
     const boardCells = board.map((row, r) =>
@@ -221,10 +221,25 @@ export function App() {
         }
     }
 
-    return (
+    return {boardStyled:
         <BoardStyled key="board">
             {boardCells}
-            {playerCellsStyled}
         </BoardStyled>
-    );
+    , setBoard};
+}
+
+export function GameLoop() {
+    const { playerCellsStyled, setPlayerCells } = Player();
+    const { boardStyled, setBoard } = Board();
+
+    function loop(timestamp) {
+        // Physics
+
+        // Render
+        // setPlayerCells
+        // setBoard
+        window.requestAnimationFrame(loop)
+    }
+    window.requestAnimationFrame(loop);
+    return <BoardStyled>{boardStyled}{playerCellsStyled}</BoardStyled>;
 }

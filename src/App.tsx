@@ -221,11 +221,14 @@ export function Board() {
         }
     }
 
-    return {boardStyled:
-        <BoardStyled key="board">
-            {boardCells}
-        </BoardStyled>
-    , setBoard};
+    return {
+        boardStyled: (
+            <BoardStyled key="board">
+                {boardCells}
+            </BoardStyled>
+        ),
+        setBoard,
+    };
 }
 
 export function GameLoop() {
@@ -238,7 +241,7 @@ export function GameLoop() {
         // Render
         // setPlayerCells
         // setBoard
-        window.requestAnimationFrame(loop)
+        window.requestAnimationFrame(loop);
     }
     window.requestAnimationFrame(loop);
     return <BoardStyled>{boardStyled}{playerCellsStyled}</BoardStyled>;

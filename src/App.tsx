@@ -68,12 +68,7 @@ class PlayerPhysics {
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         ];
         this.spawnPos = [2,1];
-        this.pos = this.spawnPos;
-        this.cells = this.generateUserCells();
-        this.adjustedCells = this.cells.map((cell) =>
-            this.getAdjustedUserCell(cell)
-        );
-
+        this.resetBlock();
         window.addEventListener(
             "keydown",
             this.updatePlayerPos.bind(this),
@@ -84,19 +79,19 @@ class PlayerPhysics {
     setPos(x: number, y: number) {
         this.pos[0] = x;
         this.pos[1] = y;
+        // Update adjusted cells, which also allows React to see new updates.
         this.adjustedCells = this.cells.map((cell) =>
             this.getAdjustedUserCell(cell)
         );
     }
 
     setCells(cells: UserCell[]) {
-        this.cells = cells;
         this.adjustedCells = this.cells.map((cell) =>
             this.getAdjustedUserCell(cell)
         );
     }
 
-    rotateCells(cells: UserCell[]): UserCell[] {
+    rotateCells(cells: UserCell[]) {
         // Inplace but returns itself.
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
@@ -111,7 +106,6 @@ class PlayerPhysics {
                 cell.y = x + mid;
             }
         });
-        return cells;
     }
 
     updatePlayerPos(
@@ -131,9 +125,8 @@ class PlayerPhysics {
             this.setPos(this.pos[0], this.pos[1] - 1);
         } else if (keyCode == 32) {
             // Space bar.
-            this.setCells(this.rotateCells(this.cells));
-            // This is to prompt React to re-render component b.c. only sees changes in pointers.
-            // this.setPos(this.pos[0], this.pos[1]);
+            this.rotateCells(this.cells);
+            this.setPos(this.pos[0], this.pos[1]);
         }
     }
 
@@ -154,6 +147,12 @@ class PlayerPhysics {
             })
         );
         return res;
+    }
+
+    resetBlock() {
+        this.pos = this.spawnPos.slice();
+        this.cells = this.generateUserCells();
+        this.setPos(this.pos[0], this.pos[1]);
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
@@ -273,7 +272,6 @@ export function GameLoop() {
 
     function loop(timestamp) {
         // Update physics.
-        // TODO
         handleStates();
         // Update rendering.
         if (gameState.setPlayerCells != null) {
@@ -304,6 +302,11 @@ export function GameLoop() {
             });
             // Allow React to see change with a new object:
             boardPhysics.boardCellMatrix = boardPhysics.boardCellMatrix.slice();
+            // Allow React to see change with a new object:
+            console.log(playerPhysics.adjustedCells)
+            playerPhysics.resetBlock();
+            console.log(playerPhysics.adjustedCells)
+
             service.send("LOCK");
             console.log("event: lockDelay ~ SEND")
         }

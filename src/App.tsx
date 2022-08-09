@@ -7,7 +7,7 @@ import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
 const TBD = "@";
-const EMPTY = "";
+export const EMPTY = "";
 const BOARD_ROWS = 5;
 const BOARD_COLS = 5;
 
@@ -235,6 +235,7 @@ function BoardComponent({ gameState, init }) {
                 key={`cell(${r.toString()},${c.toString()})`}
                 x={cell.x + 1}
                 y={cell.y + 1}
+                char={cell.char}
             >
                 {cell.char}
             </BoardCellStyled>

@@ -55,7 +55,8 @@ interface UserCell {
 class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
-    pos: number[];
+    pos: number[]; // x, y
+    spawnPos: number[]; // x, y
     layout: string[][];
 
     constructor() {
@@ -66,7 +67,8 @@ class PlayerPhysics {
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         ];
-        this.pos = [2, 2];
+        this.spawnPos = [2,1];
+        this.pos = this.spawnPos;
         this.cells = this.generateUserCells();
         this.adjustedCells = this.cells.map((cell) =>
             this.getAdjustedUserCell(cell)

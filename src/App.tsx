@@ -222,7 +222,7 @@ class BoardPhysics {
                 return row;
             }
         }
-        return 0;
+        return BOARD_ROWS - 1;
     }
 }
 
@@ -231,7 +231,6 @@ function BoardComponent({ gameState, init }) {
     gameState.setBoardCells = boardState[1];
     const [board, _setBoard] = boardState;
 
-    // Create Board of locked or empty cells.
     const boardCells = board.map((row, r) =>
         row.map((cell, c) => (
             <BoardCellStyled
@@ -274,7 +273,7 @@ export function GameLoop() {
     function loop(timestamp) {
         // Update physics.
         // TODO
-
+        handleStates();
         // Update rendering.
         if (gameState.setPlayerCells != null) {
             gameState.setPlayerCells(playerPhysics.adjustedCells);
@@ -287,13 +286,15 @@ export function GameLoop() {
     window.requestAnimationFrame(loop);
 
     function handleStates() {
-        service.send({ type: "TOUCHINGBLOCK" }); // Do placed when cond heldGround
+        // console.log(service.state.value)
         if (service.state.value == "placingBlock") {
             // TODO: This needs testing.
             const is_touching = playerPhysics.adjustedCells.some((cell) => {
-                return cell.y - 1 >= boardPhysics.getGroundHeight(cell.x);
+                return cell.y >= boardPhysics.getGroundHeight(cell.x);
+
             });
             if (is_touching) {
+                console.log("event: placingBlock ~ TOUCHINGBLOCK")
                 service.send("TOUCHINGBLOCK");
             }
         }

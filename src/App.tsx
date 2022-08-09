@@ -27,8 +27,6 @@ export const BoardStyled = styled.div`
   display: grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
   grid-template-columns: repeat(${BOARD_COLS}, 30px);
-  border: 1px solid black;
-  background: gray;
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
@@ -287,16 +285,24 @@ export function GameLoop() {
 
     function handleStates() {
         // console.log(service.state.value)
-        if (service.state.value == "placingBlock") {
-            // TODO: This needs testing.
+        if ("placingBlock" == service.state.value) {
             const is_touching = playerPhysics.adjustedCells.some((cell) => {
                 return cell.y >= boardPhysics.getGroundHeight(cell.x);
 
             });
             if (is_touching) {
-                console.log("event: placingBlock ~ TOUCHINGBLOCK")
                 service.send("TOUCHINGBLOCK");
+                console.log("event: placingBlock ~ TOUCHINGBLOCK")
             }
+        }
+        else if ("lockDelay" == service.state.value) {
+            let cells = playerPhysics.adjustedCells.forEach((userCell) => {
+                boardPhysics.boardCellMatrix[userCell.x][userCell.y].char = userCell.char;
+            });
+            // Allow React to see change with a new object:
+            boardPhysics.boardCellMatrix = boardPhysics.boardCellMatrix.slice();
+            service.send("LOCK");
+            console.log("event: lockDelay ~ SEND")
         }
     }
     return res;

@@ -261,7 +261,7 @@ let playerPhysics = new PlayerPhysics();
 let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 let lockStart = null;
 // The amount of time it takes before a block locks in place.
-let lockMax = 1000 / 2;
+let lockMax = 1500;
 export function GameLoop() {
     const gameState = {
         setPlayerCells: null,
@@ -321,13 +321,16 @@ export function GameLoop() {
     }
     window.requestAnimationFrame(loop);
 
+    function isPlayerTouchingGround() {
+        return playerPhysics.adjustedCells.some((cell) => {
+            return cell.y >= boardPhysics.getGroundHeight(cell.x);
+        });
+    }
+
     function handleStates() {
         // console.log(service.state.value)
         if ("placingBlock" == service.state.value) {
-            const is_touching = playerPhysics.adjustedCells.some((cell) => {
-                return cell.y >= boardPhysics.getGroundHeight(cell.x);
-            });
-            if (is_touching) {
+            if (isPlayerTouchingGround()) {
                 service.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
                 console.log("event: placingBlock ~ TOUCHINGBLOCK");
@@ -335,7 +338,9 @@ export function GameLoop() {
         } else if ("lockDelay" == service.state.value) {
             let lockTime = performance.now() - lockStart;
 
-            if (playerPhysics.hasMoved) {
+            // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
+            // if the previous touched ground height is the same as the current one.
+            if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 service.send("UNLOCK");
             }
             else if (lockMax <= lockTime) {
@@ -355,6 +360,7 @@ export function GameLoop() {
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
         }
+        // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
 

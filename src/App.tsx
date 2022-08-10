@@ -153,6 +153,9 @@ class PlayerPhysics {
         this.pos = this.spawnPos.slice();
         this.cells = this.generateUserCells();
         this.setPos(this.pos[0], this.pos[1]);
+        this.adjustedCells = this.cells.map((cell) =>
+            this.getAdjustedUserCell(cell)
+        );
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
@@ -166,7 +169,8 @@ class PlayerPhysics {
     }
 }
 
-function PlayerComponent({ gameState, init }) {
+let playerPhysics = new PlayerPhysics();
+const PlayerComponent = React.memo(function PlayerComponent({ gameState, init }) {
     // This function contains player information.
     const playerState = useState(init); // Note: cells is not adjusted to the board.
     gameState.setPlayerCells = playerState[1];
@@ -186,7 +190,7 @@ function PlayerComponent({ gameState, init }) {
 
     // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
     return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
-}
+});
 
 interface BoardCell {
     x: number;
@@ -225,7 +229,8 @@ class BoardPhysics {
     }
 }
 
-function BoardComponent({ gameState, init }) {
+let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     const boardState = useState(init);
     gameState.setBoardCells = boardState[1];
     const [board, _setBoard] = boardState;
@@ -244,11 +249,9 @@ function BoardComponent({ gameState, init }) {
     );
 
     return <React.Fragment>{boardCells}</React.Fragment>;
-}
+});
 
 export function GameLoop() {
-    let playerPhysics = new PlayerPhysics();
-    let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 
     // Idea: We init function component state objects using physics state and
     // memoize the physics objects and their respective setter functions (from Components) here.
@@ -261,11 +264,13 @@ export function GameLoop() {
         <BoardStyled>
             <BoardComponent
                 gameState={gameState}
-                init={boardPhysics.boardCellMatrix}
+                key={'Board'}
+                init={boardPhysics.boardCellMatrix.slice()}
             />
             <PlayerComponent
+                key={'Player'}
                 gameState={gameState}
-                init={playerPhysics.adjustedCells}
+                init={playerPhysics.adjustedCells.slice()}
             />
         </BoardStyled>
     );
@@ -289,7 +294,6 @@ export function GameLoop() {
         if ("placingBlock" == service.state.value) {
             const is_touching = playerPhysics.adjustedCells.some((cell) => {
                 return cell.y >= boardPhysics.getGroundHeight(cell.x);
-
             });
             if (is_touching) {
                 service.send("TOUCHINGBLOCK");
@@ -297,19 +301,17 @@ export function GameLoop() {
             }
         }
         else if ("lockDelay" == service.state.value) {
-            let cells = playerPhysics.adjustedCells.forEach((userCell) => {
-                boardPhysics.boardCellMatrix[userCell.x][userCell.y].char = userCell.char;
-            });
             // Allow React to see change with a new object:
-            boardPhysics.boardCellMatrix = boardPhysics.boardCellMatrix.slice();
-            // Allow React to see change with a new object:
-            console.log(playerPhysics.adjustedCells)
             playerPhysics.resetBlock();
-            console.log(playerPhysics.adjustedCells)
 
             service.send("LOCK");
             console.log("event: lockDelay ~ SEND")
         }
+        else if ("fallingLetters" == service.state.value) {
+            service.send("GROUNDED");
+            console.log("event: fallingLetters ~ GROUNDED")
+        }
     }
+
     return res;
 }

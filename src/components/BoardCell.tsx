@@ -14,6 +14,4 @@ export const BoardCellStyled = styled.div`
   grid-row: ${(props) => props.x};
   grid-column: ${(props) => props.y};
   text-align: center;
-  background: ${(props) => props.'none'};
-  
 `;

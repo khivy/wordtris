@@ -169,7 +169,6 @@ class PlayerPhysics {
     }
 }
 
-let playerPhysics = new PlayerPhysics();
 const PlayerComponent = React.memo(
     function PlayerComponent({ gameState, init }) {
         // This function contains player information.
@@ -231,7 +230,6 @@ class BoardPhysics {
     }
 }
 
-let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     const boardState = useState(init);
     gameState.setBoardCells = boardState[1];
@@ -253,6 +251,10 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     return <React.Fragment>{boardCells}</React.Fragment>;
 });
 
+let playerPhysics = new PlayerPhysics();
+let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+let lockStart = 0;
+let lockMax = 1000;
 export function GameLoop() {
     const gameState = {
         setPlayerCells: null,
@@ -275,10 +277,12 @@ export function GameLoop() {
     );
 
     let FPS = 60;
+    // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
     let frameStep = 1000 / FPS;
     let accum = 0;
     let prevTime = performance.now();
     function loop(timestamp) {
+        console.log(prevTime)
         let curTime = performance.now();
         accum += curTime - prevTime;
         prevTime = curTime;
@@ -319,20 +323,25 @@ export function GameLoop() {
             });
             if (is_touching) {
                 service.send("TOUCHINGBLOCK");
+                lockStart = performance.now();
                 console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
         } else if ("lockDelay" == service.state.value) {
-            let cells = boardPhysics.boardCellMatrix.slice();
-            playerPhysics.adjustedCells.forEach((userCell) => {
-                cells[userCell.y][userCell.x].char = userCell.char;
-            });
-            // Allow React to see change with a new object:
-            boardPhysics.boardCellMatrix = cells;
-            // Allow React to see change with a new object:
-            playerPhysics.resetBlock();
+            let lockTime = performance.now() - lockStart;
 
-            service.send("LOCK");
-            console.log("event: lockDelay ~ SEND");
+            if (lockMax <= lockTime) {
+                let cells = boardPhysics.boardCellMatrix.slice();
+                playerPhysics.adjustedCells.forEach((userCell) => {
+                    cells[userCell.y][userCell.x].char = userCell.char;
+                });
+                // Allow React to see change with a new object:
+                boardPhysics.boardCellMatrix = cells;
+                // Allow React to see change with a new object:
+                playerPhysics.resetBlock();
+
+                service.send("LOCK");
+                console.log("event: lockDelay ~ SEND");
+            }
         } else if ("fallingLetters" == service.state.value) {
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");

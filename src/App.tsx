@@ -220,8 +220,8 @@ class BoardPhysics {
 
     getGroundHeight(col: number): number {
         // Search for first non-EMPTY board cell from the top.
-        for (let row = 0; row < BOARD_ROWS; ++row) {
-            if (this.boardCellMatrix[row][col].char !== EMPTY) {
+        for (let row = -1; row < BOARD_ROWS-1; ++row) {
+            if (this.boardCellMatrix[row+1][col].char !== EMPTY) {
                 return row;
             }
         }
@@ -301,6 +301,12 @@ export function GameLoop() {
             }
         }
         else if ("lockDelay" == service.state.value) {
+            let cells = boardPhysics.boardCellMatrix.slice();
+            playerPhysics.adjustedCells.forEach((userCell) => {
+                cells[userCell.y][userCell.x].char = userCell.char;
+            });
+            // Allow React to see change with a new object:
+            boardPhysics.boardCellMatrix = cells;
             // Allow React to see change with a new object:
             playerPhysics.resetBlock();
 

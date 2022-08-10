@@ -96,11 +96,11 @@ class PlayerPhysics {
     }
 
     rotateCells(cells: UserCell[]) {
-        // Inplace but returns itself.
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
         let mid = Math.floor(this.layout.length / 2);
-        cells.forEach((cell) => {
+        let res = cells.slice();
+        res.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
             const x = cell.x - mid; // 2,1 - 2,2, it's 0,-1, hoping to see 1,0
@@ -110,6 +110,7 @@ class PlayerPhysics {
                 cell.y = x + mid;
             }
         });
+        return res;
     }
 
     getAdjustedLeftmostX() {
@@ -185,8 +186,7 @@ class PlayerPhysics {
             }
         } else if (keyCode == 32) {
             // Space bar.
-            this.rotateCells(this.cells);
-            this.setPos(x, y);
+            this.setCells(this.rotateCells(this.cells));
         }
     }
 

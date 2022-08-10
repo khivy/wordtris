@@ -6,6 +6,8 @@ import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
+const IS_DEBUG = true;
+
 const TBD = "@";
 export const EMPTY = "";
 const BOARD_ROWS = 7;
@@ -60,7 +62,7 @@ class PlayerPhysics {
     layout: string[][];
     hasMoved: boolean;
 
-    constructor() {
+    constructor(board: BoardCell[][]) {
         this.layout = [
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -72,7 +74,7 @@ class PlayerPhysics {
         this.resetBlock();
         window.addEventListener(
             "keydown",
-            this.updatePlayerPos.bind(this),
+            this.updatePlayerPos.bind(this, board),
             false,
         ); // Without bind it loses context.
         this.hasMoved = false;
@@ -110,29 +112,42 @@ class PlayerPhysics {
         });
     }
 
+    // Might be worth it to move this to GameLoop.
     updatePlayerPos(
-        { keyCode, repeat }: { keyCode: number; repeat: boolean },
+        board: BoardCell[][], { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
+        const x = this.pos[0];
+        const y = this.pos[1];
         if (keyCode === 37) {
-            this.setPos(this.pos[0] - 1, this.pos[1]);
-            this.hasMoved = true;
+            // Left
+            if (board[y][x-1].char == EMPTY) {
+                this.setPos(x - 1, y);
+                this.hasMoved = true;
+            }
         } else if (keyCode === 39) {
-            // this.setPos(this.pos[0] + 1, this.pos[1]);
-            this.setPos(this.pos[0] + 1, this.pos[1]);
-            this.hasMoved = true;
+            // Right
+            if (board[y][x+1].char == EMPTY) {
+                this.setPos(x + 1, y);
+                this.hasMoved = true;
+            }
         } else if (keyCode === 40) {
+            // Down
             if (repeat) {
                 // TODO: Handle repeated downkey.
             }
-            this.setPos(this.pos[0], this.pos[1] + 1);
-            this.hasMoved = true;
+            if (board[y+1][x].char == EMPTY) {
+                this.setPos(x, y + 1);
+                this.hasMoved = true;
+            }
         } else if (keyCode === 38) {
-            this.setPos(this.pos[0], this.pos[1] - 1);
-            this.hasMoved = true;
+            if (IS_DEBUG && board[y-1][x].char == EMPTY) {
+                this.setPos(x, y - 1);
+                this.hasMoved = true;
+            }
         } else if (keyCode == 32) {
             // Space bar.
             this.rotateCells(this.cells);
-            this.setPos(this.pos[0], this.pos[1]);
+            this.setPos(x, y);
         }
     }
 
@@ -257,8 +272,8 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     return <React.Fragment>{boardCells}</React.Fragment>;
 });
 
-let playerPhysics = new PlayerPhysics();
 let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+let playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
 let lockStart = null;
 // The amount of time it takes before a block locks in place.
 let lockMax = 1500;

@@ -113,35 +113,53 @@ class PlayerPhysics {
     }
 
     getAdjustedLeftmostX() {
-       return this.adjustedCells.reduce((prev, cur) => prev.x < cur.x ? prev.x : cur.x);
+        return this.adjustedCells.reduce((prev, cur) =>
+            prev.x < cur.x ? prev.x : cur.x
+        );
     }
 
     getAdjustedRightmostX() {
-        return this.adjustedCells.reduce((prev, cur) => prev.x < cur.x ? cur.x : prev.x);
+        return this.adjustedCells.reduce((prev, cur) =>
+            prev.x < cur.x ? cur.x : prev.x
+        );
     }
 
     getAdjustedTopY() {
-        return this.adjustedCells.reduce((prev, cur) => prev.y < cur.y ? prev.y : cur.y);
+        return this.adjustedCells.reduce((prev, cur) =>
+            prev.y < cur.y ? prev.y : cur.y
+        );
     }
 
     getAdjustedBottomY() {
-        return this.adjustedCells.reduce((prev, cur) => prev.y < cur.y ? cur.y : prev.y);
+        return this.adjustedCells.reduce((prev, cur) =>
+            prev.y < cur.y ? cur.y : prev.y
+        );
     }
 
     // Might be worth it to move this to GameLoop.
     updatePlayerPos(
-        board: BoardCell[][], { keyCode, repeat }: { keyCode: number; repeat: boolean },
+        board: BoardCell[][],
+        { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
         const x = this.pos[0];
         const y = this.pos[1];
-        const areTargetSpacesEmpty = (dx, dy) => this.adjustedCells.every((cell) => board[cell.y+dy][cell.x+dx].char == EMPTY);
+        const areTargetSpacesEmpty = (dx, dy) =>
+            this.adjustedCells.every((cell) =>
+                board[cell.y + dy][cell.x + dx].char == EMPTY
+            );
         if (keyCode === 37) {
-            if (0 <= this.getAdjustedLeftmostX()-1 && areTargetSpacesEmpty(-1, 0)) {
+            if (
+                0 <= this.getAdjustedLeftmostX() - 1 &&
+                areTargetSpacesEmpty(-1, 0)
+            ) {
                 this.setPos(x - 1, y);
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
-            if (this.getAdjustedRightmostX()+1 < BOARD_COLS && areTargetSpacesEmpty(1, 0)) {
+            if (
+                this.getAdjustedRightmostX() + 1 < BOARD_COLS &&
+                areTargetSpacesEmpty(1, 0)
+            ) {
                 this.setPos(x + 1, y);
                 this.hasMoved = true;
             }
@@ -150,12 +168,18 @@ class PlayerPhysics {
             if (repeat) {
                 // TODO: Handle repeated downkey.
             }
-            if (this.getAdjustedBottomY()+1 < BOARD_ROWS && areTargetSpacesEmpty(0, 1)) {
+            if (
+                this.getAdjustedBottomY() + 1 < BOARD_ROWS &&
+                areTargetSpacesEmpty(0, 1)
+            ) {
                 this.setPos(x, y + 1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 38) {
-            if (IS_DEBUG && 0 <= this.getAdjustedTopY()-1 && areTargetSpacesEmpty(0, -1)) {
+            if (
+                IS_DEBUG && 0 <= this.getAdjustedTopY() - 1 &&
+                areTargetSpacesEmpty(0, -1)
+            ) {
                 this.setPos(x, y - 1);
                 this.hasMoved = true;
             }
@@ -372,8 +396,7 @@ export function GameLoop() {
             // if the previous touched ground height is the same as the current one.
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 service.send("UNLOCK");
-            }
-            else if (lockMax <= lockTime) {
+            } else if (lockMax <= lockTime) {
                 let cells = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((userCell) => {
                     cells[userCell.y][userCell.x].char = userCell.char;

@@ -104,7 +104,6 @@ class PlayerPhysics {
                 cell.y = x + mid;
             }
         });
-        console.log(res)
         return res;
     }
 
@@ -195,16 +194,34 @@ class PlayerPhysics {
             * if no overlap, set to rotatedCells
             * if overlap in one direction, try to shift from that direction if shift causes another overlap, don't rotate
             */
-            const isOverlapping = rotatedCellsAdjusted.some((cell) => {
-                return !this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) || board[cell.y][cell.x].char !== EMPTY;
+
+            let overlappingI = 0;
+            const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
+                if (!this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) || board[cell.y][cell.x].char !== EMPTY) {
+                    overlappingI = i;
+                    return true;
+                }
+                return false;
             });
-            if (!isOverlapping) {
+            console.log(overlappingI)
+            if (overlappingCells.length <= 0) {
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
                 this.hasMoved = true;
             }
             else {
-
+                // Get direction of overlapping cell.
+                let dy = this.layout.length - 1 - rotatedCells[overlappingI].y;
+                let dx = this.layout[0].length - 1 - rotatedCells[overlappingI].x;
+                // Shift in opposite direction of the overlapping cell.
+                for (let element of rotatedCells) {
+                    element.y -= dy;
+                }
+                
+                rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
+                this.cells = rotatedCells;
+                this.adjustedCells = rotatedCellsAdjusted;
+                this.hasMoved = true;
             }
         }
     }

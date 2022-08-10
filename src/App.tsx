@@ -187,6 +187,7 @@ class PlayerPhysics {
         } else if (keyCode == 32) {
             // Space bar.
             this.setCells(this.rotateCells(this.cells));
+            this.hasMoved = true;
         }
     }
 

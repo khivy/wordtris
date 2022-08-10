@@ -254,8 +254,6 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
 });
 
 export function GameLoop() {
-    // Idea: We init function component state objects using physics state and
-    // memoize the physics objects and their respective setter functions (from Components) here.
     const gameState = {
         setPlayerCells: null,
         setBoardCells: null,
@@ -276,19 +274,32 @@ export function GameLoop() {
         </BoardStyled>
     );
 
+    let FPS = 60;
+    let frameStep = 1000 / FPS;
+    let accum = 0;
+    let prevTime = performance.now();
     function loop(timestamp) {
+        let curTime = performance.now();
+        accum += curTime - prevTime;
+        prevTime = curTime;
+
         // Update physics.
-        handleStates();
-        // Reset if spawn point is blocked.
-        if (
-            boardPhysics
-                .boardCellMatrix[playerPhysics.spawnPos[1]][
-                    playerPhysics.spawnPos[0]
-                ].char !== EMPTY
-        ) {
-            playerPhysics = new PlayerPhysics();
-            boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+        if (accum >= frameStep) {
+            accum -= frameStep;
+            handleStates();
+
+            // Reset if spawn point is blocked.
+            if (
+                boardPhysics
+                    .boardCellMatrix[playerPhysics.spawnPos[1]][
+                        playerPhysics.spawnPos[0]
+                    ].char !== EMPTY
+            ) {
+                playerPhysics = new PlayerPhysics();
+                boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+            }
         }
+
         // Update rendering.
         if (gameState.setPlayerCells != null) {
             gameState.setPlayerCells(playerPhysics.adjustedCells);

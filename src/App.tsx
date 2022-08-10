@@ -279,9 +279,9 @@ class BoardPhysics {
         return cells;
     }
 
-    getGroundHeight(col: number): number {
+    getGroundHeight(col: number, startRow: number): number {
         // Search for first non-EMPTY board cell from the top.
-        for (let row = -1; row < BOARD_ROWS - 1; ++row) {
+        for (let row = startRow; row < BOARD_ROWS - 1; ++row) {
             if (this.boardCellMatrix[row + 1][col].char !== EMPTY) {
                 return row;
             }
@@ -377,7 +377,7 @@ export function GameLoop() {
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
-            return cell.y >= boardPhysics.getGroundHeight(cell.x);
+            return cell.y >= boardPhysics.getGroundHeight(cell.x, cell.y);
         });
     }
 

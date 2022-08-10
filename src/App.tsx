@@ -8,8 +8,8 @@ import { BoardCellStyled } from "./components/BoardCell";
 
 const TBD = "@";
 export const EMPTY = "";
-const BOARD_ROWS = 5;
-const BOARD_COLS = 5;
+const BOARD_ROWS = 7;
+const BOARD_COLS = 7;
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -278,6 +278,11 @@ export function GameLoop() {
     function loop(timestamp) {
         // Update physics.
         handleStates();
+        // Reset if spawn point is blocked.
+        if (boardPhysics.boardCellMatrix[playerPhysics.spawnPos[1]][playerPhysics.spawnPos[0]].char !== EMPTY) {
+            playerPhysics = new PlayerPhysics();
+            boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+        }
         // Update rendering.
         if (gameState.setPlayerCells != null) {
             gameState.setPlayerCells(playerPhysics.adjustedCells);

@@ -120,13 +120,13 @@ class PlayerPhysics {
         const y = this.pos[1];
         if (keyCode === 37) {
             // Left
-            if (board[y][x-1].char == EMPTY) {
+            if (0 <= x-1 && board[y][x-1].char == EMPTY) {
                 this.setPos(x - 1, y);
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
             // Right
-            if (board[y][x+1].char == EMPTY) {
+            if (x+1 < BOARD_COLS && board[y][x+1].char == EMPTY) {
                 this.setPos(x + 1, y);
                 this.hasMoved = true;
             }
@@ -135,12 +135,12 @@ class PlayerPhysics {
             if (repeat) {
                 // TODO: Handle repeated downkey.
             }
-            if (board[y+1][x].char == EMPTY) {
+            if (y+1 < BOARD_ROWS && board[y+1][x].char == EMPTY) {
                 this.setPos(x, y + 1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 38) {
-            if (IS_DEBUG && board[y-1][x].char == EMPTY) {
+            if (IS_DEBUG && 0 <= y-1 && board[y-1][x].char == EMPTY) {
                 this.setPos(x, y - 1);
                 this.hasMoved = true;
             }

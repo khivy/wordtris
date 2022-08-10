@@ -112,21 +112,36 @@ class PlayerPhysics {
         });
     }
 
+    getAdjustedLeftmostX() {
+       return this.adjustedCells.reduce((prev, cur) => prev.x < cur.x ? prev.x : cur.x);
+    }
+
+    getAdjustedRightmostX() {
+        return this.adjustedCells.reduce((prev, cur) => prev.x < cur.x ? cur.x : prev.x);
+    }
+
+    getAdjustedTopY() {
+        return this.adjustedCells.reduce((prev, cur) => prev.y < cur.y ? prev.y : cur.y);
+    }
+
+    getAdjustedBottomY() {
+        return this.adjustedCells.reduce((prev, cur) => prev.y < cur.y ? cur.y : prev.y);
+    }
+
     // Might be worth it to move this to GameLoop.
     updatePlayerPos(
         board: BoardCell[][], { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
         const x = this.pos[0];
         const y = this.pos[1];
+        const areTargetSpacesEmpty = (dx, dy) => this.adjustedCells.every((cell) => board[cell.y+dy][cell.x+dx].char == EMPTY);
         if (keyCode === 37) {
-            // Left
-            if (0 <= x-1 && board[y][x-1].char == EMPTY) {
+            if (0 <= this.getAdjustedLeftmostX()-1 && areTargetSpacesEmpty(-1, 0)) {
                 this.setPos(x - 1, y);
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
-            // Right
-            if (x+1 < BOARD_COLS && board[y][x+1].char == EMPTY) {
+            if (this.getAdjustedRightmostX()+1 < BOARD_COLS && areTargetSpacesEmpty(1, 0)) {
                 this.setPos(x + 1, y);
                 this.hasMoved = true;
             }
@@ -135,12 +150,12 @@ class PlayerPhysics {
             if (repeat) {
                 // TODO: Handle repeated downkey.
             }
-            if (y+1 < BOARD_ROWS && board[y+1][x].char == EMPTY) {
+            if (this.getAdjustedBottomY()+1 < BOARD_ROWS && areTargetSpacesEmpty(0, 1)) {
                 this.setPos(x, y + 1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 38) {
-            if (IS_DEBUG && 0 <= y-1 && board[y-1][x].char == EMPTY) {
+            if (IS_DEBUG && 0 <= this.getAdjustedTopY()-1 && areTargetSpacesEmpty(0, -1)) {
                 this.setPos(x, y - 1);
                 this.hasMoved = true;
             }

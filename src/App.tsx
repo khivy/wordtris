@@ -58,6 +58,7 @@ class PlayerPhysics {
     pos: number[]; // x, y
     spawnPos: number[]; // x, y
     layout: string[][];
+    hasMoved: boolean;
 
     constructor() {
         this.layout = [
@@ -74,6 +75,7 @@ class PlayerPhysics {
             this.updatePlayerPos.bind(this),
             false,
         ); // Without bind it loses context.
+        this.hasMoved = false;
     }
 
     setPos(x: number, y: number) {
@@ -113,16 +115,20 @@ class PlayerPhysics {
     ): void {
         if (keyCode === 37) {
             this.setPos(this.pos[0] - 1, this.pos[1]);
+            this.hasMoved = true;
         } else if (keyCode === 39) {
             // this.setPos(this.pos[0] + 1, this.pos[1]);
             this.setPos(this.pos[0] + 1, this.pos[1]);
+            this.hasMoved = true;
         } else if (keyCode === 40) {
             if (repeat) {
                 // TODO: Handle repeated downkey.
             }
             this.setPos(this.pos[0], this.pos[1] + 1);
+            this.hasMoved = true;
         } else if (keyCode === 38) {
             this.setPos(this.pos[0], this.pos[1] - 1);
+            this.hasMoved = true;
         } else if (keyCode == 32) {
             // Space bar.
             this.rotateCells(this.cells);
@@ -253,8 +259,9 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
 
 let playerPhysics = new PlayerPhysics();
 let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
-let lockStart = 0;
-let lockMax = 1000;
+let lockStart = null;
+// The amount of time it takes before a block locks in place.
+let lockMax = 1000 / 2;
 export function GameLoop() {
     const gameState = {
         setPlayerCells: null,
@@ -282,7 +289,6 @@ export function GameLoop() {
     let accum = 0;
     let prevTime = performance.now();
     function loop(timestamp) {
-        console.log(prevTime)
         let curTime = performance.now();
         accum += curTime - prevTime;
         prevTime = curTime;
@@ -329,7 +335,10 @@ export function GameLoop() {
         } else if ("lockDelay" == service.state.value) {
             let lockTime = performance.now() - lockStart;
 
-            if (lockMax <= lockTime) {
+            if (playerPhysics.hasMoved) {
+                service.send("UNLOCK");
+            }
+            else if (lockMax <= lockTime) {
                 let cells = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((userCell) => {
                     cells[userCell.y][userCell.x].char = userCell.char;
@@ -346,6 +355,7 @@ export function GameLoop() {
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
         }
+        playerPhysics.hasMoved = false;
     }
 
     return res;

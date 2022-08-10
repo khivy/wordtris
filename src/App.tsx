@@ -190,11 +190,8 @@ class PlayerPhysics {
             // Space bar.
             let rotatedCells = this.rotateCells(this.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
-            /*cases
-            * if no overlap, set to rotatedCells
-            * if overlap in one direction, try to shift from that direction if shift causes another overlap, don't rotate
-            */
 
+            // Get the overlapping cell's respective index in non-adjusted array.
             let overlappingI = 0;
             const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
                 if (!this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) || board[cell.y][cell.x].char !== EMPTY) {
@@ -203,7 +200,6 @@ class PlayerPhysics {
                 }
                 return false;
             });
-            console.log(overlappingI)
             if (overlappingCells.length <= 0) {
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
@@ -211,13 +207,14 @@ class PlayerPhysics {
             }
             else {
                 // Get direction of overlapping cell.
-                let dy = this.layout.length - 1 - rotatedCells[overlappingI].y;
-                let dx = this.layout[0].length - 1 - rotatedCells[overlappingI].x;
+                let dy = Math.floor(this.layout.length/2) - rotatedCells[overlappingI].y;
+                let dx = Math.floor(this.layout[0].length/2) - rotatedCells[overlappingI].x;
+                console.log(dx, dy)
                 // Shift in opposite direction of the overlapping cell.
                 for (let element of rotatedCells) {
-                    element.y -= dy;
+                    element.y += dy;
+                    element.x += dx;
                 }
-                
                 rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;

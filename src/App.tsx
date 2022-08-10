@@ -189,12 +189,17 @@ class PlayerPhysics {
         } else if (keyCode == 32) {
             // Space bar.
             let rotatedCells = this.rotateCells(this.cells);
-            let rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
+            let rotatedCellsAdjusted = rotatedCells.map((cell) =>
+                this.getAdjustedUserCell(cell)
+            );
 
             // Get the overlapping cell's respective index in non-adjusted array.
             let overlappingI = 0;
             const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
-                if (!this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) || board[cell.y][cell.x].char !== EMPTY) {
+                if (
+                    !this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) ||
+                    board[cell.y][cell.x].char !== EMPTY
+                ) {
                     overlappingI = i;
                     return true;
                 }
@@ -204,18 +209,21 @@ class PlayerPhysics {
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
                 this.hasMoved = true;
-            }
-            else {
+            } else {
                 // Get direction of overlapping cell.
-                let dy = Math.floor(this.layout.length/2) - rotatedCells[overlappingI].y;
-                let dx = Math.floor(this.layout[0].length/2) - rotatedCells[overlappingI].x;
-                console.log(dx, dy)
+                let dy = Math.floor(this.layout.length / 2) -
+                    rotatedCells[overlappingI].y;
+                let dx = Math.floor(this.layout[0].length / 2) -
+                    rotatedCells[overlappingI].x;
+                console.log(dx, dy);
                 // Shift in opposite direction of the overlapping cell.
                 for (let element of rotatedCells) {
                     element.y += dy;
                     element.x += dx;
                 }
-                rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
+                rotatedCellsAdjusted = rotatedCells.map((cell) =>
+                    this.getAdjustedUserCell(cell)
+                );
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
                 this.hasMoved = true;
@@ -443,6 +451,21 @@ export function GameLoop() {
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == service.state.value) {
+            // For each floating block, move it 1 + the ground.
+            for (let r = 0; r < BOARD_ROWS - 1; ++r) {
+                for (let c = 0; c < BOARD_COLS; ++c) {
+                    if (
+                        boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
+                        boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
+                    ) {
+                        boardPhysics
+                            .boardCellMatrix[
+                                boardPhysics.getGroundHeight(c, r)
+                            ][c].char = boardPhysics.boardCellMatrix[r][c].char;
+                        boardPhysics.boardCellMatrix[r][c].char = EMPTY;
+                    }
+                }
+            }
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
         }

@@ -89,17 +89,11 @@ class PlayerPhysics {
         );
     }
 
-    setCells(cells: UserCell[]) {
-        this.adjustedCells = this.cells.map((cell) =>
-            this.getAdjustedUserCell(cell)
-        );
-    }
-
-    rotateCells(cells: UserCell[]) {
+    rotateCells(cells: UserCell[]): UserCell[] {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
         let mid = Math.floor(this.layout.length / 2);
-        let res = cells.slice();
+        let res = structuredClone(cells);
         res.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
@@ -110,6 +104,7 @@ class PlayerPhysics {
                 cell.y = x + mid;
             }
         });
+        console.log(res)
         return res;
     }
 
@@ -135,6 +130,14 @@ class PlayerPhysics {
         return this.adjustedCells.reduce((prev, cur) =>
             prev.y < cur.y ? cur.y : prev.y
         );
+    }
+
+    isInXBounds(x: number) {
+        return 0 <= x && x < BOARD_COLS;
+    }
+
+    isInYBounds(y: number) {
+        return 0 <= y && y < BOARD_ROWS;
     }
 
     // Might be worth it to move this to GameLoop.
@@ -186,8 +189,23 @@ class PlayerPhysics {
             }
         } else if (keyCode == 32) {
             // Space bar.
-            this.setCells(this.rotateCells(this.cells));
-            this.hasMoved = true;
+            let rotatedCells = this.rotateCells(this.cells);
+            let rotatedCellsAdjusted = rotatedCells.map((cell) => this.getAdjustedUserCell(cell));
+            /*cases
+            * if no overlap, set to rotatedCells
+            * if overlap in one direction, try to shift from that direction if shift causes another overlap, don't rotate
+            */
+            const isOverlapping = rotatedCellsAdjusted.some((cell) => {
+                return !this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) || board[cell.y][cell.x].char !== EMPTY;
+            });
+            if (!isOverlapping) {
+                this.cells = rotatedCells;
+                this.adjustedCells = rotatedCellsAdjusted;
+                this.hasMoved = true;
+            }
+            else {
+
+            }
         }
     }
 

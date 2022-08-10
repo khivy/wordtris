@@ -67,7 +67,7 @@ class PlayerPhysics {
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         ];
-        this.spawnPos = [2,1];
+        this.spawnPos = [2, 1];
         this.resetBlock();
         window.addEventListener(
             "keydown",
@@ -170,27 +170,29 @@ class PlayerPhysics {
 }
 
 let playerPhysics = new PlayerPhysics();
-const PlayerComponent = React.memo(function PlayerComponent({ gameState, init }) {
-    // This function contains player information.
-    const playerState = useState(init); // Note: cells is not adjusted to the board.
-    gameState.setPlayerCells = playerState[1];
-    const [playerCells, _setPlayerCells] = playerState;
+const PlayerComponent = React.memo(
+    function PlayerComponent({ gameState, init }) {
+        // This function contains player information.
+        const playerState = useState(init); // Note: cells is not adjusted to the board.
+        gameState.setPlayerCells = playerState[1];
+        const [playerCells, _setPlayerCells] = playerState;
 
-    let adjustedCellsStyled = playerCells.map((cell) => {
-        return (
-            <UserCellStyled
-                key={cell.uid}
-                x={cell.x + 1}
-                y={cell.y + 1}
-            >
-                {cell.char}
-            </UserCellStyled>
-        );
-    });
+        let adjustedCellsStyled = playerCells.map((cell) => {
+            return (
+                <UserCellStyled
+                    key={cell.uid}
+                    x={cell.x + 1}
+                    y={cell.y + 1}
+                >
+                    {cell.char}
+                </UserCellStyled>
+            );
+        });
 
-    // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
-    return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
-});
+        // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
+        return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
+    },
+);
 
 interface BoardCell {
     x: number;
@@ -220,8 +222,8 @@ class BoardPhysics {
 
     getGroundHeight(col: number): number {
         // Search for first non-EMPTY board cell from the top.
-        for (let row = -1; row < BOARD_ROWS-1; ++row) {
-            if (this.boardCellMatrix[row+1][col].char !== EMPTY) {
+        for (let row = -1; row < BOARD_ROWS - 1; ++row) {
+            if (this.boardCellMatrix[row + 1][col].char !== EMPTY) {
                 return row;
             }
         }
@@ -252,7 +254,6 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
 });
 
 export function GameLoop() {
-
     // Idea: We init function component state objects using physics state and
     // memoize the physics objects and their respective setter functions (from Components) here.
     const gameState = {
@@ -264,11 +265,11 @@ export function GameLoop() {
         <BoardStyled>
             <BoardComponent
                 gameState={gameState}
-                key={'Board'}
+                key={"Board"}
                 init={boardPhysics.boardCellMatrix.slice()}
             />
             <PlayerComponent
-                key={'Player'}
+                key={"Player"}
                 gameState={gameState}
                 init={playerPhysics.adjustedCells.slice()}
             />
@@ -279,7 +280,12 @@ export function GameLoop() {
         // Update physics.
         handleStates();
         // Reset if spawn point is blocked.
-        if (boardPhysics.boardCellMatrix[playerPhysics.spawnPos[1]][playerPhysics.spawnPos[0]].char !== EMPTY) {
+        if (
+            boardPhysics
+                .boardCellMatrix[playerPhysics.spawnPos[1]][
+                    playerPhysics.spawnPos[0]
+                ].char !== EMPTY
+        ) {
             playerPhysics = new PlayerPhysics();
             boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
         }
@@ -302,10 +308,9 @@ export function GameLoop() {
             });
             if (is_touching) {
                 service.send("TOUCHINGBLOCK");
-                console.log("event: placingBlock ~ TOUCHINGBLOCK")
+                console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
-        }
-        else if ("lockDelay" == service.state.value) {
+        } else if ("lockDelay" == service.state.value) {
             let cells = boardPhysics.boardCellMatrix.slice();
             playerPhysics.adjustedCells.forEach((userCell) => {
                 cells[userCell.y][userCell.x].char = userCell.char;
@@ -316,11 +321,10 @@ export function GameLoop() {
             playerPhysics.resetBlock();
 
             service.send("LOCK");
-            console.log("event: lockDelay ~ SEND")
-        }
-        else if ("fallingLetters" == service.state.value) {
+            console.log("event: lockDelay ~ SEND");
+        } else if ("fallingLetters" == service.state.value) {
             service.send("GROUNDED");
-            console.log("event: fallingLetters ~ GROUNDED")
+            console.log("event: fallingLetters ~ GROUNDED");
         }
     }
 

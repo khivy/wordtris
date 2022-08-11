@@ -17,9 +17,9 @@ const BOARD_ROWS = 7;
 const BOARD_COLS = 7;
 
 // Interp determines the distance between the player block's current row and the next row.
-// It is separate from game logic; used for rendering only.
 let interp = 0;
 const interpRate = .4;
+const interpKeydownMult = 30;
 const interpMax = 100;
 
 export const UserCellStyled = styled.div`
@@ -149,11 +149,19 @@ class PlayerPhysics {
         return 0 <= c && c < BOARD_COLS;
     }
 
-    doGradualFall(board: BoardCell[][]) {
+    // Returns the number of times crossed onto a new row.
+    doGradualFall(board: BoardCell[][]): number {
         interp += interpRate;
         if (this.adjustedCells.some((cell) => !this.isInRBounds(cell.r+1) || board[cell.r+1][cell.c].char !== EMPTY)) {
             interp = 0;
         }
+        let dr = 0;
+        while (interpMax <= interp) {
+            dr += 1;
+            interp -= interpMax;
+            playerPhysics.hasMoved = true;
+        }
+        return dr;
     }
 
     // Might be worth it to move this to GameLoop.
@@ -195,8 +203,7 @@ class PlayerPhysics {
                 areTargetSpacesEmpty(1, 0)
             ) {
                 if (ENABLE_GRADUAL_FALL) {
-                    let dr = 0;
-                    this.setPos(r+dr, c);
+                    interp += interpRate*interpKeydownMult;
                 } else {
                     this.setPos(r+1, c);
                 }
@@ -316,7 +323,6 @@ const PlayerComponent = React.memo(
         const [playerCells, _setPlayerCells] = playerState;
         let adjustedCellsStyled = playerCells.map((cell) => {
 
-            // let test = (cell.r % (BOARD_ROWS-1)) & 1;
             const divStyle = {
                 background: 'blue',
                 border: 2,
@@ -451,13 +457,7 @@ export function GameLoop() {
             accum -= frameStep;
             handleStates();
             if (ENABLE_GRADUAL_FALL) {
-                playerPhysics.doGradualFall(boardPhysics.boardCellMatrix);
-                let dr = 0;
-                while (interpMax <= interp) {
-                    dr += 1;
-                    interp -= interpMax;
-                    playerPhysics.hasMoved = true;
-                }
+                const dr = playerPhysics.doGradualFall(boardPhysics.boardCellMatrix);
                 playerPhysics.setPos(playerPhysics.pos[0]+dr, playerPhysics.pos[1]);
             }
 

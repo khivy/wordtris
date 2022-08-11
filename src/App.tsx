@@ -57,8 +57,8 @@ interface UserCell {
 class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
-    pos: number[]; // x, y
-    spawnPos: number[]; // x, y
+    pos: number[]; // r, c
+    spawnPos: number[];
     layout: string[][];
     hasMoved: boolean;
 
@@ -155,7 +155,7 @@ class PlayerPhysics {
                 0 <= this.getAdjustedLeftmostC() - 1 &&
                 areTargetSpacesEmpty(0, -1)
             ) {
-                this.setPos(r, c-1);
+                this.setPos(r, c - 1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
@@ -225,7 +225,10 @@ class PlayerPhysics {
                     this.getAdjustedUserCell(cell)
                 );
                 // Check for overlaps with shifted cells.
-                const isOverlapping = rotatedCellsAdjusted.some((cell, i) => !this.isInCBounds(cell.c) || !this.isInRBounds(cell.r) || board[cell.r][cell.c].char !== EMPTY );
+                const isOverlapping = rotatedCellsAdjusted.some((cell, i) =>
+                    !this.isInCBounds(cell.c) || !this.isInRBounds(cell.r) ||
+                    board[cell.r][cell.c].char !== EMPTY
+                );
                 if (!isOverlapping) {
                     this.cells = rotatedCells;
                     this.adjustedCells = rotatedCellsAdjusted;
@@ -312,9 +315,11 @@ class BoardPhysics {
     }
 
     resetBoard(rows, cols) {
-        this.boardCellMatrix.forEach((row) => row.forEach((col) => {
-            col.char = EMPTY;
-        }));
+        this.boardCellMatrix.forEach((row) =>
+            row.forEach((col) => {
+                col.char = EMPTY;
+            })
+        );
     }
 
     createBoard(rows: number, cols: number): BoardCell[][] {

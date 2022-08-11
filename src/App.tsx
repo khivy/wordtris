@@ -301,10 +301,16 @@ interface BoardCell {
 }
 
 class BoardPhysics {
-    boardCellMatrix;
+    boardCellMatrix: BoardCell[][];
 
     constructor(rows: number, cols: number) {
         this.boardCellMatrix = this.createBoard(rows, cols);
+    }
+
+    resetBoard(rows, cols) {
+        this.boardCellMatrix.forEach((row) => row.forEach((col) => {
+            col.char = EMPTY;
+        }));
     }
 
     createBoard(rows: number, cols: number): BoardCell[][] {
@@ -400,8 +406,7 @@ export function GameLoop() {
                         playerPhysics.spawnPos[0]
                     ].char !== EMPTY
             ) {
-                playerPhysics = new PlayerPhysics();
-                boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+                boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
             }
         }
 

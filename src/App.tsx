@@ -12,6 +12,9 @@ const TBD = "@";
 export const EMPTY = "";
 const BOARD_ROWS = 7;
 const BOARD_COLS = 7;
+let interp = 0;
+let interpRate = 0.25;
+let interpMax = 1;
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -19,8 +22,8 @@ export const UserCellStyled = styled.div`
   grid-row: ${(props) => props.r};
   grid-column: ${(props) => props.c};
   display: flex;
-  // margin-top: -50%;
-  // margin-bottom: 50%;
+  margin-top: ${(props) => props.interp * 100}%;
+  margin-bottom: -${(props) => props.interp * 100}%;
   justify-content: center;
   z-index: 1;
 `;
@@ -33,10 +36,11 @@ export const BoardStyled = styled.div`
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 const stateMachine = createMachine({
-    initial: "placingBlock",
+    initial: "spawningBlock",
     states: {
+        spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
-        fallingLetters: { on: { GROUNDED: "placingBlock" } },
+        fallingLetters: { on: { GROUNDED: "spawningBlock" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
     },
 });
@@ -175,8 +179,15 @@ class PlayerPhysics {
                 this.getAdjustedBottomR() + 1 < BOARD_ROWS &&
                 areTargetSpacesEmpty(1, 0)
             ) {
-                this.setPos(r + 1, c);
-                this.hasMoved = true;
+                interp += interpRate; // edit the HTML elements with key user.
+                if (1.0 <= interp) {
+                    interp = 0;
+                    this.setPos(r + 1, c);
+                    this.hasMoved = true;
+                }
+                else {
+                    this.setPos(r, c);
+                }
             }
         } else if (keyCode === 38) {
             if (
@@ -290,6 +301,7 @@ const PlayerComponent = React.memo(
                     key={cell.uid}
                     r={cell.r + 1}
                     c={cell.c + 1}
+                    interp={interp}
                 >
                     {cell.char}
                 </UserCellStyled>
@@ -438,7 +450,10 @@ export function GameLoop() {
 
     function handleStates() {
         // console.log(service.state.value)
-        if ("placingBlock" == service.state.value) {
+        if ("spawningBlock" == service.state.value) {
+            service.send("SPAWN");
+        }
+        else if ("placingBlock" == service.state.value) {
             if (isPlayerTouchingGround()) {
                 service.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
@@ -459,6 +474,7 @@ export function GameLoop() {
                 // Allow React to see change with a new object:
                 boardPhysics.boardCellMatrix = cells;
                 // Allow React to see change with a new object:
+                interp = 0;
                 playerPhysics.resetBlock();
 
                 service.send("LOCK");

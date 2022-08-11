@@ -172,14 +172,16 @@ class PlayerPhysics {
         const r = this.pos[0];
         const c = this.pos[1];
         const areTargetSpacesEmpty = (dr, dc) =>
-            this.adjustedCells.every((cell) =>
-                board[cell.r + dr][cell.c + dc].char == EMPTY
-            );
+            this.adjustedCells.every((cell) => {
+                return board[cell.r + dr][cell.c + dc].char === EMPTY
+            });
         if (keyCode === 37) {
             // Left
             if (
-                0 <= this.getAdjustedLeftmostC() - 1 &&
-                areTargetSpacesEmpty(0, -1)
+                this.isInCBounds(this.getAdjustedRightmostC() - 1) &&
+                // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
+                this.isInRBounds(this.getAdjustedBottomR() + Math.ceil(interp/interpMax)) &&
+                areTargetSpacesEmpty(Math.ceil(interp/interpMax), -1)
             ) {
                 this.setPos(r, c - 1);
                 this.hasMoved = true;
@@ -187,8 +189,10 @@ class PlayerPhysics {
         } else if (keyCode === 39) {
             // Right
             if (
-                this.getAdjustedRightmostC() + 1 < BOARD_COLS &&
-                areTargetSpacesEmpty(0, 1)
+                this.isInCBounds(this.getAdjustedRightmostC() + 1) &&
+                // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
+                this.isInRBounds(this.getAdjustedBottomR() + Math.ceil(interp/interpMax)) &&
+                areTargetSpacesEmpty(Math.ceil(interp/interpMax), 1)
             ) {
                 this.setPos(r, c + 1);
                 this.hasMoved = true;

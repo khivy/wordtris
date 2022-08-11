@@ -11,7 +11,7 @@ export const BoardCellStyled = styled.div`
   background: ${(props) => props.char === EMPTY ? "none" : "red"};
   text: ${(props) => props.char === EMPTY ? "none" : "red"};
   border: 2px solid;
-  grid-row: ${(props) => props.y};
-  grid-column: ${(props) => props.x};
+  grid-row: ${(props) => props.r};
+  grid-column: ${(props) => props.c};
   text-align: center;
 `;

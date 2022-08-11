@@ -16,8 +16,8 @@ const BOARD_COLS = 7;
 export const UserCellStyled = styled.div`
   background: blue;
   border: 2px solid;
-  grid-row: ${(props) => props.y};
-  grid-column: ${(props) => props.x};
+  grid-row: ${(props) => props.r};
+  grid-column: ${(props) => props.c};
   display: flex;
   // margin-top: -50%;
   // margin-bottom: 50%;
@@ -48,8 +48,8 @@ const service = interpret(stateMachine).onTransition((state) => {
 service.start();
 
 interface UserCell {
-    x: number;
-    y: number;
+    r: number;
+    c: number;
     char: string;
     uid: string;
 }
@@ -70,7 +70,7 @@ class PlayerPhysics {
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         ];
-        this.spawnPos = [2, 1];
+        this.spawnPos = [1, 3];
         this.resetBlock();
         window.addEventListener(
             "keydown",
@@ -80,9 +80,9 @@ class PlayerPhysics {
         this.hasMoved = false;
     }
 
-    setPos(x: number, y: number) {
-        this.pos[0] = x;
-        this.pos[1] = y;
+    setPos(r: number, c: number) {
+        this.pos[0] = r;
+        this.pos[1] = c;
         // Update adjusted cells, which also allows React to see new updates.
         this.adjustedCells = this.cells.map((cell) =>
             this.getAdjustedUserCell(cell)
@@ -97,46 +97,46 @@ class PlayerPhysics {
         res.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
-            const x = cell.x - mid; // 2,1 - 2,2, it's 0,-1, hoping to see 1,0
-            const y = cell.y - mid; //
-            if (x !== 0 || y !== 0) {
-                cell.x = -y + mid;
-                cell.y = x + mid;
+            const r = cell.r - mid;
+            const c = cell.c - mid;
+            if (r !== 0 || c !== 0) {
+                cell.r = c + mid;
+                cell.c = -r + mid;
             }
         });
         return res;
     }
 
-    getAdjustedLeftmostX() {
+    getAdjustedLeftmostC() {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.x < cur.x ? prev.x : cur.x
+            prev.c < cur.c ? prev.c : cur.c
         );
     }
 
-    getAdjustedRightmostX() {
+    getAdjustedRightmostC() {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.x < cur.x ? cur.x : prev.x
+            prev.c < cur.c ? cur.c : prev.c
         );
     }
 
-    getAdjustedTopY() {
+    getAdjustedTopR() {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.y < cur.y ? prev.y : cur.y
+            prev.r < cur.r ? prev.r : cur.r
         );
     }
 
-    getAdjustedBottomY() {
+    getAdjustedBottomR() {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.y < cur.y ? cur.y : prev.y
+            prev.r < cur.r ? cur.r : prev.r
         );
     }
 
-    isInXBounds(x: number) {
-        return 0 <= x && x < BOARD_COLS;
+    isInRBounds(r: number) {
+        return 0 <= r && r < BOARD_ROWS;
     }
 
-    isInYBounds(y: number) {
-        return 0 <= y && y < BOARD_ROWS;
+    isInCBounds(c: number) {
+        return 0 <= c && c < BOARD_COLS;
     }
 
     // Might be worth it to move this to GameLoop.
@@ -144,26 +144,26 @@ class PlayerPhysics {
         board: BoardCell[][],
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
-        const x = this.pos[0];
-        const y = this.pos[1];
-        const areTargetSpacesEmpty = (dx, dy) =>
+        const r = this.pos[0];
+        const c = this.pos[1];
+        const areTargetSpacesEmpty = (dr, dc) =>
             this.adjustedCells.every((cell) =>
-                board[cell.y + dy][cell.x + dx].char == EMPTY
+                board[cell.r + dr][cell.c + dc].char == EMPTY
             );
         if (keyCode === 37) {
             if (
-                0 <= this.getAdjustedLeftmostX() - 1 &&
-                areTargetSpacesEmpty(-1, 0)
+                0 <= this.getAdjustedLeftmostC() - 1 &&
+                areTargetSpacesEmpty(0, -1)
             ) {
-                this.setPos(x - 1, y);
+                this.setPos(r, c-1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
             if (
-                this.getAdjustedRightmostX() + 1 < BOARD_COLS &&
-                areTargetSpacesEmpty(1, 0)
+                this.getAdjustedRightmostC() + 1 < BOARD_COLS &&
+                areTargetSpacesEmpty(0, 1)
             ) {
-                this.setPos(x + 1, y);
+                this.setPos(r, c + 1);
                 this.hasMoved = true;
             }
         } else if (keyCode === 40) {
@@ -172,18 +172,18 @@ class PlayerPhysics {
                 // TODO: Handle repeated downkey.
             }
             if (
-                this.getAdjustedBottomY() + 1 < BOARD_ROWS &&
-                areTargetSpacesEmpty(0, 1)
+                this.getAdjustedBottomR() + 1 < BOARD_ROWS &&
+                areTargetSpacesEmpty(1, 0)
             ) {
-                this.setPos(x, y + 1);
+                this.setPos(r + 1, c);
                 this.hasMoved = true;
             }
         } else if (keyCode === 38) {
             if (
-                IS_DEBUG && 0 <= this.getAdjustedTopY() - 1 &&
-                areTargetSpacesEmpty(0, -1)
+                IS_DEBUG && 0 <= this.getAdjustedTopR() - 1 &&
+                areTargetSpacesEmpty(-1, 0)
             ) {
-                this.setPos(x, y - 1);
+                this.setPos(r - 1, c);
                 this.hasMoved = true;
             }
         } else if (keyCode == 32) {
@@ -197,8 +197,8 @@ class PlayerPhysics {
             let overlappingI = 0;
             const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
                 if (
-                    !this.isInXBounds(cell.x) || !this.isInYBounds(cell.y) ||
-                    board[cell.y][cell.x].char !== EMPTY
+                    !this.isInCBounds(cell.c) || !this.isInRBounds(cell.r) ||
+                    board[cell.r][cell.c].char !== EMPTY
                 ) {
                     overlappingI = i;
                     return true;
@@ -211,15 +211,14 @@ class PlayerPhysics {
                 this.hasMoved = true;
             } else {
                 // Get direction of overlapping cell.
-                let dy = Math.floor(this.layout.length / 2) -
-                    rotatedCells[overlappingI].y;
-                let dx = Math.floor(this.layout[0].length / 2) -
-                    rotatedCells[overlappingI].x;
-                console.log(dx, dy);
+                let dr = Math.floor(this.layout.length / 2) -
+                    rotatedCells[overlappingI].r;
+                let dc = Math.floor(this.layout[0].length / 2) -
+                    rotatedCells[overlappingI].c;
                 // Shift in opposite direction of the overlapping cell.
                 for (let element of rotatedCells) {
-                    element.y += dy;
-                    element.x += dx;
+                    element.r += dr;
+                    element.c += dc;
                 }
                 rotatedCellsAdjusted = rotatedCells.map((cell) =>
                     this.getAdjustedUserCell(cell)
@@ -239,8 +238,8 @@ class PlayerPhysics {
             row.forEach((ch, c) => {
                 if (ch === TBD) {
                     res.push({
-                        x: c,
-                        y: r,
+                        r: r,
+                        c: c,
                         char: generateRandomChar(),
                         uid: `user(${r},${c})`,
                     });
@@ -262,8 +261,8 @@ class PlayerPhysics {
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
     getAdjustedUserCell(cell: UserCell): UserCell {
         return {
-            x: cell.x + this.pos[0] - Math.floor(this.layout[0].length / 2),
-            y: cell.y + this.pos[1] - Math.floor(this.layout.length / 2),
+            r: cell.r + this.pos[0] - Math.floor(this.layout.length / 2),
+            c: cell.c + this.pos[1] - Math.floor(this.layout[0].length / 2),
             uid: cell.uid,
             char: cell.char,
         };
@@ -281,8 +280,8 @@ const PlayerComponent = React.memo(
             return (
                 <UserCellStyled
                     key={cell.uid}
-                    x={cell.x + 1}
-                    y={cell.y + 1}
+                    r={cell.r + 1}
+                    c={cell.c + 1}
                 >
                     {cell.char}
                 </UserCellStyled>
@@ -295,8 +294,8 @@ const PlayerComponent = React.memo(
 );
 
 interface BoardCell {
-    x: number;
-    y: number;
+    r: number;
+    c: number;
     char: string;
 }
 
@@ -319,7 +318,7 @@ class BoardPhysics {
         for (let r = 0; r < rows; ++r) {
             let row = [];
             for (let c = 0; c < cols; ++c) {
-                row.push({ x: c, y: r, char: EMPTY });
+                row.push({ c: c, r: r, char: EMPTY });
             }
             cells.push(row);
         }
@@ -346,8 +345,8 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
         row.map((cell, c) => (
             <BoardCellStyled
                 key={`cell(${r.toString()},${c.toString()})`}
-                x={cell.x + 1}
-                y={cell.y + 1}
+                r={cell.r + 1}
+                c={cell.c + 1}
                 char={cell.char}
             >
                 {cell.char}
@@ -402,8 +401,8 @@ export function GameLoop() {
             // Reset if spawn point is blocked.
             if (
                 boardPhysics
-                    .boardCellMatrix[playerPhysics.spawnPos[1]][
-                        playerPhysics.spawnPos[0]
+                    .boardCellMatrix[playerPhysics.spawnPos[0]][
+                        playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
                 boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
@@ -423,7 +422,7 @@ export function GameLoop() {
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
-            return cell.y >= boardPhysics.getGroundHeight(cell.x, cell.y);
+            return cell.r >= boardPhysics.getGroundHeight(cell.c, cell.r);
         });
     }
 
@@ -445,7 +444,7 @@ export function GameLoop() {
             } else if (lockMax <= lockTime) {
                 let cells = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((userCell) => {
-                    cells[userCell.y][userCell.x].char = userCell.char;
+                    cells[userCell.r][userCell.c].char = userCell.char;
                 });
                 // Allow React to see change with a new object:
                 boardPhysics.boardCellMatrix = cells;

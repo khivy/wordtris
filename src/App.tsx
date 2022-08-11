@@ -223,9 +223,13 @@ class PlayerPhysics {
                 rotatedCellsAdjusted = rotatedCells.map((cell) =>
                     this.getAdjustedUserCell(cell)
                 );
-                this.cells = rotatedCells;
-                this.adjustedCells = rotatedCellsAdjusted;
-                this.hasMoved = true;
+                // Check for overlaps with shifted cells.
+                const isOverlapping = rotatedCellsAdjusted.some((cell, i) => !this.isInCBounds(cell.c) || !this.isInRBounds(cell.r) || board[cell.r][cell.c].char !== EMPTY );
+                if (!isOverlapping) {
+                    this.cells = rotatedCells;
+                    this.adjustedCells = rotatedCellsAdjusted;
+                    this.hasMoved = true;
+                }
             }
         }
     }

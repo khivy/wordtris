@@ -6,15 +6,21 @@ import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
-const IS_DEBUG = true;
+// Main features:
+const ENABLE_GRADUAL_FALL = true;
+// Debug features:
+const _ENABLE_UP_KEY = true;
 
 const TBD = "@";
 export const EMPTY = "";
 const BOARD_ROWS = 7;
 const BOARD_COLS = 7;
+
+// Interp determines the distance between the player block's current row and the next row.
+// It is separate from game logic; used for rendering only.
 let interp = 0;
-let interpRate = 0.25;
-let interpMax = 1;
+const interpRate = .4;
+const interpMax = 100;
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -22,8 +28,8 @@ export const UserCellStyled = styled.div`
   grid-row: ${(props) => props.r};
   grid-column: ${(props) => props.c};
   display: flex;
-  margin-top: ${(props) => props.interp * 100}%;
-  margin-bottom: -${(props) => props.interp * 100}%;
+  margin-top: ${(props) => props.interp}%;
+  margin-bottom: -${(props) => props.interp}%;
   justify-content: center;
   z-index: 1;
 `;
@@ -143,6 +149,13 @@ class PlayerPhysics {
         return 0 <= c && c < BOARD_COLS;
     }
 
+    doGradualFall(board: BoardCell[][]) {
+        interp += interpRate;
+        if (this.adjustedCells.some((cell) => !this.isInRBounds(cell.r+1) || board[cell.r+1][cell.c].char !== EMPTY)) {
+            interp = 0;
+        }
+    }
+
     // Might be worth it to move this to GameLoop.
     updatePlayerPos(
         board: BoardCell[][],
@@ -155,6 +168,7 @@ class PlayerPhysics {
                 board[cell.r + dr][cell.c + dc].char == EMPTY
             );
         if (keyCode === 37) {
+            // Left
             if (
                 0 <= this.getAdjustedLeftmostC() - 1 &&
                 areTargetSpacesEmpty(0, -1)
@@ -163,6 +177,7 @@ class PlayerPhysics {
                 this.hasMoved = true;
             }
         } else if (keyCode === 39) {
+            // Right
             if (
                 this.getAdjustedRightmostC() + 1 < BOARD_COLS &&
                 areTargetSpacesEmpty(0, 1)
@@ -179,19 +194,17 @@ class PlayerPhysics {
                 this.getAdjustedBottomR() + 1 < BOARD_ROWS &&
                 areTargetSpacesEmpty(1, 0)
             ) {
-                interp += interpRate; // edit the HTML elements with key user.
-                if (1.0 <= interp) {
-                    interp = 0;
-                    this.setPos(r + 1, c);
-                    this.hasMoved = true;
-                }
-                else {
-                    this.setPos(r, c);
+                if (ENABLE_GRADUAL_FALL) {
+                    let dr = 0;
+                    this.setPos(r+dr, c);
+                } else {
+                    this.setPos(r+1, c);
                 }
             }
         } else if (keyCode === 38) {
+            // Up key
             if (
-                IS_DEBUG && 0 <= this.getAdjustedTopR() - 1 &&
+                _ENABLE_UP_KEY && 0 <= this.getAdjustedTopR() - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {
                 this.setPos(r - 1, c);
@@ -301,17 +314,28 @@ const PlayerComponent = React.memo(
         const playerState = useState(init); // Note: cells is not adjusted to the board.
         gameState.setPlayerCells = playerState[1];
         const [playerCells, _setPlayerCells] = playerState;
-
         let adjustedCellsStyled = playerCells.map((cell) => {
+
+            // let test = (cell.r % (BOARD_ROWS-1)) & 1;
+            const divStyle = {
+                background: 'blue',
+                border: 2,
+                borderStyle: 'solid',
+                gridRow: cell.r + 1,
+                gridColumn: cell.c + 1,
+                display: 'flex',
+                marginTop: interp.toString()+'%',
+                marginBottom: -interp.toString()+'%',
+                justifyContent: 'center',
+                zIndex: 1,
+        };
             return (
-                <UserCellStyled
+                <div
                     key={cell.uid}
-                    r={cell.r + 1}
-                    c={cell.c + 1}
-                    interp={interp}
+                    style={divStyle}
                 >
                     {cell.char}
-                </UserCellStyled>
+                </div>
             );
         });
 
@@ -399,15 +423,15 @@ export function GameLoop() {
 
     let res = (
         <BoardStyled>
-            <BoardComponent
-                gameState={gameState}
-                key={"Board"}
-                init={boardPhysics.boardCellMatrix.slice()}
-            />
             <PlayerComponent
                 key={"Player"}
                 gameState={gameState}
                 init={playerPhysics.adjustedCells.slice()}
+            />
+            <BoardComponent
+                gameState={gameState}
+                key={"Board"}
+                init={boardPhysics.boardCellMatrix.slice()}
             />
         </BoardStyled>
     );
@@ -423,9 +447,19 @@ export function GameLoop() {
         prevTime = curTime;
 
         // Update physics.
-        if (accum >= frameStep) {
+        while (accum >= frameStep) {
             accum -= frameStep;
             handleStates();
+            if (ENABLE_GRADUAL_FALL) {
+                playerPhysics.doGradualFall(boardPhysics.boardCellMatrix);
+                let dr = 0;
+                while (interpMax <= interp) {
+                    dr += 1;
+                    interp -= interpMax;
+                    playerPhysics.hasMoved = true;
+                }
+                playerPhysics.setPos(playerPhysics.pos[0]+dr, playerPhysics.pos[1]);
+            }
 
             // Reset if spawn point is blocked.
             if (
@@ -480,8 +514,8 @@ export function GameLoop() {
                 });
                 // Allow React to see change with a new object:
                 boardPhysics.boardCellMatrix = cells;
-                // Allow React to see change with a new object:
                 interp = 0;
+                // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
 
                 service.send("LOCK");

@@ -218,6 +218,13 @@ class PlayerPhysics {
             });
             // If there's no overlap, place it. Otherwise, shift it in the opposite direction of the overlapping cell.
             if (overlappingCells.length <= 0) {
+                // If rotation puts a block right underneath a placed block, set interp to 0.
+                const isAdjacentToGround = rotatedCellsAdjusted.some((cell) => {
+                    return !this.isInRBounds(cell.r+1) || board[cell.r+1][cell.c].char !== EMPTY
+                });
+                if (isAdjacentToGround) {
+                    interp = 0;
+                }
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
                 this.hasMoved = true;

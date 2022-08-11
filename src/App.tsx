@@ -205,6 +205,7 @@ class PlayerPhysics {
                 }
                 return false;
             });
+            // If there's no overlap, place it. Otherwise, shift it in the opposite direction of the overlapping cell.
             if (overlappingCells.length <= 0) {
                 this.cells = rotatedCells;
                 this.adjustedCells = rotatedCellsAdjusted;
@@ -215,10 +216,10 @@ class PlayerPhysics {
                     rotatedCells[overlappingI].r;
                 let dc = Math.floor(this.layout[0].length / 2) -
                     rotatedCells[overlappingI].c;
-                // Shift in opposite direction of the overlapping cell.
-                for (let element of rotatedCells) {
-                    element.r += dr;
-                    element.c += dc;
+                // Shift it.
+                for (let cell of rotatedCells) {
+                    cell.r += dr;
+                    cell.c += dc;
                 }
                 rotatedCellsAdjusted = rotatedCells.map((cell) =>
                     this.getAdjustedUserCell(cell)

@@ -7,7 +7,7 @@ import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
 // Main features:
-const ENABLE_GRADUAL_FALL = true;
+const ENABLE_SMOOTH_FALL = false;
 // Debug features:
 const _ENABLE_UP_KEY = true;
 
@@ -152,7 +152,12 @@ class PlayerPhysics {
     // Returns the number of times crossed onto a new row.
     doGradualFall(board: BoardCell[][]): number {
         interp += interpRate;
-        if (this.adjustedCells.some((cell) => !this.isInRBounds(cell.r+1) || board[cell.r+1][cell.c].char !== EMPTY)) {
+        if (
+            this.adjustedCells.some((cell) =>
+                !this.isInRBounds(cell.r + 1) ||
+                board[cell.r + 1][cell.c].char !== EMPTY
+            )
+        ) {
             interp = 0;
         }
         let dr = 0;
@@ -173,15 +178,22 @@ class PlayerPhysics {
         const c = this.pos[1];
         const areTargetSpacesEmpty = (dr, dc) =>
             this.adjustedCells.every((cell) => {
-                return board[cell.r + dr][cell.c + dc].char === EMPTY
+                return board[cell.r + dr][cell.c + dc].char === EMPTY;
             });
         if (keyCode === 37) {
             // Left
             if (
-                this.isInCBounds(this.getAdjustedRightmostC() - 1) &&
+                this.isInCBounds(this.getAdjustedLeftmostC() - 1) &&
                 // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
-                this.isInRBounds(this.getAdjustedBottomR() + Math.ceil(interp/interpMax)) &&
-                areTargetSpacesEmpty(Math.ceil(interp/interpMax), -1)
+                (!ENABLE_SMOOTH_FALL ||
+                    this.isInRBounds(
+                        this.getAdjustedBottomR() +
+                            Math.ceil(interp / interpMax),
+                    )) &&
+                areTargetSpacesEmpty(
+                    Math.ceil(ENABLE_SMOOTH_FALL ? interp / interpMax : 0),
+                    -1,
+                )
             ) {
                 this.setPos(r, c - 1);
                 this.hasMoved = true;
@@ -191,8 +203,15 @@ class PlayerPhysics {
             if (
                 this.isInCBounds(this.getAdjustedRightmostC() + 1) &&
                 // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
-                this.isInRBounds(this.getAdjustedBottomR() + Math.ceil(interp/interpMax)) &&
-                areTargetSpacesEmpty(Math.ceil(interp/interpMax), 1)
+                (!ENABLE_SMOOTH_FALL ||
+                    this.isInRBounds(
+                        this.getAdjustedBottomR() +
+                            Math.ceil(interp / interpMax),
+                    )) &&
+                areTargetSpacesEmpty(
+                    Math.ceil(ENABLE_SMOOTH_FALL ? interp / interpMax : 0),
+                    1,
+                )
             ) {
                 this.setPos(r, c + 1);
                 this.hasMoved = true;
@@ -206,10 +225,10 @@ class PlayerPhysics {
                 this.getAdjustedBottomR() + 1 < BOARD_ROWS &&
                 areTargetSpacesEmpty(1, 0)
             ) {
-                if (ENABLE_GRADUAL_FALL) {
-                    interp += interpRate*interpKeydownMult;
+                if (ENABLE_SMOOTH_FALL) {
+                    interp += interpRate * interpKeydownMult;
                 } else {
-                    this.setPos(r+1, c);
+                    this.setPos(r + 1, c);
                 }
             }
         } else if (keyCode === 38) {
@@ -244,7 +263,8 @@ class PlayerPhysics {
             if (overlappingCells.length <= 0) {
                 // If rotation puts a block right underneath a placed block, set interp to 0.
                 const isAdjacentToGround = rotatedCellsAdjusted.some((cell) => {
-                    return !this.isInRBounds(cell.r+1) || board[cell.r+1][cell.c].char !== EMPTY
+                    return !this.isInRBounds(cell.r + 1) ||
+                        board[cell.r + 1][cell.c].char !== EMPTY;
                 });
                 if (isAdjacentToGround) {
                     interp = 0;
@@ -326,19 +346,20 @@ const PlayerComponent = React.memo(
         gameState.setPlayerCells = playerState[1];
         const [playerCells, _setPlayerCells] = playerState;
         let adjustedCellsStyled = playerCells.map((cell) => {
-
             const divStyle = {
-                background: 'blue',
+                background: "blue",
                 border: 2,
-                borderStyle: 'solid',
+                borderStyle: "solid",
                 gridRow: cell.r + 1,
                 gridColumn: cell.c + 1,
-                display: 'flex',
-                marginTop: interp.toString()+'%',
-                marginBottom: -interp.toString()+'%',
-                justifyContent: 'center',
+                display: "flex",
+                marginTop: ENABLE_SMOOTH_FALL ? interp.toString() + "%" : "0%",
+                marginBottom: ENABLE_SMOOTH_FALL
+                    ? -interp.toString() + "%"
+                    : "0%",
+                justifyContent: "center",
                 zIndex: 1,
-        };
+            };
             return (
                 <div
                     key={cell.uid}
@@ -460,10 +481,13 @@ export function GameLoop() {
         while (accum >= frameStep) {
             accum -= frameStep;
             handleStates();
-            if (ENABLE_GRADUAL_FALL) {
-                const dr = playerPhysics.doGradualFall(boardPhysics.boardCellMatrix);
-                playerPhysics.setPos(playerPhysics.pos[0]+dr, playerPhysics.pos[1]);
-            }
+            const dr = playerPhysics.doGradualFall(
+                boardPhysics.boardCellMatrix,
+            );
+            playerPhysics.setPos(
+                playerPhysics.pos[0] + dr,
+                playerPhysics.pos[1],
+            );
 
             // Reset if spawn point is blocked.
             if (
@@ -497,8 +521,7 @@ export function GameLoop() {
         // console.log(service.state.value)
         if ("spawningBlock" == service.state.value) {
             service.send("SPAWN");
-        }
-        else if ("placingBlock" == service.state.value) {
+        } else if ("placingBlock" == service.state.value) {
             if (isPlayerTouchingGround()) {
                 service.send("TOUCHINGBLOCK");
                 lockStart = performance.now();

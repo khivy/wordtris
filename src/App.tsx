@@ -603,12 +603,31 @@ export function GameLoop() {
             // TODO: Remove repeated checks when addedCells occupy same row or col.
             for (const [r, c] of addedCells) {
                 // Row words.
-                findWords(boardPhysics.boardCellMatrix[r], false)
-                // findWords(boardPhysics.boardCellMatrix[r], true)
+                let [left, right] = findWords(boardPhysics.boardCellMatrix[r], false)
+                // const [leftR, rightR] = findWords(boardPhysics.boardCellMatrix[r], true)
+                // if (rightR - leftR > right - left) {
+                //     left = leftR;
+                //     right = rightR;
+                // }
+                // Ignore when a candidate isn't found.
+                if (left !== -1) {
+                    console.log('removing now')
+                    // Remove word.
+                    for (let i = left; i<right+1; ++i) {
+                        console.log('removing', boardPhysics.boardCellMatrix[r][i].char)
+                        boardPhysics.boardCellMatrix[r][i].char = EMPTY;
+                    }
+                }
+
                 // Column words
-                findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), false)
-                findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), true)
+                // findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), false)
+                // findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), true)
             }
+            // Allow React to see changes.
+            boardPhysics.boardCellMatrix = structuredClone(boardPhysics.boardCellMatrix)
+            // Drop all characters.
+
+            // Remove words.
             service.send("DONE");
             console.log("event: checkingMatches ~ DONE");
         }

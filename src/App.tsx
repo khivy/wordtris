@@ -46,8 +46,9 @@ const stateMachine = createMachine({
     states: {
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
-        fallingLetters: { on: { GROUNDED: "spawningBlock" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
+        fallingLetters: { on: { GROUNDED: "checkingMatches" } },
+        checkingMatches: { on: { DONE: "spawningBlock" } },
     },
 });
 
@@ -441,6 +442,7 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     return <React.Fragment>{boardCells}</React.Fragment>;
 });
 
+let addedCells = new Set();
 let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 let playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
 let lockStart = null;
@@ -520,7 +522,9 @@ export function GameLoop() {
     function handleStates() {
         // console.log(service.state.value)
         if ("spawningBlock" == service.state.value) {
+            addedCells.clear();
             service.send("SPAWN");
+            console.log("event: spawningBlock ~ SPAWN");
         } else if ("placingBlock" == service.state.value) {
             if (isPlayerTouchingGround()) {
                 service.send("TOUCHINGBLOCK");
@@ -535,12 +539,14 @@ export function GameLoop() {
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 service.send("UNLOCK");
             } else if (lockMax <= lockTime) {
-                let cells = boardPhysics.boardCellMatrix.slice();
-                playerPhysics.adjustedCells.forEach((userCell) => {
-                    cells[userCell.r][userCell.c].char = userCell.char;
+                let newBoard = boardPhysics.boardCellMatrix.slice();
+                playerPhysics.adjustedCells.forEach((cell) => {
+                    addedCells.add([cell.r, cell.c])
+                    // Give player cells to board.
+                    newBoard[cell.r][cell.c].char = cell.char;
                 });
                 // Allow React to see change with a new object:
-                boardPhysics.boardCellMatrix = cells;
+                boardPhysics.boardCellMatrix = newBoard;
                 interp = 0;
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
@@ -556,16 +562,21 @@ export function GameLoop() {
                         boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
                         boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
                     ) {
-                        boardPhysics
-                            .boardCellMatrix[
-                                boardPhysics.getGroundHeight(c, r)
-                            ][c].char = boardPhysics.boardCellMatrix[r][c].char;
+                        let g = boardPhysics.getGroundHeight(c, r);
+                        boardPhysics.boardCellMatrix[g][c].char = boardPhysics.boardCellMatrix[r][c].char;
                         boardPhysics.boardCellMatrix[r][c].char = EMPTY;
+                        // Update cell in addedCells.
+                        addedCells.add([g,c])
+                        addedCells.delete([r,c])
                     }
                 }
             }
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
+        } else if ("checkingMatches" == service.state.value) {
+            // Check for columns.
+            service.send("DONE");
+            console.log("event: checkingMatches ~ DONE");
         }
         // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;

@@ -5,6 +5,7 @@ import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
+import * as Words from "a-set-of-english-words";
 
 // Main features:
 const ENABLE_SMOOTH_FALL = true;
@@ -21,6 +22,8 @@ let interp = 0;
 const interpRate = .4;
 const interpKeydownMult = 30;
 const interpMax = 100;
+
+const validWords = Words;
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -574,13 +577,43 @@ export function GameLoop() {
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
         } else if ("checkingMatches" == service.state.value) {
-            // Check for columns.
+
+            function findWords(arr: UserCell[], reversed: boolean): number[] {
+                let contents = reversed ? arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).reverse().join('') : arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).join('')
+                // Look for words in row
+                let minWordLen = 2;
+                let resLeft = -1;
+                let resRight = -1;
+                for (let left=0; left<contents.length; ++left) {
+                    for (let right=left+minWordLen-1; right<contents.length; ++right) {
+                        let cand = contents.slice(left, right+1);
+                        if (validWords.has(cand)) {
+                            console.log('a candidate is', cand)
+                            if (right-left > resRight - resLeft) {
+                                resRight = right;
+                                resLeft = left;
+                                console.log('longest is',cand)
+                            }
+                        }
+                    }
+                }
+                return reversed ? [contents.length - resRight - 1, resRight - (resLeft) + (contents.length-resRight-1)] : [resLeft, resRight];
+            }
+
+            // TODO: Remove repeated checks when addedCells occupy same row or col.
+            for (const [r, c] of addedCells) {
+                // Row words.
+                findWords(boardPhysics.boardCellMatrix[r], false)
+                // findWords(boardPhysics.boardCellMatrix[r], true)
+                // Column words
+                findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), false)
+                findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), true)
+            }
             service.send("DONE");
             console.log("event: checkingMatches ~ DONE");
         }
         // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
-
     return res;
 }

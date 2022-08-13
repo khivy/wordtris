@@ -545,6 +545,7 @@ export function GameLoop() {
     }
 
     function findWords(arr: UserCell[], reversed: boolean): number[] {
+        // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         let contents = reversed ? arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).reverse().join('') : arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).join('')
         // Look for words in row
         let minWordLen = 2;
@@ -620,6 +621,7 @@ export function GameLoop() {
                 }
                 // Remove word, but ignore when a candidate isn't found.
                 if (left !== -1) {
+                    console.log('removing word: ', rightR - leftR > right - left ? newBoard[r].slice(left,right+1).map((cell)=>cell.char).reverse().join('') : newBoard[r].slice(left,right+1).map((cell)=>cell.char).reverse().join(''));
                     for (let i = left; i<right+1; ++i) {
                         newBoard[r][i].char = EMPTY;
                     }

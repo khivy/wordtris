@@ -559,8 +559,8 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" == service.state.value) {
             // For each floating block, move it 1 + the ground.
-            for (let r = 0; r < BOARD_ROWS - 1; ++r) {
-                for (let c = 0; c < BOARD_COLS; ++c) {
+            for (let r = BOARD_ROWS - 2; r >= 0; --r) {
+                for (let c = BOARD_COLS - 1; c > 0; --c) {
                     if (
                         boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
                         boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
@@ -606,11 +606,11 @@ export function GameLoop() {
             for (const [r, c] of addedCells) {
                 // Row words.
                 let [left, right] = findWords(newBoard[r], false)
-                // const [leftR, rightR] = findWords(boardPhysics.boardCellMatrix[r], true)
-                // if (rightR - leftR > right - left) {
-                //     left = leftR;
-                //     right = rightR;
-                // }
+                const [leftR, rightR] = findWords(boardPhysics.boardCellMatrix[r], true)
+                if (rightR - leftR > right - left) {
+                    left = leftR;
+                    right = rightR;
+                }
                 // Ignore when a candidate isn't found.
                 if (left !== -1) {
                     console.log('removing now')

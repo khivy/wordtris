@@ -609,6 +609,7 @@ export function GameLoop() {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             let newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
+            let hasRemovedWord = false;
             for (const [r, c] of placedCells) {
                 // Row words.
                 let [left, right] = findWords(newBoard[r], false)
@@ -617,14 +618,12 @@ export function GameLoop() {
                     left = leftR;
                     right = rightR;
                 }
-                // Ignore when a candidate isn't found.
+                // Remove word, but ignore when a candidate isn't found.
                 if (left !== -1) {
-                    console.log('removing now')
-                    // Remove word.
                     for (let i = left; i<right+1; ++i) {
-                        console.log('removing', newBoard[r][i].char)
                         newBoard[r][i].char = EMPTY;
                     }
+                    hasRemovedWord = true;
                 }
                 // Column words
                 // findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), false)
@@ -632,10 +631,17 @@ export function GameLoop() {
             }
             // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;
-
-            // Remove words.
-            service.send("DONE");
-            console.log("event: checkingMatches ~ DONE");
+            // Drop all characters.
+            if (hasRemovedWord) {
+                const [added, _removed] = dropFloatingCells();
+                // Dropped letters can chain into more words, so stay in this state.
+                placedCells = new Set(added);
+                console.log("event: checkingMatches ~ n/a");
+            }
+            else {
+                service.send("DONE");
+                console.log("event: checkingMatches ~ DONE");
+            }
         }
         // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;

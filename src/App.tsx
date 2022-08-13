@@ -8,7 +8,8 @@ import { BoardCellStyled } from "./components/BoardCell";
 import * as Words from "a-set-of-english-words";
 
 // Main features:
-const ENABLE_SMOOTH_FALL = true;
+const ENABLE_SMOOTH_FALL = false;
+const MIN_WORD_LENGTH = 3;
 // Debug features:
 const _ENABLE_UP_KEY = true;
 
@@ -551,11 +552,10 @@ export function GameLoop () {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         let contents = reversed ? arr.map((cell) => cell.char === EMPTY ? '-' : cell.char).reverse().join('') : arr.map((cell) => cell.char === EMPTY ? '-' : cell.char).join('')
         // Look for words in row
-        let minWordLen = 2;
         let resLeft = -1;
         let resRight = -1;
         for (let left = 0; left < contents.length; ++left) {
-            for (let right = left + minWordLen - 1; right < contents.length; ++right) {
+            for (let right = left + MIN_WORD_LENGTH - 1; right < contents.length; ++right) {
                 let cand = contents.slice(left, right + 1);
                 if (validWords.has(cand)) {
                     if (right - left > resRight - resLeft) {
@@ -654,7 +654,7 @@ export function GameLoop () {
 
             // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;
-            
+
             // Drop all characters.
             if (hasRemovedWord) {
                 const [added, _removed] = dropFloatingCells();

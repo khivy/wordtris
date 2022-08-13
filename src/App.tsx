@@ -600,10 +600,12 @@ export function GameLoop() {
                 return reversed ? [contents.length - resRight - 1, resRight - (resLeft) + (contents.length-resRight-1)] : [resLeft, resRight];
             }
 
+            // Allocate a newBoard to avoid desync between render and board (React, pls).
+            let newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when addedCells occupy same row or col.
             for (const [r, c] of addedCells) {
                 // Row words.
-                let [left, right] = findWords(boardPhysics.boardCellMatrix[r], false)
+                let [left, right] = findWords(newBoard[r], false)
                 // const [leftR, rightR] = findWords(boardPhysics.boardCellMatrix[r], true)
                 // if (rightR - leftR > right - left) {
                 //     left = leftR;
@@ -614,17 +616,16 @@ export function GameLoop() {
                     console.log('removing now')
                     // Remove word.
                     for (let i = left; i<right+1; ++i) {
-                        console.log('removing', boardPhysics.boardCellMatrix[r][i].char)
-                        boardPhysics.boardCellMatrix[r][i].char = EMPTY;
+                        console.log('removing', newBoard[r][i].char)
+                        newBoard[r][i].char = EMPTY;
                     }
                 }
-
                 // Column words
                 // findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), false)
                 // findWords(boardPhysics.boardCellMatrix.map((row) => row[c]), true)
             }
             // Allow React to see changes.
-            boardPhysics.boardCellMatrix = structuredClone(boardPhysics.boardCellMatrix)
+            boardPhysics.boardCellMatrix = newBoard;
             // Drop all characters.
 
             // Remove words.

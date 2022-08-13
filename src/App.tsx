@@ -445,7 +445,7 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     return <React.Fragment>{boardCells}</React.Fragment>;
 });
 
-let addedCells = new Set();
+let placedCells = new Set();
 let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 let playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
 let lockStart = null;
@@ -522,10 +522,52 @@ export function GameLoop() {
         });
     }
 
+    function dropFloatingCells(): number[][] {
+        // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
+        let added = [];
+        let removed = [];
+        for (let r = BOARD_ROWS - 2; r >= 0; --r) {
+            for (let c = BOARD_COLS - 1; c > 0; --c) {
+                if (
+                    boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
+                    boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
+                ) {
+                    let g = boardPhysics.getGroundHeight(c, r);
+                    boardPhysics.boardCellMatrix[g][c].char = boardPhysics.boardCellMatrix[r][c].char;
+                    boardPhysics.boardCellMatrix[r][c].char = EMPTY;
+                    // Update cell in placedCells.
+                    added.push([g,c])
+                    removed.push([r,c])
+                }
+            }
+        }
+        return [added, removed]
+    }
+
+    function findWords(arr: UserCell[], reversed: boolean): number[] {
+        let contents = reversed ? arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).reverse().join('') : arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).join('')
+        // Look for words in row
+        let minWordLen = 2;
+        let resLeft = -1;
+        let resRight = -1;
+        for (let left=0; left<contents.length; ++left) {
+            for (let right=left+minWordLen-1; right<contents.length; ++right) {
+                let cand = contents.slice(left, right+1);
+                if (validWords.has(cand)) {
+                    if (right-left > resRight - resLeft) {
+                        resRight = right;
+                        resLeft = left;
+                    }
+                }
+            }
+        }
+        return reversed ? [contents.length - resRight - 1, resRight - (resLeft) + (contents.length-resRight-1)] : [resLeft, resRight];
+    }
+
     function handleStates() {
         // console.log(service.state.value)
         if ("spawningBlock" == service.state.value) {
-            addedCells.clear();
+            placedCells.clear();
             service.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
         } else if ("placingBlock" == service.state.value) {
@@ -544,7 +586,7 @@ export function GameLoop() {
             } else if (lockMax <= lockTime) {
                 let newBoard = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
-                    addedCells.add([cell.r, cell.c])
+                    placedCells.add([cell.r, cell.c])
                     // Give player cells to board.
                     newBoard[cell.r][cell.c].char = cell.char;
                 });
@@ -559,51 +601,15 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" == service.state.value) {
             // For each floating block, move it 1 + the ground.
-            for (let r = BOARD_ROWS - 2; r >= 0; --r) {
-                for (let c = BOARD_COLS - 1; c > 0; --c) {
-                    if (
-                        boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
-                        boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
-                    ) {
-                        let g = boardPhysics.getGroundHeight(c, r);
-                        boardPhysics.boardCellMatrix[g][c].char = boardPhysics.boardCellMatrix[r][c].char;
-                        boardPhysics.boardCellMatrix[r][c].char = EMPTY;
-                        // Update cell in addedCells.
-                        addedCells.add([g,c])
-                        addedCells.delete([r,c])
-                    }
-                }
-            }
+            const [added, _removed] = dropFloatingCells();
+            added.forEach((coord) => placedCells.add(coord));
             service.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
         } else if ("checkingMatches" == service.state.value) {
-
-            function findWords(arr: UserCell[], reversed: boolean): number[] {
-                let contents = reversed ? arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).reverse().join('') : arr.map((cell)=> cell.char === EMPTY ? '-' : cell.char).join('')
-                // Look for words in row
-                let minWordLen = 2;
-                let resLeft = -1;
-                let resRight = -1;
-                for (let left=0; left<contents.length; ++left) {
-                    for (let right=left+minWordLen-1; right<contents.length; ++right) {
-                        let cand = contents.slice(left, right+1);
-                        if (validWords.has(cand)) {
-                            console.log('a candidate is', cand)
-                            if (right-left > resRight - resLeft) {
-                                resRight = right;
-                                resLeft = left;
-                                console.log('longest is',cand)
-                            }
-                        }
-                    }
-                }
-                return reversed ? [contents.length - resRight - 1, resRight - (resLeft) + (contents.length-resRight-1)] : [resLeft, resRight];
-            }
-
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             let newBoard = boardPhysics.boardCellMatrix.slice();
-            // TODO: Remove repeated checks when addedCells occupy same row or col.
-            for (const [r, c] of addedCells) {
+            // TODO: Remove repeated checks when placedCells occupy same row or col.
+            for (const [r, c] of placedCells) {
                 // Row words.
                 let [left, right] = findWords(newBoard[r], false)
                 const [leftR, rightR] = findWords(boardPhysics.boardCellMatrix[r], true)
@@ -626,7 +632,6 @@ export function GameLoop() {
             }
             // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;
-            // Drop all characters.
 
             // Remove words.
             service.send("DONE");

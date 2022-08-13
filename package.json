@@ -1,6 +1,25 @@
 {
     "name": "wordtris",
     "version": "0.1.2",
+    "description": "tetris but with words",
+    "keywords": [
+        "game",
+        "tetris"
+    ],
+    "homepage": "https://github.com/ivyraine/wordtris",
+    "bugs": "https://github.com/ivyraine/wordtris/issues",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Ivy Raine"
+        },
+        {
+            "name": "Khyber Sen",
+            "email": "kkysen@gmail.com"
+        }
+    ],
+    "browser": "src/index.tsx",
+    "repository": "github:ivyraine/wordtris",
     "dependencies": {
         "a-set-of-english-words": "^1.0.0",
         "react": "^18.2.0",

@@ -7,7 +7,7 @@ import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
 
 // Main features:
-const ENABLE_SMOOTH_FALL = false;
+const ENABLE_SMOOTH_FALL = true;
 // Debug features:
 const _ENABLE_UP_KEY = true;
 

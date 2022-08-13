@@ -13,7 +13,8 @@ check:
 alias c := check
 
 build:
-    bun bun src/index.tsx
+    bun bun
+    ./node_modules.bun > bundle.js
 
 alias b := build
 

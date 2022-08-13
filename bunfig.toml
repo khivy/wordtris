@@ -1,0 +1,2 @@
+[bundle]
+entryPoints = ["./src/index.tsx"]

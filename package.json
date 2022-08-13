@@ -18,6 +18,7 @@
             "email": "kkysen@gmail.com"
         }
     ],
+    "type": "module",
     "browser": "src/index.tsx",
     "repository": "github:ivyraine/wordtris",
     "dependencies": {

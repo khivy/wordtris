@@ -34,11 +34,12 @@ jobs:
       - name: Lint
         run: deno lint
 
-      - name: tsc
-        run: bun tsc
-
       - name: Bundle
         run: bun bun
 
       - name: Bundle
         run: bun run test/cellTest.js     
+
+      - name: tsc
+        run: bun tsc
+

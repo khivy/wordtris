@@ -386,7 +386,7 @@ interface BoardCell {
     char: string;
 }
 
-class BoardPhysics {
+export class BoardPhysics {
     boardCellMatrix: BoardCell[][];
 
     constructor(rows: number, cols: number) {

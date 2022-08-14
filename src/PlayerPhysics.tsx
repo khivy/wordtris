@@ -1,8 +1,19 @@
 import "./App.css";
 import { generateRandomChar } from "./components/Board";
-import { EMPTY, TBD, BOARD_ROWS, BOARD_COLS, ENABLE_SMOOTH_FALL, _ENABLE_UP_KEY, interp, interpMax, interpRate, interpKeydownMult } from './setup'
-import { UserCell } from './UserCell'
-import { BoardCell } from './BoardCell'
+import {
+    _ENABLE_UP_KEY,
+    BOARD_COLS,
+    BOARD_ROWS,
+    EMPTY,
+    ENABLE_SMOOTH_FALL,
+    interp,
+    interpKeydownMult,
+    interpMax,
+    interpRate,
+    TBD,
+} from "./setup";
+import { UserCell } from "./UserCell";
+import { BoardCell } from "./BoardCell";
 
 export class PlayerPhysics {
     cells: UserCell[];
@@ -128,7 +139,7 @@ export class PlayerPhysics {
                 (!ENABLE_SMOOTH_FALL ||
                     this.isInRBounds(
                         this.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -146,7 +157,7 @@ export class PlayerPhysics {
                 (!ENABLE_SMOOTH_FALL ||
                     this.isInRBounds(
                         this.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -278,4 +289,3 @@ export class PlayerPhysics {
         };
     }
 }
-

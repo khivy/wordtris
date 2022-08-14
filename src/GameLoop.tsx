@@ -5,10 +5,23 @@ import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
-import { PlayerPhysics } from './PlayerPhysics'
-import { BoardCell } from './BoardCell'
-import { UserCell } from './UserCell'
-import { ENABLE_SMOOTH_FALL, MIN_WORD_LENGTH, _ENABLE_UP_KEY, validWords, BOARD_COLS, BOARD_ROWS, EMPTY, TBD, interp, interpMax, interpRate, interpKeydownMult } from './setup'
+import { PlayerPhysics } from "./PlayerPhysics";
+import { BoardCell } from "./BoardCell";
+import { UserCell } from "./UserCell";
+import {
+    _ENABLE_UP_KEY,
+    BOARD_COLS,
+    BOARD_ROWS,
+    EMPTY,
+    ENABLE_SMOOTH_FALL,
+    interp,
+    interpKeydownMult,
+    interpMax,
+    interpRate,
+    MIN_WORD_LENGTH,
+    TBD,
+    validWords,
+} from "./setup";
 
 export const UserCellStyled = styled.div`
   background: blue;
@@ -60,7 +73,9 @@ const PlayerComponent = React.memo(
                 gridRow: cell.r + 1,
                 gridColumn: cell.c + 1,
                 display: "flex",
-                marginTop: ENABLE_SMOOTH_FALL ? interp.val.toString() + "%" : "0%",
+                marginTop: ENABLE_SMOOTH_FALL
+                    ? interp.val.toString() + "%"
+                    : "0%",
                 marginBottom: ENABLE_SMOOTH_FALL
                     ? -interp.val.toString() + "%"
                     : "0%",

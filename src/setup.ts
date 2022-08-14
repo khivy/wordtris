@@ -18,4 +18,3 @@ export const interpKeydownMult = 30;
 export const interpMax = 100;
 
 export const validWords = Words;
-

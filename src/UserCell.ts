@@ -4,4 +4,3 @@ export interface UserCell {
     char: string;
     uid: string;
 }
-

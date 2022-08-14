@@ -22,7 +22,7 @@ import {
 } from "./setup";
 
 let validWords = null;
-fetch('lexicons/Oxford5000.txt')
+fetch('lexicons/Google20000.txt')
     .then(response => response.text())
     .then(data => {
         // Do something with your data
@@ -283,15 +283,17 @@ export function GameLoop() {
                     true,
                 );
                 // Use reversed word if longer.
+                let isColReversed = false;
                 if (col_botR - col_topR > col_bot - col_top) {
                     col_top = col_topR;
                     col_bot = col_botR;
+                    isColReversed = true;
                 }
                 // Remove word, but ignore when a candidate isn't found.
                 if (col_top !== -1) {
                     console.log(
                         "removing word: ",
-                        col_botR - col_topR > col_bot - col_top
+                        isColReversed
                             ? boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
@@ -299,7 +301,7 @@ export function GameLoop() {
                             : boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
-                                ).reverse().join(""),
+                                ).join(""),
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
                         console.log("rem char", newBoard[i][c].char);

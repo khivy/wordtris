@@ -52,6 +52,7 @@ const stateMachine = createMachine({
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
         checkingMatches: { on: { DONE: "spawningBlock" } },
     },
+    predictableActionArguments: true,
 });
 
 // Handle states.

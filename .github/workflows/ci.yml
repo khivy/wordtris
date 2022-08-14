@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+
+      - name: Setup Bun
+        uses: antongolub/action-setup-bun@v1
+        with:
+          cache: true
+          cache-bin: true
+
+      - name: Install
+        run: bun install
+
+      - name: Format
+        run: deno fmt --check
+
+      - name: Lint
+        run: deno lint
+
+      - name: tsc
+        run: bun tsc
+
+      - name: Bundle
+        run: bun bun
+
+      - name: Bundle
+        run: bun run test/cellTest.js     

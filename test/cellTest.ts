@@ -1,4 +1,4 @@
-import { BoardPhysics } from "../src/App";
+import { BoardPhysics } from "../src/GameLoop";
 
 function testBaseHeight() {
     let len;

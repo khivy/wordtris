@@ -1,6 +1,7 @@
 // Main features:
 export const ENABLE_SMOOTH_FALL = false;
 export const MIN_WORD_LENGTH = 3;
+export const ENABLE_INSTANT_DROP = true;
 // Debug features:
 export const _ENABLE_UP_KEY = true;
 

@@ -56,7 +56,7 @@ stateHandler.start();
 
 let placedCells = new Set();
 const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
-const playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
+const playerPhysics = new PlayerPhysics(boardPhysics);
 let lockStart = null;
 // The amount of time it takes before a block locks in place.
 const lockMax = 1500;

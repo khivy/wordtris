@@ -5,6 +5,7 @@ import {
     BOARD_COLS,
     BOARD_ROWS,
     EMPTY,
+    ENABLE_INSTANT_DROP,
     ENABLE_SMOOTH_FALL,
     interp,
     interpKeydownMult,
@@ -14,6 +15,7 @@ import {
 } from "./setup";
 import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
+import { BoardPhysics } from "./BoardPhysics";
 
 export class PlayerPhysics {
     cells: UserCell[];
@@ -23,7 +25,7 @@ export class PlayerPhysics {
     layout: string[][];
     hasMoved: boolean;
 
-    constructor(board: BoardCell[][]) {
+    constructor(boardPhysics: BoardPhysics) {
         this.layout = [
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -35,7 +37,7 @@ export class PlayerPhysics {
         this.resetBlock();
         globalThis.addEventListener(
             "keydown",
-            this.updatePlayerPos.bind(this, board),
+            this.updatePlayerPos.bind(this, boardPhysics),
             false,
         ); // Without bind it loses context.
         this.hasMoved = false;
@@ -122,9 +124,10 @@ export class PlayerPhysics {
 
     // Might be worth it to move this to GameLoop.
     updatePlayerPos(
-        board: BoardCell[][],
+        boardPhysics: BoardPhysics,
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
+        const board = boardPhysics.boardCellMatrix;
         const r = this.pos[0];
         const c = this.pos[1];
         const areTargetSpacesEmpty = (dr, dc) =>
@@ -184,7 +187,14 @@ export class PlayerPhysics {
             }
         } else if (keyCode === 38) {
             // Up key
-            if (
+            if (ENABLE_INSTANT_DROP) {
+                // highest ground
+                let ground_row = boardPhysics.rows;
+                this.adjustedCells.forEach((cell) =>  ground_row = Math.min(ground_row, boardPhysics.getGroundHeight(cell.c, cell.r)) );
+                this.setPos(ground_row, this.pos[1]);
+                this.hasMoved = true;
+            }
+            else if (
                 _ENABLE_UP_KEY && 0 <= this.getAdjustedTopR() - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {

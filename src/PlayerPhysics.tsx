@@ -188,10 +188,13 @@ export class PlayerPhysics {
         } else if (keyCode === 38) {
             // Up key
             if (ENABLE_INSTANT_DROP) {
-                // highest ground
                 let ground_row = boardPhysics.rows;
                 this.adjustedCells.forEach((cell) =>  ground_row = Math.min(ground_row, boardPhysics.getGroundHeight(cell.c, cell.r)) );
-                this.setPos(ground_row, this.pos[1]);
+                const mid = Math.floor(this.layout.length / 2);
+                // Offset with the lowest cell, centered around layout's midpoint.
+                let dy = 0;
+                this.cells.forEach((cell) =>  dy = Math.max(dy, cell.r-mid));
+                this.setPos(ground_row - dy, this.pos[1]); // + the lowest on that row if its >center
                 this.hasMoved = true;
             }
             else if (

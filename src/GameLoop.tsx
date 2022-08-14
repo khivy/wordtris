@@ -100,10 +100,6 @@ export function GameLoop() {
             const dr = playerPhysics.doGradualFall(
                 boardPhysics.boardCellMatrix,
             );
-            playerPhysics.setPos(
-                playerPhysics.pos[0] + dr,
-                playerPhysics.pos[1],
-            );
 
             // Reset if spawn point is blocked.
             if (

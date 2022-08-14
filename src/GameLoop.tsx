@@ -627,8 +627,12 @@ export function GameLoop() {
             const newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
             let hasRemovedWord = false;
-            const affectedRows = new Set([...placedCells].map((cell) => cell[0]));
-            const affectedCols = new Set([...placedCells].map((cell) => cell[1]));
+            const affectedRows = new Set(
+                [...placedCells].map((cell) => cell[0]),
+            );
+            const affectedCols = new Set(
+                [...placedCells].map((cell) => cell[1]),
+            );
             affectedRows.forEach((r) => {
                 // Row words
                 let [row_left, row_right] = findWords(newBoard[r], false);

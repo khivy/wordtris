@@ -12,10 +12,10 @@ export class BoardPhysics {
         this.cols = cols;
     }
 
-    resetBoard(rows, cols) {
+    resetBoard() {
         this.boardCellMatrix.forEach((row) =>
-            row.forEach((col) => {
-                col.char = EMPTY;
+            row.forEach((cell) => {
+                cell.char = EMPTY;
             })
         );
     }

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { EMPTY } from "../GameLoop";
+import { EMPTY } from "../setup";
 
 export interface BoardCell {
     x: number;

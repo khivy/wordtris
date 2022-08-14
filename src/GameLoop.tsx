@@ -4,8 +4,8 @@ import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
-import { BoardCellStyled } from "./components/BoardCell";
 import { PlayerComponent } from "./PlayerComponent"
+import { BoardComponent } from "./BoardComponent"
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardCell } from "./BoardCell";
 import { BoardPhysics } from "./BoardPhysics";
@@ -61,27 +61,6 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
     // TODO
 });
 stateHandler.start();
-
-const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
-    const boardState = useState(init);
-    gameState.setBoardCells = boardState[1];
-    const [board, _setBoard] = boardState;
-
-    const boardCells = board.map((row, r) =>
-        row.map((cell, c) => (
-            <BoardCellStyled
-                key={`cell(${r.toString()},${c.toString()})`}
-                r={cell.r + 1}
-                c={cell.c + 1}
-                char={cell.char}
-            >
-                {cell.char}
-            </BoardCellStyled>
-        ))
-    );
-
-    return <React.Fragment>{boardCells}</React.Fragment>;
-});
 
 let placedCells = new Set();
 const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);

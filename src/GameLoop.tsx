@@ -1,13 +1,10 @@
 import * as React from "react";
-import { useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
-import { generateRandomChar } from "./components/Board";
-import { PlayerComponent } from "./PlayerComponent"
-import { BoardComponent } from "./BoardComponent"
+import { PlayerComponent } from "./PlayerComponent";
+import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
-import { BoardCell } from "./BoardCell";
 import { BoardPhysics } from "./BoardPhysics";
 import { UserCell } from "./UserCell";
 import {

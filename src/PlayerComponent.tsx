@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-    _ENABLE_UP_KEY,
-    ENABLE_SMOOTH_FALL,
-    interp,
-} from "./setup";
+import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "./setup";
 
 export const PlayerComponent = React.memo(
     function PlayerComponent({ gameState, init }) {
@@ -42,4 +38,3 @@ export const PlayerComponent = React.memo(
         return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
     },
 );
-

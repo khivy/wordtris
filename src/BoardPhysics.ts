@@ -1,8 +1,5 @@
 import { BoardCell } from "./components/BoardCell";
-import {
-    _ENABLE_UP_KEY,
-    EMPTY,
-} from "./setup";
+import { _ENABLE_UP_KEY, EMPTY } from "./setup";
 
 export class BoardPhysics {
     boardCellMatrix: BoardCell[][];
@@ -46,4 +43,3 @@ export class BoardPhysics {
         return this.rows - 1;
     }
 }
-

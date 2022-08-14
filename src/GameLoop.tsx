@@ -5,6 +5,7 @@ import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { generateRandomChar } from "./components/Board";
 import { BoardCellStyled } from "./components/BoardCell";
+import { PlayerComponent } from "./PlayerComponent"
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardCell } from "./BoardCell";
 import { BoardPhysics } from "./BoardPhysics";
@@ -60,44 +61,6 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
     // TODO
 });
 stateHandler.start();
-
-const PlayerComponent = React.memo(
-    function PlayerComponent({ gameState, init }) {
-        // This function contains player information.
-        const playerState = useState(init); // Note: cells is not adjusted to the board.
-        gameState.setPlayerCells = playerState[1];
-        const [playerCells, _setPlayerCells] = playerState;
-        const adjustedCellsStyled = playerCells.map((cell) => {
-            const divStyle = {
-                background: "blue",
-                border: 2,
-                borderStyle: "solid",
-                gridRow: cell.r + 1,
-                gridColumn: cell.c + 1,
-                display: "flex",
-                marginTop: ENABLE_SMOOTH_FALL
-                    ? interp.val.toString() + "%"
-                    : "0%",
-                marginBottom: ENABLE_SMOOTH_FALL
-                    ? -interp.val.toString() + "%"
-                    : "0%",
-                justifyContent: "center",
-                zIndex: 1,
-            };
-            return (
-                <div
-                    key={cell.uid}
-                    style={divStyle}
-                >
-                    {cell.char}
-                </div>
-            );
-        });
-
-        // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
-        return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
-    },
-);
 
 const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
     const boardState = useState(init);

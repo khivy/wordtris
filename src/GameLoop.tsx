@@ -1,12 +1,11 @@
 import * as React from "react";
-import { useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
-import { generateRandomChar } from "./components/Board";
-import { BoardCellStyled } from "./components/BoardCell";
+import { PlayerComponent } from "./PlayerComponent";
+import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
-import { BoardCell } from "./BoardCell";
+import { BoardPhysics } from "./BoardPhysics";
 import { UserCell } from "./UserCell";
 import {
     _ENABLE_UP_KEY,
@@ -22,18 +21,6 @@ import {
     TBD,
     validWords,
 } from "./setup";
-
-export const UserCellStyled = styled.div`
-  background: blue;
-  border: 2px solid;
-  grid-row: ${(props) => props.r};
-  grid-column: ${(props) => props.c};
-  display: flex;
-  margin-top: ${(props) => props.interp}%;
-  margin-bottom: -${(props) => props.interp}%;
-  justify-content: center;
-  z-index: 1;
-`;
 
 export const BoardStyled = styled.div`
   display: grid;
@@ -51,113 +38,14 @@ const stateMachine = createMachine({
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
         checkingMatches: { on: { DONE: "spawningBlock" } },
     },
+    predictableActionArguments: true,
 });
 
 // Handle states.
-const service = interpret(stateMachine).onTransition((state) => {
+const stateHandler = interpret(stateMachine).onTransition((state) => {
     // TODO
 });
-service.start();
-
-const PlayerComponent = React.memo(
-    function PlayerComponent({ gameState, init }) {
-        // This function contains player information.
-        const playerState = useState(init); // Note: cells is not adjusted to the board.
-        gameState.setPlayerCells = playerState[1];
-        const [playerCells, _setPlayerCells] = playerState;
-        const adjustedCellsStyled = playerCells.map((cell) => {
-            const divStyle = {
-                background: "blue",
-                border: 2,
-                borderStyle: "solid",
-                gridRow: cell.r + 1,
-                gridColumn: cell.c + 1,
-                display: "flex",
-                marginTop: ENABLE_SMOOTH_FALL
-                    ? interp.val.toString() + "%"
-                    : "0%",
-                marginBottom: ENABLE_SMOOTH_FALL
-                    ? -interp.val.toString() + "%"
-                    : "0%",
-                justifyContent: "center",
-                zIndex: 1,
-            };
-            return (
-                <div
-                    key={cell.uid}
-                    style={divStyle}
-                >
-                    {cell.char}
-                </div>
-            );
-        });
-
-        // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
-        return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
-    },
-);
-
-export class BoardPhysics {
-    boardCellMatrix: BoardCell[][];
-
-    constructor(rows: number, cols: number) {
-        this.boardCellMatrix = this.createBoard(rows, cols);
-        this.rows = rows;
-        this.cols = cols;
-    }
-
-    resetBoard(rows, cols) {
-        this.boardCellMatrix.forEach((row) =>
-            row.forEach((col) => {
-                col.char = EMPTY;
-            })
-        );
-    }
-
-    createBoard(rows: number, cols: number): BoardCell[][] {
-        // Init cells.
-        const cells = [];
-        for (let r = 0; r < rows; ++r) {
-            const row = [];
-            for (let c = 0; c < cols; ++c) {
-                row.push({ c: c, r: r, char: EMPTY });
-            }
-            cells.push(row);
-        }
-        return cells;
-    }
-
-    getGroundHeight(col: number, startRow: number): number {
-        // Search for first non-EMPTY board cell from the top.
-        for (let row = startRow; row < this.rows - 1; ++row) {
-            if (this.boardCellMatrix[row + 1][col].char !== EMPTY) {
-                return row;
-            }
-        }
-        return this.rows - 1;
-    }
-}
-
-const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
-    const boardState = useState(init);
-    gameState.setBoardCells = boardState[1];
-    const [board, _setBoard] = boardState;
-
-    const boardCells = board.map((row, r) =>
-        row.map((cell, c) => (
-            <BoardCellStyled
-                key={`cell(${r.toString()},${c.toString()})`}
-                r={cell.r + 1}
-                c={cell.c + 1}
-                char={cell.char}
-            >
-                {cell.char}
-            </BoardCellStyled>
-        ))
-    );
-
-    return <React.Fragment>{boardCells}</React.Fragment>;
-});
+stateHandler.start();
 
 let placedCells = new Set();
 const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
@@ -295,24 +183,24 @@ export function GameLoop() {
     }
 
     function handleStates() {
-        // console.log(service.state.value)
-        if ("spawningBlock" == service.state.value) {
+        // console.log(stateHandler.state.value)
+        if ("spawningBlock" == stateHandler.state.value) {
             placedCells.clear();
-            service.send("SPAWN");
+            stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
-        } else if ("placingBlock" == service.state.value) {
+        } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
-                service.send("TOUCHINGBLOCK");
+                stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
                 console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
-        } else if ("lockDelay" == service.state.value) {
+        } else if ("lockDelay" == stateHandler.state.value) {
             const lockTime = performance.now() - lockStart;
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
-                service.send("UNLOCK");
+                stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime) {
                 const newBoard = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
@@ -326,16 +214,16 @@ export function GameLoop() {
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
 
-                service.send("LOCK");
+                stateHandler.send("LOCK");
                 console.log("event: lockDelay ~ SEND");
             }
-        } else if ("fallingLetters" == service.state.value) {
+        } else if ("fallingLetters" == stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
             const [added, _removed] = dropFloatingCells();
             added.forEach((coord) => placedCells.add(coord));
-            service.send("GROUNDED");
+            stateHandler.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
-        } else if ("checkingMatches" == service.state.value) {
+        } else if ("checkingMatches" == stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
@@ -423,7 +311,7 @@ export function GameLoop() {
                 placedCells = new Set(added);
                 console.log("event: checkingMatches ~ n/a");
             } else {
-                service.send("DONE");
+                stateHandler.send("DONE");
                 console.log("event: checkingMatches ~ DONE");
             }
         }

@@ -12,7 +12,7 @@ export const BOARD_ROWS = 7;
 export const BOARD_COLS = 7;
 
 // Interp determines the distance between the player block's current row and the next row.
-export let interp = { val: 0 };
+export const interp = { val: 0 };
 export const interpRate = .4;
 export const interpKeydownMult = 30;
 export const interpMax = 100;

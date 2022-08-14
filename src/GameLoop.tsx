@@ -87,7 +87,7 @@ class PlayerPhysics {
         ];
         this.spawnPos = [1, 3];
         this.resetBlock();
-        window.addEventListener(
+        globalThis.addEventListener(
             "keydown",
             this.updatePlayerPos.bind(this, board),
             false,
@@ -515,10 +515,10 @@ export function GameLoop() {
         if (gameState.setBoardCells != null) {
             gameState.setBoardCells(boardPhysics.boardCellMatrix);
         }
-        window.requestAnimationFrame(loop);
+        globalThis.requestAnimationFrame(loop);
     }
 
-    window.requestAnimationFrame(loop);
+    globalThis.requestAnimationFrame(loop);
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {

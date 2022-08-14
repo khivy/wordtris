@@ -38,7 +38,7 @@ jobs:
         run: bun bun
 
       - name: Bundle
-        run: bun run test/cellTest.js     
+        run: bun run test/cellTest.ts     
 
       - name: tsc
         run: bun tsc

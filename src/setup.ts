@@ -6,8 +6,8 @@ export const _ENABLE_UP_KEY = true;
 
 export const TBD = "@";
 export const EMPTY = "";
-export const BOARD_ROWS = 7;
-export const BOARD_COLS = 7;
+export const BOARD_ROWS = 10;
+export const BOARD_COLS = 9;
 
 // Interp determines the distance between the player block's current row and the next row.
 export const interp = { val: 0 };

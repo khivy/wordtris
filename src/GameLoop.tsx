@@ -22,18 +22,6 @@ import {
     validWords,
 } from "./setup";
 
-export const UserCellStyled = styled.div`
-  background: blue;
-  border: 2px solid;
-  grid-row: ${(props) => props.r};
-  grid-column: ${(props) => props.c};
-  display: flex;
-  margin-top: ${(props) => props.interp}%;
-  margin-bottom: -${(props) => props.interp}%;
-  justify-content: center;
-  z-index: 1;
-`;
-
 export const BoardStyled = styled.div`
   display: grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);

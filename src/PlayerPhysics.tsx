@@ -22,7 +22,7 @@ export class PlayerPhysics {
         ];
         this.spawnPos = [1, 3];
         this.resetBlock();
-        window.addEventListener(
+        globalThis.addEventListener(
             "keydown",
             this.updatePlayerPos.bind(this, board),
             false,
@@ -42,8 +42,8 @@ export class PlayerPhysics {
     rotateCells(cells: UserCell[]): UserCell[] {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
-        let mid = Math.floor(this.layout.length / 2);
-        let res = structuredClone(cells);
+        const mid = Math.floor(this.layout.length / 2);
+        const res = structuredClone(cells);
         res.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
@@ -102,7 +102,6 @@ export class PlayerPhysics {
         }
         let dr = 0;
         while (interpMax <= interp.val) {
-            console.log(interp.val)
             dr += 1;
             interp.val -= interpMax;
             this.hasMoved = true;
@@ -183,7 +182,7 @@ export class PlayerPhysics {
             }
         } else if (keyCode == 32) {
             // Space bar.
-            let rotatedCells = this.rotateCells(this.cells);
+            const rotatedCells = this.rotateCells(this.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) =>
                 this.getAdjustedUserCell(cell)
             );
@@ -215,12 +214,12 @@ export class PlayerPhysics {
                 this.hasMoved = true;
             } else {
                 // Get direction of overlapping cell.
-                let dr = Math.floor(this.layout.length / 2) -
+                const dr = Math.floor(this.layout.length / 2) -
                     rotatedCells[overlappingI].r;
-                let dc = Math.floor(this.layout[0].length / 2) -
+                const dc = Math.floor(this.layout[0].length / 2) -
                     rotatedCells[overlappingI].c;
                 // Shift it.
-                for (let cell of rotatedCells) {
+                for (const cell of rotatedCells) {
                     cell.r += dr;
                     cell.c += dc;
                 }
@@ -244,7 +243,7 @@ export class PlayerPhysics {
     generateUserCells(): UserCell[] {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
-        let res = [];
+        const res = [];
         this.layout.forEach((row, r) =>
             row.forEach((ch, c) => {
                 if (ch === TBD) {

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-let weightedChars = {
+const weightedChars = {
     a: 8.2,
     b: 1.5,
     c: 2.8,
@@ -30,7 +30,7 @@ let weightedChars = {
 };
 
 function buildWeightedCharacters(dict) {
-    let res = [];
+    const res = [];
     let prefixSum = 0;
     for (const [ch, weight] of Object.entries(dict)) {
         prefixSum += weight;
@@ -42,9 +42,9 @@ function buildWeightedCharacters(dict) {
 function pickWeightedRandom(weightedChars, totalSum) {
     let l = 0;
     let r = weightedChars.length - 1;
-    let target = Math.random() * totalSum;
+    const target = Math.random() * totalSum;
     while (l < r) {
-        let m = Math.floor((r + l) / 2);
+        const m = Math.floor((r + l) / 2);
         if (weightedChars[m][1] < target) {
             l = m + 1;
         } else {

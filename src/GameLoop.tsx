@@ -22,7 +22,7 @@ import {
 } from "./setup";
 
 let validWords = null;
-fetch('lexicons/Oxford3000.txt')
+fetch('lexicons/Oxford5000.txt')
     .then(response => response.text())
     .then(data => {
         // Do something with your data
@@ -244,27 +244,28 @@ export function GameLoop() {
             affectedRows.forEach((r) => {
                 // Row words
                 let [row_left, row_right] = findWords(newBoard[r], false);
-                const [row_leftR, row_rightR] = findWords(
-                    boardPhysics.boardCellMatrix[r],
-                    true,
-                );
-                // Use reversed word if longer.
-                if (row_rightR - row_leftR > row_right - row_left) {
-                    row_left = row_leftR;
-                    row_right = row_rightR;
-                }
+                // const [row_leftR, row_rightR] = findWords(
+                //     boardPhysics.boardCellMatrix[r],
+                //     true,
+                // );
+                // // Use reversed word if longer.
+                // if (row_rightR - row_leftR > row_right - row_left) {
+                //     row_left = row_leftR;
+                //     row_right = row_rightR;
+                // }
                 // Remove word, but ignore when a candidate isn't found.
                 if (row_left !== -1) {
-                    console.log(
-                        "removing word: ",
-                        row_rightR - row_leftR > row_right - row_left
-                            ? newBoard[r].slice(row_left, row_right + 1).map((
-                                cell,
-                            ) => cell.char).reverse().join("")
-                            : newBoard[r].slice(row_left, row_right + 1).map((
-                                cell,
-                            ) => cell.char).reverse().join(""),
-                    );
+                    // console.log(
+                    //     "removing word: ",
+                    //     row_rightR - row_leftR > row_right - row_left
+                    //         ? newBoard[r].slice(row_left, row_right + 1).map((
+                    //             cell,
+                    //         ) => cell.char).reverse().join("")
+                    //         : newBoard[r].slice(row_left, row_right + 1).map((
+                    //             cell,
+                    //         ) => cell.char).reverse().join(""),
+                    // );
+                    console.log(newBoard[r].slice(row_left, row_right + 1).map(( cell) => cell.char).join(""));
                     for (let i = row_left; i < row_right + 1; ++i) {
                         newBoard[r][i].char = EMPTY;
                     }

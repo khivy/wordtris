@@ -55,10 +55,10 @@ const stateMachine = createMachine({
 });
 
 // Handle states.
-const service = interpret(stateMachine).onTransition((state) => {
+const stateHandler = interpret(stateMachine).onTransition((state) => {
     // TODO
 });
-service.start();
+stateHandler.start();
 
 const PlayerComponent = React.memo(
     function PlayerComponent({ gameState, init }) {
@@ -255,24 +255,24 @@ export function GameLoop() {
     }
 
     function handleStates() {
-        // console.log(service.state.value)
-        if ("spawningBlock" == service.state.value) {
+        // console.log(stateHandler.state.value)
+        if ("spawningBlock" == stateHandler.state.value) {
             placedCells.clear();
-            service.send("SPAWN");
+            stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
-        } else if ("placingBlock" == service.state.value) {
+        } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
-                service.send("TOUCHINGBLOCK");
+                stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
                 console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
-        } else if ("lockDelay" == service.state.value) {
+        } else if ("lockDelay" == stateHandler.state.value) {
             const lockTime = performance.now() - lockStart;
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
-                service.send("UNLOCK");
+                stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime) {
                 const newBoard = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
@@ -286,16 +286,16 @@ export function GameLoop() {
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
 
-                service.send("LOCK");
+                stateHandler.send("LOCK");
                 console.log("event: lockDelay ~ SEND");
             }
-        } else if ("fallingLetters" == service.state.value) {
+        } else if ("fallingLetters" == stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
             const [added, _removed] = dropFloatingCells();
             added.forEach((coord) => placedCells.add(coord));
-            service.send("GROUNDED");
+            stateHandler.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
-        } else if ("checkingMatches" == service.state.value) {
+        } else if ("checkingMatches" == stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
@@ -383,7 +383,7 @@ export function GameLoop() {
                 placedCells = new Set(added);
                 console.log("event: checkingMatches ~ n/a");
             } else {
-                service.send("DONE");
+                stateHandler.send("DONE");
                 console.log("event: checkingMatches ~ DONE");
             }
         }

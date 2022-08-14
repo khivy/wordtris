@@ -19,8 +19,15 @@ import {
     interpRate,
     MIN_WORD_LENGTH,
     TBD,
-    validWords,
 } from "./setup";
+
+let validWords = null;
+fetch('lexicons/Oxford3000.txt')
+    .then(response => response.text())
+    .then(data => {
+        // Do something with your data
+        validWords = new Set(data.split('\n'));
+    });
 
 export const BoardStyled = styled.div`
   display: grid;

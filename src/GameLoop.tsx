@@ -102,6 +102,8 @@ export class BoardPhysics {
 
     constructor(rows: number, cols: number) {
         this.boardCellMatrix = this.createBoard(rows, cols);
+        this.rows = rows;
+        this.cols = cols;
     }
 
     resetBoard(rows, cols) {
@@ -127,12 +129,12 @@ export class BoardPhysics {
 
     getGroundHeight(col: number, startRow: number): number {
         // Search for first non-EMPTY board cell from the top.
-        for (let row = startRow; row < BOARD_ROWS - 1; ++row) {
+        for (let row = startRow; row < this.rows - 1; ++row) {
             if (this.boardCellMatrix[row + 1][col].char !== EMPTY) {
                 return row;
             }
         }
-        return BOARD_ROWS - 1;
+        return this.rows - 1;
     }
 }
 

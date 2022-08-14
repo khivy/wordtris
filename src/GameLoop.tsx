@@ -241,6 +241,7 @@ export function GameLoop() {
             const affectedCols = new Set(
                 [...placedCells].map((cell) => cell[1]),
             );
+            const toRemove = new Set();
             affectedRows.forEach((r) => {
                 // Row words
                 let [row_left, row_right] = findWords(newBoard[r], false);
@@ -267,7 +268,7 @@ export function GameLoop() {
                     // );
                     console.log(newBoard[r].slice(row_left, row_right + 1).map(( cell) => cell.char).join(""));
                     for (let i = row_left; i < row_right + 1; ++i) {
-                        newBoard[r][i].char = EMPTY;
+                        toRemove.add([r,i]);
                     }
                     hasRemovedWord = true;
                 }
@@ -304,12 +305,16 @@ export function GameLoop() {
                                 ).join(""),
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
-                        console.log("rem char", newBoard[i][c].char);
-                        newBoard[i][c].char = EMPTY;
+                        toRemove.add([i,c]);
                     }
                     hasRemovedWord = true;
                 }
             });
+
+            // Remove characters
+            toRemove.forEach((coord) => {
+                boardPhysics.boardCellMatrix[coord[0]][coord[1]].char = EMPTY });
+            toRemove.clear();
 
             // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;

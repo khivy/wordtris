@@ -107,8 +107,8 @@ class PlayerPhysics {
     rotateCells(cells: UserCell[]): UserCell[] {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
-        let mid = Math.floor(this.layout.length / 2);
-        let res = structuredClone(cells);
+        const mid = Math.floor(this.layout.length / 2);
+        const res = structuredClone(cells);
         res.forEach((cell) => {
             // Center around mid.
             // Remember, top-left is (0,0) and bot-right is (last,last).
@@ -247,7 +247,7 @@ class PlayerPhysics {
             }
         } else if (keyCode == 32) {
             // Space bar.
-            let rotatedCells = this.rotateCells(this.cells);
+            const rotatedCells = this.rotateCells(this.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) =>
                 this.getAdjustedUserCell(cell)
             );
@@ -279,12 +279,12 @@ class PlayerPhysics {
                 this.hasMoved = true;
             } else {
                 // Get direction of overlapping cell.
-                let dr = Math.floor(this.layout.length / 2) -
+                const dr = Math.floor(this.layout.length / 2) -
                     rotatedCells[overlappingI].r;
-                let dc = Math.floor(this.layout[0].length / 2) -
+                const dc = Math.floor(this.layout[0].length / 2) -
                     rotatedCells[overlappingI].c;
                 // Shift it.
-                for (let cell of rotatedCells) {
+                for (const cell of rotatedCells) {
                     cell.r += dr;
                     cell.c += dc;
                 }
@@ -308,7 +308,7 @@ class PlayerPhysics {
     generateUserCells(): UserCell[] {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
-        let res = [];
+        const res = [];
         this.layout.forEach((row, r) =>
             row.forEach((ch, c) => {
                 if (ch === TBD) {
@@ -350,7 +350,7 @@ const PlayerComponent = React.memo(
         const playerState = useState(init); // Note: cells is not adjusted to the board.
         gameState.setPlayerCells = playerState[1];
         const [playerCells, _setPlayerCells] = playerState;
-        let adjustedCellsStyled = playerCells.map((cell) => {
+        const adjustedCellsStyled = playerCells.map((cell) => {
             const divStyle = {
                 background: "blue",
                 border: 2,
@@ -405,7 +405,7 @@ export class BoardPhysics {
         // Init cells.
         const cells = [];
         for (let r = 0; r < rows; ++r) {
-            let row = [];
+            const row = [];
             for (let c = 0; c < cols; ++c) {
                 row.push({ c: c, r: r, char: EMPTY });
             }
@@ -447,11 +447,11 @@ const BoardComponent = React.memo(function BoardComponent({ gameState, init }) {
 });
 
 let placedCells = new Set();
-let boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
-let playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
+const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
+const playerPhysics = new PlayerPhysics(boardPhysics.boardCellMatrix);
 let lockStart = null;
 // The amount of time it takes before a block locks in place.
-let lockMax = 1500;
+const lockMax = 1500;
 
 export function GameLoop() {
     const gameState = {
@@ -459,7 +459,7 @@ export function GameLoop() {
         setBoardCells: null,
     };
 
-    let res = (
+    const res = (
         <BoardStyled>
             <PlayerComponent
                 key={"Player"}
@@ -474,14 +474,14 @@ export function GameLoop() {
         </BoardStyled>
     );
 
-    let FPS = 60;
+    const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
-    let frameStep = 1000 / FPS;
+    const frameStep = 1000 / FPS;
     let accum = 0;
     let prevTime = performance.now();
 
     function loop(timestamp) {
-        let curTime = performance.now();
+        const curTime = performance.now();
         accum += curTime - prevTime;
         prevTime = curTime;
 
@@ -528,15 +528,15 @@ export function GameLoop() {
 
     function dropFloatingCells(): number[][] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
-        let added = [];
-        let removed = [];
+        const added = [];
+        const removed = [];
         for (let r = BOARD_ROWS - 2; r >= 0; --r) {
             for (let c = BOARD_COLS - 1; c > 0; --c) {
                 if (
                     boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
                     boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
                 ) {
-                    let g = boardPhysics.getGroundHeight(c, r);
+                    const g = boardPhysics.getGroundHeight(c, r);
                     boardPhysics.boardCellMatrix[g][c].char =
                         boardPhysics.boardCellMatrix[r][c].char;
                     boardPhysics.boardCellMatrix[r][c].char = EMPTY;
@@ -551,7 +551,7 @@ export function GameLoop() {
 
     function findWords(arr: UserCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
-        let contents = reversed
+        const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()
                 .join("")
             : arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).join("");
@@ -564,7 +564,7 @@ export function GameLoop() {
                 right < contents.length;
                 ++right
             ) {
-                let cand = contents.slice(left, right + 1);
+                const cand = contents.slice(left, right + 1);
                 if (validWords.has(cand)) {
                     if (right - left > resRight - resLeft) {
                         resRight = right;
@@ -594,14 +594,14 @@ export function GameLoop() {
                 console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
         } else if ("lockDelay" == service.state.value) {
-            let lockTime = performance.now() - lockStart;
+            const lockTime = performance.now() - lockStart;
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 service.send("UNLOCK");
             } else if (lockMax <= lockTime) {
-                let newBoard = boardPhysics.boardCellMatrix.slice();
+                const newBoard = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
                     placedCells.add([cell.r, cell.c]);
                     // Give player cells to board.
@@ -624,11 +624,11 @@ export function GameLoop() {
             console.log("event: fallingLetters ~ GROUNDED");
         } else if ("checkingMatches" == service.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
-            let newBoard = boardPhysics.boardCellMatrix.slice();
+            const newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
             let hasRemovedWord = false;
-            let affectedRows = new Set([...placedCells].map((cell) => cell[0]));
-            let affectedCols = new Set([...placedCells].map((cell) => cell[1]));
+            const affectedRows = new Set([...placedCells].map((cell) => cell[0]));
+            const affectedCols = new Set([...placedCells].map((cell) => cell[1]));
             affectedRows.forEach((r) => {
                 // Row words
                 let [row_left, row_right] = findWords(newBoard[r], false);
@@ -661,11 +661,11 @@ export function GameLoop() {
             });
             affectedCols.forEach((c) => {
                 // Column words
-                let [col_top, col_bot] = findWords(
+                const [col_top, col_bot] = findWords(
                     boardPhysics.boardCellMatrix.map((row) => row[c]),
                     false,
                 );
-                let [col_topR, col_botR] = findWords(
+                const [col_topR, col_botR] = findWords(
                     boardPhysics.boardCellMatrix.map((row) => row[c]),
                     true,
                 );

@@ -124,20 +124,14 @@ export class PlayerPhysics {
     generateUserCells(): UserCell[] {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
-        const res = [];
-        this.layout.forEach((row, r) =>
-            row.forEach((ch, c) => {
-                if (ch === TBD) {
-                    res.push({
-                        r: r,
-                        c: c,
-                        char: generateRandomChar(),
-                        uid: `user(${r},${c})`,
-                    });
-                }
-            })
+        return this.layout.flatMap((row, r) =>
+            row.filter((ch) => ch === TBD).map((_, c) => ({
+                r,
+                c,
+                char: generateRandomChar(),
+                uid: `user(${r},${c})`,
+            }))
         );
-        return res;
     }
 
     resetBlock() {

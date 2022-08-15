@@ -245,7 +245,6 @@ const gameState = {
 };
 
 export function GameLoop() {
-
     const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
     const frameStep = 1000 / FPS;
@@ -295,8 +294,8 @@ export function GameLoop() {
         }
 
         // Update rendering.
-            gameState.setPlayerCells(playerPhysics.adjustedCells);
-            gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        gameState.setPlayerCells(playerPhysics.adjustedCells);
+        gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
     }
 
@@ -383,7 +382,6 @@ export function GameLoop() {
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
-            console.log(lockStart);
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {

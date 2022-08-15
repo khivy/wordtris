@@ -1,14 +1,10 @@
 import styled from "styled-components";
+import { BoardCell } from "../BoardCell";
 import { EMPTY } from "../setup";
-
-export interface BoardCell {
-    x: number;
-    y: number;
-}
 
 export const BoardCellStyled = styled.div`
   width: auto;
-  background: ${(props) => {
+  background: ${(props: BoardCell) => {
     if (props.char === EMPTY) {
         return "none";
     } else if (props.hasMatched) {

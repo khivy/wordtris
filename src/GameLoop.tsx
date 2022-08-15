@@ -71,7 +71,6 @@ let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 
-
 let didInstantDrop = false;
 
 function updatePlayerPos(
@@ -235,12 +234,13 @@ globalThis.addEventListener(
     false,
 ); // Without bind it loses context.
 
+const gameState = {
+    setPlayerCells: null,
+    setPlayerVisible: null,
+    setBoardCells: null,
+};
+
 export function GameLoop() {
-    const gameState = {
-        setPlayerCells: null,
-        setBoardCells: null,
-        isPlayerVisible: true,
-    };
 
     const res = (
         <BoardStyled>
@@ -289,12 +289,8 @@ export function GameLoop() {
         }
 
         // Update rendering.
-        if (gameState.setPlayerCells != null) {
             gameState.setPlayerCells(playerPhysics.adjustedCells);
-        }
-        if (gameState.setBoardCells != null) {
             gameState.setBoardCells(boardPhysics.boardCellMatrix);
-        }
         globalThis.requestAnimationFrame(loop);
     }
 
@@ -365,7 +361,8 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
-            gameState.isPlayerVisible = true;
+            console.log('spawning')
+            gameState.setPlayerVisible(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
@@ -398,7 +395,7 @@ export function GameLoop() {
                 didInstantDrop = false;
 
                 stateHandler.send("LOCK");
-                gameState.isPlayerVisible = false;
+                gameState.setPlayerVisible(false);
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
@@ -530,7 +527,6 @@ export function GameLoop() {
                     console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
-                console.log('hi')
                 stateHandler.send("DONE");
                 console.log("event: playMatchAnimation ~ DONE");
             }

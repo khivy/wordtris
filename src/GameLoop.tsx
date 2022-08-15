@@ -71,7 +71,6 @@ let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 
-
 let didInstantDrop = false;
 
 function updatePlayerPos(
@@ -235,18 +234,34 @@ globalThis.addEventListener(
     false,
 ); // Without bind it loses context.
 
+const gameState = {
+    setPlayerCells: null,
+    setPlayerVisible: null,
+    setBoardCells: null,
+};
+
 export function GameLoop() {
-    const gameState = {
-        setPlayerCells: null,
-        setBoardCells: null,
-        isPlayerVisible: true,
-    };
 
     const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
     const frameStep = 1000 / FPS;
     let accum = 0;
     let prevTime = performance.now();
+
+    const res = (
+        <BoardStyled>
+            <PlayerComponent
+                key={"Player"}
+                gameState={gameState}
+                init={playerPhysics.adjustedCells.slice()}
+            />
+            <BoardComponent
+                gameState={gameState}
+                key={"Board"}
+                init={boardPhysics.boardCellMatrix.slice()}
+            />
+        </BoardStyled>
+    );
 
     function loop(timestamp) {
         const curTime = performance.now();
@@ -276,12 +291,8 @@ export function GameLoop() {
         }
 
         // Update rendering.
-        if (gameState.setPlayerCells != null) {
             gameState.setPlayerCells(playerPhysics.adjustedCells);
-        }
-        if (gameState.setBoardCells != null) {
             gameState.setBoardCells(boardPhysics.boardCellMatrix);
-        }
         globalThis.requestAnimationFrame(loop);
     }
 
@@ -352,7 +363,8 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
-            gameState.isPlayerVisible = true;
+            console.log('spawning')
+            gameState.setPlayerVisible(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
@@ -385,7 +397,7 @@ export function GameLoop() {
                 didInstantDrop = false;
 
                 stateHandler.send("LOCK");
-                gameState.isPlayerVisible = false;
+                gameState.setPlayerVisible(false);
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
@@ -517,7 +529,6 @@ export function GameLoop() {
                     console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
-                console.log('hi')
                 stateHandler.send("DONE");
                 console.log("event: playMatchAnimation ~ DONE");
             }
@@ -525,21 +536,6 @@ export function GameLoop() {
         // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
-
-    const res = (
-        <BoardStyled>
-            <PlayerComponent
-                key={"Player"}
-                gameState={gameState}
-                init={playerPhysics.adjustedCells.slice()}
-            />
-            <BoardComponent
-                gameState={gameState}
-                key={"Board"}
-                init={boardPhysics.boardCellMatrix.slice()}
-            />
-        </BoardStyled>
-    );
 
     return res;
 }

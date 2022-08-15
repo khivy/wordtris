@@ -70,6 +70,7 @@ const lockMax = 1500;
 let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
+let isPlayerMovementEnabled = false;
 
 let didInstantDrop = false;
 
@@ -78,6 +79,9 @@ function updatePlayerPos(
     boardPhysics: BoardPhysics,
     { keyCode, repeat }: { keyCode: number; repeat: boolean },
 ): void {
+    if (!isPlayerMovementEnabled) {
+        return;
+    }
     const board = boardPhysics.boardCellMatrix;
     const r = playerPhysics.pos[0];
     const c = playerPhysics.pos[1];
@@ -269,13 +273,15 @@ export function GameLoop() {
         while (accum >= frameStep) {
             accum -= frameStep;
             handleStates();
-            const dr = playerPhysics.doGradualFall(
-                boardPhysics.boardCellMatrix,
-            );
-            playerPhysics.setPos(
-                playerPhysics.pos[0] + dr,
-                playerPhysics.pos[1],
-            );
+            if (isPlayerMovementEnabled) {
+                const dr = playerPhysics.doGradualFall(
+                    boardPhysics.boardCellMatrix,
+                );
+                playerPhysics.setPos(
+                    playerPhysics.pos[0] + dr,
+                    playerPhysics.pos[1],
+                );
+            }
             // Reset if spawn point is blocked.
             if (
                 boardPhysics
@@ -360,7 +366,7 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
-            console.log("spawning");
+            isPlayerMovementEnabled = true;
             gameState.setPlayerVisible(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
@@ -393,6 +399,8 @@ export function GameLoop() {
                 didInstantDrop = false;
 
                 stateHandler.send("LOCK");
+                // Disable player block features.
+                isPlayerMovementEnabled = false;
                 gameState.setPlayerVisible(false);
                 console.log("event: lockDelay ~ SEND");
             }

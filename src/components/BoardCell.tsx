@@ -10,13 +10,12 @@ export const BoardCellStyled = styled.div`
   width: auto;
   background: ${(props) => {
     if (props.char === EMPTY) {
-        return 'none';
+        return "none";
     } else if (props.hasMatched) {
-        return 'lightgreen;'
+        return "lightgreen;";
     } else {
-        return 'red';
+        return "red";
     }
-    
 }};
   text: ${(props) => props.char === EMPTY ? "none" : "red"};
   border: 2px solid;

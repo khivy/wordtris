@@ -99,7 +99,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                    Math.ceil(interp.val / interpMax),
+                        Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -119,7 +119,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                    Math.ceil(interp.val / interpMax),
+                        Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -245,7 +245,6 @@ const gameState = {
 };
 
 export function GameLoop() {
-
     const res = (
         <BoardStyled>
             <PlayerComponent
@@ -287,8 +286,8 @@ export function GameLoop() {
             if (
                 boardPhysics
                     .boardCellMatrix[playerPhysics.spawnPos[0]][
-                    playerPhysics.spawnPos[1]
-                ].char !== EMPTY
+                        playerPhysics.spawnPos[1]
+                    ].char !== EMPTY
             ) {
                 boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
             }

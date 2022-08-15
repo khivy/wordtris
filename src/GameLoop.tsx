@@ -420,7 +420,7 @@ export function GameLoop() {
             );
             affectedRows.forEach((r) => {
                 // Row words
-                let [row_left, row_right] = findWords(newBoard[r], false);
+                const [row_left, row_right] = findWords(newBoard[r], false);
                 // const [row_leftR, row_rightR] = findWords(
                 //     boardPhysics.boardCellMatrix[r],
                 //     true,
@@ -507,7 +507,7 @@ export function GameLoop() {
             console.log("event: checkingMatches ~ PLAYING_ANIM");
         } else if ("playMatchAnimation" == stateHandler.state.value) {
             if (isMatchChaining) {
-                let animTime = performance.now() - matchAnimStart;
+                const animTime = performance.now() - matchAnimStart;
                 if (matchAnimLength <= animTime) {
                     // Also remove characters. (hasMatched)
                     const newBoard = boardPhysics.boardCellMatrix.slice();

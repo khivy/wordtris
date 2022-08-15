@@ -51,18 +51,22 @@ export class PlayerPhysics {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
         const mid = Math.floor(this.layout.length / 2);
-        const res = structuredClone(cells);
-        res.forEach((cell) => {
+        return cells.map(({ r, c, char, uid }) => {
             // Center around mid.
-            // Remember, top-left is (0,0) and bot-right is (last,last).
-            const r = cell.r - mid;
-            const c = cell.c - mid;
-            if (r !== 0 || c !== 0) {
-                cell.r = c + mid;
-                cell.c = -r + mid;
+            // Remember, top-left is `(0, 0)` and bot-right is `(last, last)`.
+            const r2 = r - mid;
+            const c2 = c - mid;
+            if (r2 !== 0 || c2 !== 0) {
+                r = c2 + mid;
+                c = -r2 + mid;
             }
+            return {
+                r,
+                c,
+                char,
+                uid,
+            };
         });
-        return res;
     }
 
     getAdjustedLeftmostC() {

@@ -61,6 +61,7 @@ const playerPhysics = new PlayerPhysics(boardPhysics);
 let lockStart = null;
 // The amount of time it takes before a block locks in place.
 const lockMax = 1500;
+let didInstantDrop = false;
 
 function updatePlayerPos(
     playerPhysics: PlayerPhysics,
@@ -136,6 +137,7 @@ function updatePlayerPos(
         playerPhysics.cells.forEach((cell) =>  dy = Math.max(dy, cell.r-mid));
         playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
         playerPhysics.hasMoved = true;
+        didInstantDrop = true;
     }
     else if (
         _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
@@ -356,9 +358,10 @@ export function GameLoop() {
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
+            console.log(lockStart)
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 stateHandler.send("UNLOCK");
-            } else if (lockMax <= lockTime) {
+            } else if (lockMax <= lockTime || didInstantDrop) {
                 const newBoard = boardPhysics.boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
                     placedCells.add([cell.r, cell.c]);
@@ -370,6 +373,7 @@ export function GameLoop() {
                 interp.val = 0;
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
+                didInstantDrop = false;
 
                 stateHandler.send("LOCK");
                 console.log("event: lockDelay ~ SEND");

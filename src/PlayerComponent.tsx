@@ -15,10 +15,10 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
             gridColumn: cell.c + 1,
             display: "flex",
             marginTop: ENABLE_SMOOTH_FALL
-                ? interp.val.toString() + "%"
+                ? `${interp.val}%`
                 : "0%",
             marginBottom: ENABLE_SMOOTH_FALL
-                ? -interp.val.toString() + "%"
+                ? `${-interp.val}%`
                 : "0%",
             justifyContent: "center",
             zIndex: 1,

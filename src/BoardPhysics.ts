@@ -37,7 +37,7 @@ export class BoardPhysics {
         for (let r = 0; r < rows; ++r) {
             const row = [];
             for (let c = 0; c < cols; ++c) {
-                row.push({ c: c, r: r, char: EMPTY });
+                row.push({ c: c, r: r, char: EMPTY, hasMatched: false });
             }
             cells.push(row);
         }

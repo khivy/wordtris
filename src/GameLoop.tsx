@@ -7,6 +7,7 @@ import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardPhysics } from "./BoardPhysics";
 import { UserCell } from "./UserCell";
+import { BoardCell } from "./BoardCell";
 import {
     _ENABLE_UP_KEY,
     BOARD_COLS,
@@ -44,7 +45,8 @@ const stateMachine = createMachine({
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
-        checkingMatches: { on: { DONE: "spawningBlock" } },
+        checkingMatches: { on: { PLAYING_ANIM: "playMatchAnimation" } },
+        playMatchAnimation: { on: { DO_CHAIN: "checkingMatches", DONE: "spawningBlock" } },
     },
     predictableActionArguments: true,
 });
@@ -56,11 +58,17 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
 stateHandler.start();
 
 let placedCells = new Set();
+const matchedCells = new Set();
 const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 const playerPhysics = new PlayerPhysics(boardPhysics);
 let lockStart = null;
+
 // The amount of time it takes before a block locks in place.
 const lockMax = 1500;
+let matchAnimStart = null;
+const matchAnimLength = 750;
+let isMatchChaining = false;
+
 let didInstantDrop = false;
 
 function updatePlayerPos(
@@ -284,20 +292,19 @@ export function GameLoop() {
         });
     }
 
-    function dropFloatingCells(): number[][] {
+    function dropFloatingCells(board: BoardCell[][]): number[][] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
         const added = [];
         const removed = [];
         for (let r = BOARD_ROWS - 2; r >= 0; --r) {
             for (let c = BOARD_COLS - 1; c >= 0; --c) {
                 if (
-                    boardPhysics.boardCellMatrix[r][c].char !== EMPTY &&
-                    boardPhysics.boardCellMatrix[r + 1][c].char === EMPTY
+                    board[r][c].char !== EMPTY &&
+                    board[r + 1][c].char === EMPTY
                 ) {
                     const g = boardPhysics.getGroundHeight(c, r);
-                    boardPhysics.boardCellMatrix[g][c].char =
-                        boardPhysics.boardCellMatrix[r][c].char;
-                    boardPhysics.boardCellMatrix[r][c].char = EMPTY;
+                    board[g][c].char = board[r][c].char;
+                    board[r][c].char = EMPTY;
                     // Update cell in placedCells.
                     added.push([g, c]);
                     removed.push([r, c]);
@@ -380,7 +387,7 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [added, _removed] = dropFloatingCells();
+            const [added, _removed] = dropFloatingCells(boardPhysics.boardCellMatrix);
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
             console.log("event: fallingLetters ~ GROUNDED");
@@ -395,7 +402,6 @@ export function GameLoop() {
             const affectedCols = new Set(
                 [...placedCells].map((cell) => cell[1]),
             );
-            const toRemove = new Set();
             affectedRows.forEach((r) => {
                 // Row words
                 let [row_left, row_right] = findWords(newBoard[r], false);
@@ -422,7 +428,7 @@ export function GameLoop() {
                     // );
                     console.log(newBoard[r].slice(row_left, row_right + 1).map(( cell) => cell.char).join(""));
                     for (let i = row_left; i < row_right + 1; ++i) {
-                        toRemove.add([r,i]);
+                        matchedCells.add([r,i]);
                     }
                     hasRemovedWord = true;
                 }
@@ -459,29 +465,52 @@ export function GameLoop() {
                                 ).join(""),
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
-                        toRemove.add([i,c]);
+                        matchedCells.add([i,c]);
                     }
                     hasRemovedWord = true;
                 }
             });
 
             // Remove characters
-            toRemove.forEach((coord) => {
-                boardPhysics.boardCellMatrix[coord[0]][coord[1]].char = EMPTY });
-            toRemove.clear();
+            matchedCells.forEach((coord) => {
+                // newBoard[coord[0]][coord[1]].char = EMPTY;
+                newBoard[coord[0]][coord[1]].hasMatched = true;
+            });
 
             // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;
-
-            // Drop all characters.
             if (hasRemovedWord) {
-                const [added, _removed] = dropFloatingCells();
-                // Dropped letters can chain into more words, so stay in this state.
-                placedCells = new Set(added);
-                console.log("event: checkingMatches ~ n/a");
-            } else {
+                isMatchChaining = true;
+                matchAnimStart = performance.now();
+            }
+            stateHandler.send("PLAYING_ANIM");
+            console.log("event: checkingMatches ~ PLAYING_ANIM");
+        } else if ("playMatchAnimation" == stateHandler.state.value) {
+            if (isMatchChaining) {
+                let animTime = performance.now() - matchAnimStart;
+                if (matchAnimLength <= animTime) {
+                    // Also remove characters. (hasMatched)
+                    const newBoard = boardPhysics.boardCellMatrix.slice();
+                    matchedCells.forEach((coord) => {
+                        newBoard[coord[0]][coord[1]].char = EMPTY;
+                        newBoard[coord[0]][coord[1]].hasMatched = false;
+                    });
+
+                    // Drop all characters.
+                    const [added, _removed] = dropFloatingCells(newBoard);
+                    boardPhysics.boardCellMatrix = newBoard;
+                    placedCells = new Set(added);
+
+                    // Go back to checkingMatches to see if dropped letters causes more matches.
+                    matchedCells.clear();
+                    isMatchChaining = false;
+                    stateHandler.send("DO_CHAIN");
+                    console.log("event: playMatchAnimation ~ DO_CHAIN");
+                }
+            }
+            else {
                 stateHandler.send("DONE");
-                console.log("event: checkingMatches ~ DONE");
+                console.log("event: playMatchAnimation ~ DONE");
             }
         }
         // TODO: Move this to a playerUpdate function.

@@ -241,7 +241,6 @@ const gameState = {
 };
 
 export function GameLoop() {
-
     const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
     const frameStep = 1000 / FPS;
@@ -251,13 +250,11 @@ export function GameLoop() {
     const res = (
         <BoardStyled>
             <PlayerComponent
-                key={"Player"}
                 gameState={gameState}
                 init={playerPhysics.adjustedCells.slice()}
             />
             <BoardComponent
                 gameState={gameState}
-                key={"Board"}
                 init={boardPhysics.boardCellMatrix.slice()}
             />
         </BoardStyled>
@@ -291,8 +288,8 @@ export function GameLoop() {
         }
 
         // Update rendering.
-            gameState.setPlayerCells(playerPhysics.adjustedCells);
-            gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        gameState.setPlayerCells(playerPhysics.adjustedCells);
+        gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
     }
 
@@ -363,7 +360,7 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
-            console.log('spawning')
+            console.log("spawning");
             gameState.setPlayerVisible(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
@@ -379,7 +376,6 @@ export function GameLoop() {
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
-            console.log(lockStart);
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
@@ -421,7 +417,7 @@ export function GameLoop() {
             );
             affectedRows.forEach((r) => {
                 // Row words
-                let [row_left, row_right] = findWords(newBoard[r], false);
+                const [row_left, row_right] = findWords(newBoard[r], false);
                 // const [row_leftR, row_rightR] = findWords(
                 //     boardPhysics.boardCellMatrix[r],
                 //     true,
@@ -508,7 +504,7 @@ export function GameLoop() {
             console.log("event: checkingMatches ~ PLAYING_ANIM");
         } else if ("playMatchAnimation" == stateHandler.state.value) {
             if (isMatchChaining) {
-                let animTime = performance.now() - matchAnimStart;
+                const animTime = performance.now() - matchAnimStart;
                 if (matchAnimLength <= animTime) {
                     // Also remove characters. (hasMatched)
                     const newBoard = boardPhysics.boardCellMatrix.slice();

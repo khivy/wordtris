@@ -18,6 +18,7 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
             marginTop: `${margin}%`,
             marginBottom: `${-margin}%`,
             justifyContent: "center",
+            visibility: gameState.isPlayerVisible ? 'visible' : 'hidden',
             zIndex: 1,
         };
         return (

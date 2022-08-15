@@ -71,6 +71,7 @@ let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 
+
 let didInstantDrop = false;
 
 function updatePlayerPos(
@@ -95,7 +96,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                    Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -115,7 +116,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                    Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -238,6 +239,7 @@ export function GameLoop() {
     const gameState = {
         setPlayerCells: null,
         setBoardCells: null,
+        isPlayerVisible: true,
     };
 
     const res = (
@@ -279,8 +281,8 @@ export function GameLoop() {
             if (
                 boardPhysics
                     .boardCellMatrix[playerPhysics.spawnPos[0]][
-                        playerPhysics.spawnPos[1]
-                    ].char !== EMPTY
+                    playerPhysics.spawnPos[1]
+                ].char !== EMPTY
             ) {
                 boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
             }
@@ -363,6 +365,7 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
+            gameState.isPlayerVisible = true;
             placedCells.clear();
             stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
@@ -395,6 +398,7 @@ export function GameLoop() {
                 didInstantDrop = false;
 
                 stateHandler.send("LOCK");
+                gameState.isPlayerVisible = false;
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
@@ -526,6 +530,7 @@ export function GameLoop() {
                     console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
+                console.log('hi')
                 stateHandler.send("DONE");
                 console.log("event: playMatchAnimation ~ DONE");
             }

@@ -3,9 +3,8 @@ import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "./setup";
 
 export const PlayerComponent = React.memo(({ gameState, init }) => {
     // This function contains player information.
-    const playerState = React.useState(init); // Note: cells is not adjusted to the board.
-    gameState.setPlayerCells = playerState[1];
-    const [playerCells, _setPlayerCells] = playerState;
+    const [playerCells, setPlayerCells] = React.useState(init); // Note: cells is not adjusted to the board.
+    gameState.setPlayerCells = setPlayerCells;
     const adjustedCellsStyled = playerCells.map((cell) => {
         const margin = ENABLE_SMOOTH_FALL ? interp.val : 0;
         const divStyle = {

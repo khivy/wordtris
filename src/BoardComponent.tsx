@@ -14,6 +14,7 @@ export const BoardComponent = React.memo(
                     r={cell.r + 1}
                     c={cell.c + 1}
                     char={cell.char}
+                    hasMatched={cell.hasMatched}
                 >
                     {cell.char}
                 </BoardCellStyled>

@@ -9,7 +9,7 @@ export const PlayerComponent = React.memo(
         const [playerCells, _setPlayerCells] = playerState;
         const adjustedCellsStyled = playerCells.map((cell) => {
             const divStyle = {
-                background: "blue",
+                background: "lightblue",
                 border: 2,
                 borderStyle: "solid",
                 gridRow: cell.r + 1,

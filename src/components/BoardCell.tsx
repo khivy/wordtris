@@ -8,7 +8,15 @@ export interface BoardCell {
 
 export const BoardCellStyled = styled.div`
   width: auto;
-  background: ${(props) => props.char === EMPTY ? "none" : "red"};
+  background: ${(props) => {
+    if (props.char === EMPTY) {
+        return "none";
+    } else if (props.hasMatched) {
+        return "lightgreen;";
+    } else {
+        return "red";
+    }
+}};
   text: ${(props) => props.char === EMPTY ? "none" : "red"};
   border: 2px solid;
   grid-row: ${(props) => props.r};

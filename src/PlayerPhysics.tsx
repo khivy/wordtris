@@ -20,7 +20,7 @@ import { BoardPhysics } from "./BoardPhysics";
 export class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
-    pos: number[]; // r, c
+    pos: [number, number]; // r, c
     spawnPos: number[];
     layout: string[][];
     hasMoved: boolean;

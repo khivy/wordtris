@@ -125,12 +125,14 @@ export class PlayerPhysics {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
         return this.layout.flatMap((row, r) =>
-            row.filter((ch) => ch === TBD).map((_, c) => ({
-                r,
-                c,
-                char: generateRandomChar(),
-                uid: `user(${r},${c})`,
-            }))
+            row.map((ch, c) =>
+                ch === TBD && ({
+                    r,
+                    c,
+                    char: generateRandomChar(),
+                    uid: `user(${r},${c})`,
+                })
+            ).filter((e): e is UserCell => !!e)
         );
     }
 

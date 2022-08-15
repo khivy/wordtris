@@ -1,11 +1,6 @@
 import styled from "styled-components";
 import { EMPTY } from "../setup";
 
-export interface BoardCell {
-    x: number;
-    y: number;
-}
-
 export const BoardCellStyled = styled.div`
   width: auto;
   background: ${(props) => {

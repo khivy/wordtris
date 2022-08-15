@@ -7,6 +7,7 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
     gameState.setPlayerCells = playerState[1];
     const [playerCells, _setPlayerCells] = playerState;
     const adjustedCellsStyled = playerCells.map((cell) => {
+        const margin = ENABLE_SMOOTH_FALL ? interp.val : 0;
         const divStyle = {
             background: "lightblue",
             border: 2,
@@ -14,12 +15,8 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
             gridRow: cell.r + 1,
             gridColumn: cell.c + 1,
             display: "flex",
-            marginTop: ENABLE_SMOOTH_FALL
-                ? `${interp.val}%`
-                : "0%",
-            marginBottom: ENABLE_SMOOTH_FALL
-                ? `${-interp.val}%`
-                : "0%",
+            marginTop: `${margin}%`,
+            marginBottom: `${-margin}%`,
             justifyContent: "center",
             zIndex: 1,
         };

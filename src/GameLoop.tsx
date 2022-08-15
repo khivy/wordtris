@@ -243,13 +243,11 @@ export function GameLoop() {
     const res = (
         <BoardStyled>
             <PlayerComponent
-                key={"Player"}
                 gameState={gameState}
                 init={playerPhysics.adjustedCells.slice()}
             />
             <BoardComponent
                 gameState={gameState}
-                key={"Board"}
                 init={boardPhysics.boardCellMatrix.slice()}
             />
         </BoardStyled>

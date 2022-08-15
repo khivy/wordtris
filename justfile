@@ -8,17 +8,22 @@ fmt:
 
 check:
     deno fmt --check
+    deno lint
     bun tsc
 
 alias c := check
 
 build:
     bun bun
-    ./node_modules.bun > bundle.js
 
 alias b := build
 
 run:
-    bun run
+    bun dev
 
 alias r := run
+
+test:
+    bun test/cellTest.ts
+
+alias t := test

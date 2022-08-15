@@ -1,4 +1,4 @@
-import { BoardCell } from "./components/BoardCell";
+import { BoardCell } from "./BoardCell";
 import { _ENABLE_UP_KEY, EMPTY } from "./setup";
 
 export class BoardPhysics {

@@ -20,8 +20,8 @@ import { BoardPhysics } from "./BoardPhysics";
 export class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
-    pos: number[]; // r, c
-    spawnPos: number[];
+    pos: [number, number]; // r, c
+    spawnPos: [number, number];
     layout: string[][];
     hasMoved: boolean;
 
@@ -137,7 +137,7 @@ export class PlayerPhysics {
     }
 
     resetBlock() {
-        this.pos = this.spawnPos.slice();
+        this.pos = [...this.spawnPos];
         this.cells = this.generateUserCells();
         this.setPos(this.pos[0], this.pos[1]);
         this.adjustedCells = this.cells.map((cell) =>
@@ -146,12 +146,12 @@ export class PlayerPhysics {
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    getAdjustedUserCell(cell: UserCell): UserCell {
+    getAdjustedUserCell({ r, c, uid, char }: UserCell): UserCell {
         return {
-            r: cell.r + this.pos[0] - Math.floor(this.layout.length / 2),
-            c: cell.c + this.pos[1] - Math.floor(this.layout[0].length / 2),
-            uid: cell.uid,
-            char: cell.char,
+            r: r + this.pos[0] - Math.floor(this.layout.length / 2),
+            c: c + this.pos[1] - Math.floor(this.layout[0].length / 2),
+            uid,
+            char,
         };
     }
 }

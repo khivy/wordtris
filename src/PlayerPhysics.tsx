@@ -21,7 +21,7 @@ export class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
     pos: [number, number]; // r, c
-    spawnPos: number[];
+    spawnPos: [number, number];
     layout: string[][];
     hasMoved: boolean;
 
@@ -137,7 +137,7 @@ export class PlayerPhysics {
     }
 
     resetBlock() {
-        this.pos = this.spawnPos.slice();
+        this.pos = [...this.spawnPos];
         this.cells = this.generateUserCells();
         this.setPos(this.pos[0], this.pos[1]);
         this.adjustedCells = this.cells.map((cell) =>

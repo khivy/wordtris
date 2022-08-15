@@ -71,6 +71,7 @@ let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 
+
 let didInstantDrop = false;
 
 function updatePlayerPos(
@@ -238,22 +239,8 @@ export function GameLoop() {
     const gameState = {
         setPlayerCells: null,
         setBoardCells: null,
+        isPlayerVisible: true,
     };
-
-    const res = (
-        <BoardStyled>
-            <PlayerComponent
-                key={"Player"}
-                gameState={gameState}
-                init={playerPhysics.adjustedCells.slice()}
-            />
-            <BoardComponent
-                gameState={gameState}
-                key={"Board"}
-                init={boardPhysics.boardCellMatrix.slice()}
-            />
-        </BoardStyled>
-    );
 
     const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
@@ -365,6 +352,7 @@ export function GameLoop() {
     function handleStates() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
+            gameState.isPlayerVisible = true;
             placedCells.clear();
             stateHandler.send("SPAWN");
             console.log("event: spawningBlock ~ SPAWN");
@@ -397,6 +385,7 @@ export function GameLoop() {
                 didInstantDrop = false;
 
                 stateHandler.send("LOCK");
+                gameState.isPlayerVisible = false;
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
@@ -528,6 +517,7 @@ export function GameLoop() {
                     console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
+                console.log('hi')
                 stateHandler.send("DONE");
                 console.log("event: playMatchAnimation ~ DONE");
             }
@@ -535,6 +525,21 @@ export function GameLoop() {
         // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
+
+    const res = (
+        <BoardStyled>
+            <PlayerComponent
+                key={"Player"}
+                gameState={gameState}
+                init={playerPhysics.adjustedCells.slice()}
+            />
+            <BoardComponent
+                gameState={gameState}
+                key={"Board"}
+                init={boardPhysics.boardCellMatrix.slice()}
+            />
+        </BoardStyled>
+    );
 
     return res;
 }

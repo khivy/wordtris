@@ -22,6 +22,7 @@ export const PlayerComponent = React.memo(
                     ? -interp.val.toString() + "%"
                     : "0%",
                 justifyContent: "center",
+                visibility: gameState.isPlayerVisible ? 'visible' : 'hidden',
                 zIndex: 1,
             };
             return (

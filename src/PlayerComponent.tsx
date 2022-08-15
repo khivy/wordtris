@@ -35,6 +35,6 @@ export const PlayerComponent = React.memo(
         });
 
         // Return an array of PlayerCells, adjusted to the 1-indexed CSS Grid.
-        return <React.Fragment>{adjustedCellsStyled}</React.Fragment>;
+        return <>{adjustedCellsStyled}</>;
     },
 );

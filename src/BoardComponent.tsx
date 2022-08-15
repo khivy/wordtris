@@ -21,6 +21,6 @@ export const BoardComponent = React.memo(
             ))
         );
 
-        return <React.Fragment>{boardCells}</React.Fragment>;
+        return <>{boardCells}</>;
     },
 );

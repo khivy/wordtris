@@ -7,9 +7,8 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
     const [playerCells, setPlayerCells] = useState(init); // Note: cells is not adjusted to the board.
     gameState.setPlayerCells = setPlayerCells;
 
-    const playerVisibility = React.useState(true); // Note: cells is not adjusted to the board.
-    gameState.setPlayerVisible = playerVisibility[1];
-    const isPlayerVisible = playerVisibility[0];
+    const [isPlayerVisible, setPlayerVisible] = React.useState(true); // Note: cells is not adjusted to the board.
+    gameState.setPlayerVisible = setPlayerVisible;
 
     const adjustedCellsStyled = playerCells.map((cell) => {
         const margin = ENABLE_SMOOTH_FALL ? interp.val : 0;

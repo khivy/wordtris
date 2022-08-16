@@ -6,6 +6,10 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
     // This function contains player information.
     const [playerCells, setPlayerCells] = useState(init); // Note: cells is not adjusted to the board.
     gameState.setPlayerCells = setPlayerCells;
+
+    const [isPlayerVisible, setPlayerVisible] = React.useState(true); // Note: cells is not adjusted to the board.
+    gameState.setPlayerVisible = setPlayerVisible;
+
     const adjustedCellsStyled = playerCells.map((cell) => {
         const margin = ENABLE_SMOOTH_FALL ? interp.val : 0;
         const divStyle = {
@@ -18,6 +22,9 @@ export const PlayerComponent = React.memo(({ gameState, init }) => {
             marginTop: `${margin}%`,
             marginBottom: `${-margin}%`,
             justifyContent: "center",
+            visibility: isPlayerVisible
+                ? "visible" as const
+                : "hidden" as const,
             zIndex: 1,
         };
         return (

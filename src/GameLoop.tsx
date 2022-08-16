@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -232,12 +233,6 @@ function updatePlayerPos(
     }
 }
 
-globalThis.addEventListener(
-    "keydown",
-    updatePlayerPos.bind(this, playerPhysics, boardPhysics),
-    false,
-); // Without bind it loses context.
-
 const gameState = {
     setPlayerCells: null,
     setPlayerVisible: null,
@@ -245,6 +240,16 @@ const gameState = {
 };
 
 export function GameLoop() {
+
+    useEffect(() => {
+        globalThis.addEventListener(
+            "keydown",
+            updatePlayerPos.bind(this, playerPhysics, boardPhysics),
+            false,
+        ); // Without bind it loses context.
+        return () => globalThis.removeEventListener("keydown", updatePlayerPos.bind(this, playerPhysics, boardPhysics));
+    });
+
     const res = (
         <BoardStyled>
             <PlayerComponent

@@ -535,17 +535,30 @@ export function GameLoop () {
     }
 
     return <>
-            <div style={AppStyle}>
-                <BoardStyled>
-                    <PlayerComponent
-                        isVisible={isPlayerVisible}
-                        adjustedCells={playerPhysics.adjustedCells}
-                    />
-                    <BoardComponent
-                        boardCellMatrix={boardPhysics.boardCellMatrix}
-                    />
-                </BoardStyled>
-                <div flex={1}>hi</div>
-            </div>
-        </>;
+
+        <div style={AppStyle}>
+            <BoardStyled>
+                <PlayerComponent
+                    isVisible={isPlayerVisible}
+                    adjustedCells={playerPhysics.adjustedCells}
+                />
+                <BoardComponent
+                    boardCellMatrix={boardPhysics.boardCellMatrix}
+                />
+            </BoardStyled>
+            <WordList displayedWords={['test', 'another']}/>
+        </div>
+    </>;
 }
+
+const wordStyle = {
+    display: 'block',
+    background: 'blue',
+}
+const WordList = React.memo(({ displayedWords }) => {
+    return <div display={'flex'} flex-direction={'column'}>
+        <>{displayedWords.map((word) =>
+            <div style={wordStyle}>{word}</div>)}
+        </>
+    </div>;
+};

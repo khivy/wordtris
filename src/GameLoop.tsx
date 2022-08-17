@@ -24,6 +24,7 @@ import {
     TBD,
 } from "./setup";
 
+// Unpack words that can be created.
 let validWords = null;
 fetch("lexicons/Google20000.txt")
     .then((response) => response.text())
@@ -32,6 +33,7 @@ fetch("lexicons/Google20000.txt")
         validWords = new Set(data.split("\n"));
     });
 
+// Style of encompassing board.
 export const BoardStyled = styled.div`
   display: grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
@@ -39,6 +41,7 @@ export const BoardStyled = styled.div`
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
+// Declaration of game states.
 const stateMachine = createMachine({
     initial: "spawningBlock",
     states: {
@@ -60,17 +63,15 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
 });
 stateHandler.start();
 
-let placedCells = new Set();
+// Various game logic vars.
+const placedCells = new Set(); /* Block cell coordinates that were placed on the current frame. */
 const matchedCells = new Set();
 let lockStart = null;
-
-// The amount of time it takes before a block locks in place.
-const lockMax = 1500;
+const lockMax = 1500; /* The amount of time it takes before a block locks in place. */
 let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
-
 let didInstantDrop = false;
 
 export function GameLoop() {
@@ -516,7 +517,8 @@ export function GameLoop() {
                     // Drop all characters.
                     const [added, _removed] = dropFloatingCells(newBoard);
                     boardPhysics.boardCellMatrix = newBoard;
-                    placedCells = new Set(added);
+                    placedCells.clear();
+                    added.forEach((coord) => placedCells.add(coord));
 
                     // Go back to checkingMatches to see if dropped letters causes more matches.
                     matchedCells.clear();
@@ -527,7 +529,6 @@ export function GameLoop() {
                 stateHandler.send("DONE");
             }
         }
-        // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
 

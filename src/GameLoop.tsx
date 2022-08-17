@@ -99,16 +99,10 @@ export function GameLoop() {
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
-        globalThis.addEventListener(
-            "keydown",
-            updatePlayerPos.bind(globalThis, playerPhysics, boardPhysics),
-            false,
-        ); // Without bind it loses context.
+        globalThis.addEventListener("keydown", updatePlayerPos);
     }, []);
 
     function updatePlayerPos(
-        playerPhysics: PlayerPhysics,
-        boardPhysics: BoardPhysics,
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
         if (!isPlayerMovementEnabled) {

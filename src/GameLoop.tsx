@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -95,19 +95,16 @@ export function GameLoop() {
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
     );
-
     const [isPlayerVisible, setPlayerVisibility] = useState(true);
-    // Placeholder vars to run functions only once.
-    const [_loop, _setLoop] = useState(() => {
+
+    useEffect(() => {
         globalThis.requestAnimationFrame(loop);
-    });
-    const [_keydownEvent, _setKeydownEvent] = useState(() => {
         globalThis.addEventListener(
             "keydown",
             updatePlayerPos.bind(globalThis, playerPhysics, boardPhysics),
             false,
         ); // Without bind it loses context.
-    });
+    }, []);
 
     function updatePlayerPos(
         playerPhysics: PlayerPhysics,

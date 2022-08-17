@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -63,7 +63,6 @@ stateHandler.start();
 let placedCells = new Set();
 const matchedCells = new Set();
 const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
-const playerPhysics = new PlayerPhysics(boardPhysics);
 let lockStart = null;
 
 // The amount of time it takes before a block locks in place.
@@ -231,6 +230,7 @@ function updatePlayerPos(
             }
         }
     }
+    playerPhysics.needsRerender = true;
 }
 
 const gameState = {
@@ -238,30 +238,27 @@ const gameState = {
     setPlayerVisible: null,
     setBoardCells: null,
 };
-
 export function GameLoop() {
+    const [playerPhysics, _setPlayerPhysics] = useState(
+        new PlayerPhysics(boardPhysics),
+    );
+    // Expose the variable that'll change often.
+    const [_adjustedCells, setAdjustedCells] = useState(
+        playerPhysics.adjustedCells,
+    );
+    const [isPlayerVisible, setPlayerVisibility] = useState(true);
 
-    useEffect(() => {
+    // Placeholder vars to run functions only once.
+    const [_loop, _setLoop] = useState(() => {
+        globalThis.requestAnimationFrame(loop);
+    });
+    const [_keydownEvent, _setKeydownEvent] = useState(() => {
         globalThis.addEventListener(
             "keydown",
             updatePlayerPos.bind(this, playerPhysics, boardPhysics),
             false,
         ); // Without bind it loses context.
-        return () => globalThis.removeEventListener("keydown", updatePlayerPos.bind(this, playerPhysics, boardPhysics));
     });
-
-    const res = (
-        <BoardStyled>
-            <PlayerComponent
-                gameState={gameState}
-                init={playerPhysics.adjustedCells.slice()}
-            />
-            <BoardComponent
-                gameState={gameState}
-                init={boardPhysics.boardCellMatrix.slice()}
-            />
-        </BoardStyled>
-    );
 
     const FPS = 60;
     // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
@@ -299,12 +296,12 @@ export function GameLoop() {
         }
 
         // Update rendering.
-        gameState.setPlayerCells(playerPhysics.adjustedCells);
+        setAdjustedCells(
+            playerPhysics.adjustedCells,
+        ); /* This works to re-render b.c. setPos() creates a new array. */
         gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
     }
-
-    globalThis.requestAnimationFrame(loop);
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
@@ -372,9 +369,10 @@ export function GameLoop() {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
             isPlayerMovementEnabled = true;
-            gameState.setPlayerVisible(true);
+            setPlayerVisibility(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
+            playerPhysics.needsRerender = true; // Re
             console.log("event: spawningBlock ~ SPAWN");
         } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
@@ -407,7 +405,7 @@ export function GameLoop() {
                 stateHandler.send("LOCK");
                 // Disable player block features.
                 isPlayerMovementEnabled = false;
-                gameState.setPlayerVisible(false);
+                setPlayerVisibility(false);
                 console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
@@ -547,5 +545,16 @@ export function GameLoop() {
         playerPhysics.hasMoved = false;
     }
 
-    return res;
+    return (
+        <BoardStyled>
+            <PlayerComponent
+                isVisible={isPlayerVisible}
+                adjustedCells={playerPhysics.adjustedCells}
+            />
+            <BoardComponent
+                gameState={gameState}
+                init={boardPhysics.boardCellMatrix.slice()}
+            />
+        </BoardStyled>
+    );
 }

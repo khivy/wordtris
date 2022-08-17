@@ -8,7 +8,7 @@ import { StrictMode } from "react";
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
     // <StrictMode> // Temporarily commented out to avoid Strict Mode's double-rendering during dev.
-        <GameLoop />
+    <GameLoop />,
     // </StrictMode>,
 );
 

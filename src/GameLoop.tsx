@@ -73,11 +73,6 @@ let isPlayerMovementEnabled = false;
 
 let didInstantDrop = false;
 
-const gameState = {
-    setPlayerCells: null,
-    setPlayerVisible: null,
-    setBoardCells: null,
-};
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(new BoardPhysics(BOARD_ROWS, BOARD_COLS));
     const [_boardCellMatrix, setBoardCellMatrix] = useState(boardPhysics.boardCellMatrix);
@@ -552,8 +547,7 @@ export function GameLoop() {
                 adjustedCells={playerPhysics.adjustedCells}
             />
             <BoardComponent
-                gameState={gameState}
-                init={boardPhysics.boardCellMatrix.slice()}
+                boardCellMatrix={boardPhysics.boardCellMatrix}
             />
         </BoardStyled>
     );

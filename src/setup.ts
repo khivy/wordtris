@@ -15,3 +15,4 @@ export const interp = { val: 0 };
 export const interpRate = 1;
 export const interpKeydownMult = 30;
 export const interpMax = 100;
+export const MAX_WORDLIST_LEN = 15;

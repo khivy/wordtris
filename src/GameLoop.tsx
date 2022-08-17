@@ -21,6 +21,7 @@ import {
     interpMax,
     interpRate,
     MIN_WORD_LENGTH,
+    MAX_WORDLIST_LEN,
     TBD,
 } from "./setup";
 
@@ -104,6 +105,8 @@ export function GameLoop () {
         playerPhysics.adjustedCells,
     );
     const [isPlayerVisible, setPlayerVisibility] = useState(true);
+
+    const [matchedWords, setMatchedWords] = useState([]);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -424,31 +427,12 @@ export function GameLoop () {
             affectedRows.forEach((r) => {
                 // Row words
                 const [row_left, row_right] = findWords(newBoard[r], false);
-                // const [row_leftR, row_rightR] = findWords(
-                //     boardPhysics.boardCellMatrix[r],
-                //     true,
-                // );
-                // // Use reversed word if longer.
-                // if (row_rightR - row_leftR > row_right - row_left) {
-                //     row_left = row_leftR;
-                //     row_right = row_rightR;
-                // }
                 // Remove word, but ignore when a candidate isn't found.
                 if (row_left !== -1) {
-                    // console.log(
-                    //     "removing word: ",
-                    //     row_rightR - row_leftR > row_right - row_left
-                    //         ? newBoard[r].slice(row_left, row_right + 1).map((
-                    //             cell,
-                    //         ) => cell.char).reverse().join("")
-                    //         : newBoard[r].slice(row_left, row_right + 1).map((
-                    //             cell,
-                    //         ) => cell.char).reverse().join(""),
-                    // );
-                    console.log(
+                    matchedWords.push(
                         newBoard[r].slice(row_left, row_right + 1).map((cell) =>
                             cell.char
-                        ).join(""),
+                        ).join("")
                     );
                     for (let i = row_left; i < row_right + 1; ++i) {
                         matchedCells.add([r, i]);
@@ -475,8 +459,7 @@ export function GameLoop () {
                 }
                 // Remove word, but ignore when a candidate isn't found.
                 if (col_top !== -1) {
-                    console.log(
-                        "removing word: ",
+                    matchedWords.push(
                         isColReversed
                             ? boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
@@ -485,7 +468,7 @@ export function GameLoop () {
                             : boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
-                                ).join(""),
+                                ).join("")
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
                         matchedCells.add([i, c]);
@@ -493,6 +476,11 @@ export function GameLoop () {
                     hasRemovedWord = true;
                 }
             });
+
+            while(matchedWords.length > MAX_WORDLIST_LEN) {
+                matchedWords.shift();
+            }
+            setMatchedWords(matchedWords.slice()); // TODO: If expensive, force a re-render in a cheaper way.
 
             // Remove characters
             matchedCells.forEach((coord) => {
@@ -546,19 +534,21 @@ export function GameLoop () {
                     boardCellMatrix={boardPhysics.boardCellMatrix}
                 />
             </BoardStyled>
-            <WordList displayedWords={['test', 'another']}/>
+            <WordList displayedWords={matchedWords}/>
         </div>
     </>;
 }
 
 const wordStyle = {
     display: 'block',
-    background: 'blue',
+    background: 'yellow',
 }
 const WordList = React.memo(({ displayedWords }) => {
     return <div display={'flex'} flex-direction={'column'}>
-        <>{displayedWords.map((word) =>
-            <div style={wordStyle}>{word}</div>)}
-        </>
+        <div >Matched Words</div>
+            <>{displayedWords.map((word) =>
+                <div key={word} style={wordStyle}>{word}</div>)}
+            </>
+
     </div>;
 };

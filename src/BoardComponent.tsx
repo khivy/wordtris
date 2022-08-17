@@ -3,7 +3,6 @@ import { useState } from "react";
 import { BoardCellStyled } from "./components/BoardCell";
 
 export const BoardComponent = React.memo(({ boardCellMatrix }) => {
-
     const boardCells = boardCellMatrix.map((row, r) =>
         row.map((cell, c) => (
             <BoardCellStyled

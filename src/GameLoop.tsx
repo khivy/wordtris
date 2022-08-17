@@ -59,29 +59,35 @@ const stateMachine = createMachine({
 
 // Handle states.
 const stateHandler = interpret(stateMachine).onTransition((state) => {
-    console.log('   STATE:', state.value);
+    console.log("   STATE:", state.value);
 });
 stateHandler.start();
 
 // Various game logic vars.
-const FPS = 60; /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
+const FPS =
+    60; /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
 const frameStep = 1000 / FPS;
 let accumFrameTime = 0;
 let prevFrameTime = performance.now();
-const placedCells = new Set(); /* Block cell coordinates that were placed on the current frame. */
+const placedCells =
+    new Set(); /* Block cell coordinates that were placed on the current frame. */
 const matchedCells = new Set();
 let lockStart = null;
-const lockMax = 1500; /* The amount of time it takes before a block locks in place. */
+const lockMax =
+    1500; /* The amount of time it takes before a block locks in place. */
 let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
 let didInstantDrop = false;
 
-
 export function GameLoop() {
-    const [boardPhysics, _setBoardPhysics] = useState(new BoardPhysics(BOARD_ROWS, BOARD_COLS));
-    const [_boardCellMatrix, setBoardCellMatrix] = useState(boardPhysics.boardCellMatrix);
+    const [boardPhysics, _setBoardPhysics] = useState(
+        new BoardPhysics(BOARD_ROWS, BOARD_COLS),
+    );
+    const [_boardCellMatrix, setBoardCellMatrix] = useState(
+        boardPhysics.boardCellMatrix,
+    );
 
     const [playerPhysics, _setPlayerPhysics] = useState(
         new PlayerPhysics(boardPhysics),
@@ -129,7 +135,7 @@ export function GameLoop() {
                 (!ENABLE_SMOOTH_FALL ||
                     playerPhysics.isInRBounds(
                         playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -149,7 +155,7 @@ export function GameLoop() {
                 (!ENABLE_SMOOTH_FALL ||
                     playerPhysics.isInRBounds(
                         playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -262,7 +268,6 @@ export function GameLoop() {
         }
         playerPhysics.needsRerender = true;
     }
-
 
     function loop(timestamp) {
         const curTime = performance.now();

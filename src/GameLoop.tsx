@@ -34,11 +34,19 @@ fetch("lexicons/Google20000.txt")
     });
 
 // Style of encompassing board.
-export const BoardStyled = styled.div`
-  display: grid;
+const BoardStyled = styled.div`
+  display: inline-grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
   grid-template-columns: repeat(${BOARD_COLS}, 30px);
+  border: solid red 4px;
 `;
+
+
+const AppStyle = {
+    display: 'flex',
+    border: 'solid green 4px',
+    flexWrap: 'wrap',
+}
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -81,7 +89,7 @@ let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
 let didInstantDrop = false;
 
-export function GameLoop() {
+export function GameLoop () {
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
     );
@@ -102,7 +110,7 @@ export function GameLoop() {
         globalThis.addEventListener("keydown", updatePlayerPos);
     }, []);
 
-    function updatePlayerPos(
+    function updatePlayerPos (
         { keyCode, repeat }: { keyCode: number; repeat: boolean },
     ): void {
         if (!isPlayerMovementEnabled) {
@@ -125,7 +133,7 @@ export function GameLoop() {
                 (!ENABLE_SMOOTH_FALL ||
                     playerPhysics.isInRBounds(
                         playerPhysics.getAdjustedBottomR() +
-                            Math.ceil(interp.val / interpMax),
+                        Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -145,7 +153,7 @@ export function GameLoop() {
                 (!ENABLE_SMOOTH_FALL ||
                     playerPhysics.isInRBounds(
                         playerPhysics.getAdjustedBottomR() +
-                            Math.ceil(interp.val / interpMax),
+                        Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -259,7 +267,7 @@ export function GameLoop() {
         playerPhysics.needsRerender = true;
     }
 
-    function loop(timestamp) {
+    function loop (timestamp) {
         const curTime = performance.now();
         accumFrameTime += curTime - prevFrameTime;
         prevFrameTime = curTime;
@@ -281,7 +289,7 @@ export function GameLoop() {
             if (
                 boardPhysics
                     .boardCellMatrix[playerPhysics.spawnPos[0]][
-                        playerPhysics.spawnPos[1]
+                    playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
                 boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
@@ -297,13 +305,13 @@ export function GameLoop() {
         globalThis.requestAnimationFrame(loop);
     }
 
-    function isPlayerTouchingGround() {
+    function isPlayerTouchingGround () {
         return playerPhysics.adjustedCells.some((cell) => {
             return cell.r >= boardPhysics.getGroundHeight(cell.c, cell.r);
         });
     }
 
-    function dropFloatingCells(board: BoardCell[][]): number[][] {
+    function dropFloatingCells (board: BoardCell[][]): number[][] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
         const added = [];
         const removed = [];
@@ -325,7 +333,7 @@ export function GameLoop() {
         return [added, removed];
     }
 
-    function findWords(arr: UserCell[], reversed: boolean): number[] {
+    function findWords (arr: UserCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()
@@ -357,7 +365,7 @@ export function GameLoop() {
             : [resLeft, resRight];
     }
 
-    function handleStates() {
+    function handleStates () {
         if ("spawningBlock" == stateHandler.state.value) {
             isPlayerMovementEnabled = true;
             setPlayerVisibility(true);
@@ -526,15 +534,18 @@ export function GameLoop() {
         playerPhysics.hasMoved = false;
     }
 
-    return (
-        <BoardStyled>
-            <PlayerComponent
-                isVisible={isPlayerVisible}
-                adjustedCells={playerPhysics.adjustedCells}
-            />
-            <BoardComponent
-                boardCellMatrix={boardPhysics.boardCellMatrix}
-            />
-        </BoardStyled>
-    );
+    return <>
+            <div style={AppStyle}>
+                <BoardStyled>
+                    <PlayerComponent
+                        isVisible={isPlayerVisible}
+                        adjustedCells={playerPhysics.adjustedCells}
+                    />
+                    <BoardComponent
+                        boardCellMatrix={boardPhysics.boardCellMatrix}
+                    />
+                </BoardStyled>
+                <div flex={1}>hi</div>
+            </div>
+        </>;
 }

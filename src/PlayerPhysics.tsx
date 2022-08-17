@@ -27,7 +27,6 @@ export class PlayerPhysics {
     needsRerender: boolean;
 
     constructor(boardPhysics: BoardPhysics) {
-        console.log("constructing PlayerPhysics");
         this.layout = [
             [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, TBD, EMPTY, EMPTY],

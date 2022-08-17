@@ -56,7 +56,7 @@ const stateMachine = createMachine({
 
 // Handle states.
 const stateHandler = interpret(stateMachine).onTransition((state) => {
-    // TODO
+    console.log('   STATE:', state.value);
 });
 stateHandler.start();
 
@@ -363,26 +363,22 @@ export function GameLoop() {
     }
 
     function handleStates() {
-        // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
             isPlayerMovementEnabled = true;
             setPlayerVisibility(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
             playerPhysics.needsRerender = true; // Re
-            console.log("event: spawningBlock ~ SPAWN");
         } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
                 stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
-                console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
         } else if ("lockDelay" == stateHandler.state.value) {
             const lockTime = performance.now() - lockStart;
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
-            console.log(lockStart);
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
@@ -403,7 +399,6 @@ export function GameLoop() {
                 // Disable player block features.
                 isPlayerMovementEnabled = false;
                 setPlayerVisibility(false);
-                console.log("event: lockDelay ~ SEND");
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
@@ -412,7 +407,6 @@ export function GameLoop() {
             );
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
-            console.log("event: fallingLetters ~ GROUNDED");
         } else if ("checkingMatches" == stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardPhysics.boardCellMatrix.slice();
@@ -508,7 +502,6 @@ export function GameLoop() {
                 matchAnimStart = performance.now();
             }
             stateHandler.send("PLAYING_ANIM");
-            console.log("event: checkingMatches ~ PLAYING_ANIM");
         } else if ("playMatchAnimation" == stateHandler.state.value) {
             if (isMatchChaining) {
                 const animTime = performance.now() - matchAnimStart;
@@ -529,11 +522,9 @@ export function GameLoop() {
                     matchedCells.clear();
                     isMatchChaining = false;
                     stateHandler.send("DO_CHAIN");
-                    console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
                 stateHandler.send("DONE");
-                console.log("event: playMatchAnimation ~ DONE");
             }
         }
         // TODO: Move this to a playerUpdate function.

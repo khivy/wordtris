@@ -92,7 +92,6 @@ export function GameLoop() {
     const [playerPhysics, _setPlayerPhysics] = useState(
         new PlayerPhysics(boardPhysics),
     );
-    // Expose the variable that'll change often.
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
     );
@@ -105,7 +104,7 @@ export function GameLoop() {
     const [_keydownEvent, _setKeydownEvent] = useState(() => {
         globalThis.addEventListener(
             "keydown",
-            updatePlayerPos.bind(this, playerPhysics, boardPhysics),
+            updatePlayerPos.bind(globalThis, playerPhysics, boardPhysics),
             false,
         ); // Without bind it loses context.
     });

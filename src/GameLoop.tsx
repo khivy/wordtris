@@ -66,9 +66,9 @@ stateHandler.start();
 // Various game logic vars.
 
 /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
-const FPS = 60;
+const framesPerSecLimit = 60;
 
-const frameStep = 1000 / FPS;
+const frameStep = 1000 / framesPerSecLimit;
 let accumFrameTime = 0;
 let prevFrameTime = performance.now();
 

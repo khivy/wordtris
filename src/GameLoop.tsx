@@ -64,6 +64,10 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
 stateHandler.start();
 
 // Various game logic vars.
+const FPS = 60; /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
+const frameStep = 1000 / FPS;
+let accumFrameTime = 0;
+let prevFrameTime = performance.now();
 const placedCells = new Set(); /* Block cell coordinates that were placed on the current frame. */
 const matchedCells = new Set();
 let lockStart = null;
@@ -73,6 +77,7 @@ const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
 let didInstantDrop = false;
+
 
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(new BoardPhysics(BOARD_ROWS, BOARD_COLS));
@@ -98,12 +103,6 @@ export function GameLoop() {
             false,
         ); // Without bind it loses context.
     });
-
-    const FPS = 60;
-    // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
-    const frameStep = 1000 / FPS;
-    let accum = 0;
-    let prevTime = performance.now();
 
     function updatePlayerPos(
         playerPhysics: PlayerPhysics,
@@ -267,12 +266,12 @@ export function GameLoop() {
 
     function loop(timestamp) {
         const curTime = performance.now();
-        accum += curTime - prevTime;
-        prevTime = curTime;
+        accumFrameTime += curTime - prevFrameTime;
+        prevFrameTime = curTime;
 
         // Update physics.
-        while (accum >= frameStep) {
-            accum -= frameStep;
+        while (accumFrameTime >= frameStep) {
+            accumFrameTime -= frameStep;
             handleStates();
             if (isPlayerMovementEnabled) {
                 const dr = playerPhysics.doGradualFall(

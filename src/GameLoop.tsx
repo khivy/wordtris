@@ -62,7 +62,6 @@ stateHandler.start();
 
 let placedCells = new Set();
 const matchedCells = new Set();
-const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
 let lockStart = null;
 
 // The amount of time it takes before a block locks in place.
@@ -239,6 +238,9 @@ const gameState = {
     setBoardCells: null,
 };
 export function GameLoop() {
+    const [boardPhysics, _setBoardPhysics] = useState(new BoardPhysics(BOARD_ROWS, BOARD_COLS));
+    const [_boardCellMatrix, setBoardCellMatrix] = useState(boardPhysics.boardCellMatrix);
+
     const [playerPhysics, _setPlayerPhysics] = useState(
         new PlayerPhysics(boardPhysics),
     );
@@ -246,8 +248,8 @@ export function GameLoop() {
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
     );
-    const [isPlayerVisible, setPlayerVisibility] = useState(true);
 
+    const [isPlayerVisible, setPlayerVisibility] = useState(true);
     // Placeholder vars to run functions only once.
     const [_loop, _setLoop] = useState(() => {
         globalThis.requestAnimationFrame(loop);
@@ -299,7 +301,8 @@ export function GameLoop() {
         setAdjustedCells(
             playerPhysics.adjustedCells,
         ); /* This works to re-render b.c. setPos() creates a new array. */
-        gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        setBoardCellMatrix(boardPhysics.boardCellMatrix);
+        // gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
     }
 
@@ -362,8 +365,6 @@ export function GameLoop() {
             ]
             : [resLeft, resRight];
     }
-
-    // Might be worth it to move this to GameLoop.
 
     function handleStates() {
         // console.log(stateHandler.state.value)

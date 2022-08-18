@@ -2,11 +2,8 @@ import * as React from "react";
 import { useState } from "react";
 import { BoardCellStyled } from "./components/BoardCell";
 
-export const BoardComponent = React.memo(({ gameState, init }) => {
-    const [board, setBoard] = useState(init);
-    gameState.setBoardCells = setBoard;
-
-    const boardCells = board.map((row, r) =>
+export const BoardComponent = React.memo(({ boardCellMatrix }) => {
+    const boardCells = boardCellMatrix.map((row, r) =>
         row.map((cell, c) => (
             <BoardCellStyled
                 key={`cell(${r.toString()},${c.toString()})`}

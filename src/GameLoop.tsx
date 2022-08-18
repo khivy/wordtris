@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -23,6 +24,7 @@ import {
     TBD,
 } from "./setup";
 
+// Unpack words that can be created.
 let validWords = null;
 fetch("lexicons/Google20000.txt")
     .then((response) => response.text())
@@ -31,6 +33,7 @@ fetch("lexicons/Google20000.txt")
         validWords = new Set(data.split("\n"));
     });
 
+// Style of encompassing board.
 export const BoardStyled = styled.div`
   display: grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
@@ -38,6 +41,7 @@ export const BoardStyled = styled.div`
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
+// Declaration of game states.
 const stateMachine = createMachine({
     initial: "spawningBlock",
     states: {
@@ -55,223 +59,220 @@ const stateMachine = createMachine({
 
 // Handle states.
 const stateHandler = interpret(stateMachine).onTransition((state) => {
-    // TODO
+    console.log("   STATE:", state.value);
 });
 stateHandler.start();
 
-let placedCells = new Set();
+// Various game logic vars.
+
+/* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
+const framesPerSecLimit = 60;
+
+const frameStep = 1000 / framesPerSecLimit;
+let accumFrameTime = 0;
+let prevFrameTime = performance.now();
+
+/* Block cell coordinates that were placed/dropped.. */
+const placedCells = new Set();
+
 const matchedCells = new Set();
-const boardPhysics = new BoardPhysics(BOARD_ROWS, BOARD_COLS);
-const playerPhysics = new PlayerPhysics(boardPhysics);
 let lockStart = null;
 
-// The amount of time it takes before a block locks in place.
+/* The amount of time it takes before a block locks in place. */
 const lockMax = 1500;
+
 let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
-
 let didInstantDrop = false;
 
-function updatePlayerPos(
-    playerPhysics: PlayerPhysics,
-    boardPhysics: BoardPhysics,
-    { keyCode, repeat }: { keyCode: number; repeat: boolean },
-): void {
-    if (!isPlayerMovementEnabled) {
-        return;
-    }
-    const board = boardPhysics.boardCellMatrix;
-    const r = playerPhysics.pos[0];
-    const c = playerPhysics.pos[1];
-    const areTargetSpacesEmpty = (dr, dc) =>
-        playerPhysics.adjustedCells.every((cell) => {
-            return board[cell.r + dr][cell.c + dc].char === EMPTY;
-        });
-    if (keyCode === 37) {
-        // Left
-        if (
-            playerPhysics.isInCBounds(
-                playerPhysics.getAdjustedLeftmostC() - 1,
-            ) &&
-            // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
-            (!ENABLE_SMOOTH_FALL ||
-                playerPhysics.isInRBounds(
-                    playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
-                )) &&
-            areTargetSpacesEmpty(
-                Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
-                -1,
-            )
-        ) {
-            playerPhysics.setPos(r, c - 1);
-            playerPhysics.hasMoved = true;
-        }
-    } else if (keyCode === 39) {
-        // Right
-        if (
-            playerPhysics.isInCBounds(
-                playerPhysics.getAdjustedRightmostC() + 1,
-            ) &&
-            // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
-            (!ENABLE_SMOOTH_FALL ||
-                playerPhysics.isInRBounds(
-                    playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
-                )) &&
-            areTargetSpacesEmpty(
-                Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
-                1,
-            )
-        ) {
-            playerPhysics.setPos(r, c + 1);
-            playerPhysics.hasMoved = true;
-        }
-    } else if (keyCode === 40) {
-        // Down
-        if (repeat) {
-            // TODO: Handle repeated downkey.
-        }
-        if (
-            playerPhysics.getAdjustedBottomR() + 1 < BOARD_ROWS &&
-            areTargetSpacesEmpty(1, 0)
-        ) {
-            if (ENABLE_SMOOTH_FALL) {
-                interp.val += interpRate * interpKeydownMult;
-            } else {
-                playerPhysics.setPos(r + 1, c);
-            }
-        }
-    } else if (keyCode === 38) {
-        // Up key
-        if (ENABLE_INSTANT_DROP) {
-            let ground_row = boardPhysics.rows;
-            playerPhysics.adjustedCells.forEach((cell) =>
-                ground_row = Math.min(
-                    ground_row,
-                    boardPhysics.getGroundHeight(cell.c, cell.r),
-                )
-            );
-            const mid = Math.floor(playerPhysics.layout.length / 2);
-            // Offset with the lowest cell, centered around layout's midpoint.
-            let dy = 0;
-            playerPhysics.cells.forEach((cell) =>
-                dy = Math.max(dy, cell.r - mid)
-            );
-            playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
-            playerPhysics.hasMoved = true;
-            didInstantDrop = true;
-        } else if (
-            _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
-            areTargetSpacesEmpty(-1, 0)
-        ) {
-            playerPhysics.setPos(r - 1, c);
-            playerPhysics.hasMoved = true;
-        }
-    } else if (keyCode == 32) {
-        // Space bar.
-        const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
-        let rotatedCellsAdjusted = rotatedCells.map((cell) =>
-            playerPhysics.getAdjustedUserCell(cell)
-        );
+export function GameLoop() {
+    const [boardPhysics, _setBoardPhysics] = useState(
+        new BoardPhysics(BOARD_ROWS, BOARD_COLS),
+    );
+    const [_boardCellMatrix, setBoardCellMatrix] = useState(
+        boardPhysics.boardCellMatrix,
+    );
 
-        // Get the overlapping cell's respective index in non-adjusted array.
-        let overlappingI = 0;
-        const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
-            if (
-                !playerPhysics.isInCBounds(cell.c) ||
-                !playerPhysics.isInRBounds(cell.r) ||
-                board[cell.r][cell.c].char !== EMPTY
-            ) {
-                overlappingI = i;
-                return true;
-            }
-            return false;
-        });
-        // If there's no overlap, place it. Otherwise, shift it in the opposite direction of the overlapping cell.
-        if (overlappingCells.length <= 0) {
-            // If rotation puts a block right underneath a placed block, set interp to 0.
-            const isAdjacentToGround = rotatedCellsAdjusted.some((cell) => {
-                return !playerPhysics.isInRBounds(cell.r + 1) ||
-                    board[cell.r + 1][cell.c].char !== EMPTY;
+    const [playerPhysics, _setPlayerPhysics] = useState(
+        new PlayerPhysics(boardPhysics),
+    );
+    const [_adjustedCells, setAdjustedCells] = useState(
+        playerPhysics.adjustedCells,
+    );
+    const [isPlayerVisible, setPlayerVisibility] = useState(true);
+
+    useEffect(() => {
+        globalThis.requestAnimationFrame(loop);
+        globalThis.addEventListener("keydown", updatePlayerPos);
+    }, []);
+
+    function updatePlayerPos(
+        { keyCode, repeat }: { keyCode: number; repeat: boolean },
+    ): void {
+        if (!isPlayerMovementEnabled) {
+            return;
+        }
+        const board = boardPhysics.boardCellMatrix;
+        const r = playerPhysics.pos[0];
+        const c = playerPhysics.pos[1];
+        const areTargetSpacesEmpty = (dr, dc) =>
+            playerPhysics.adjustedCells.every((cell) => {
+                return board[cell.r + dr][cell.c + dc].char === EMPTY;
             });
-            if (isAdjacentToGround) {
-                interp.val = 0;
+        if (keyCode === 37) {
+            // Left
+            if (
+                playerPhysics.isInCBounds(
+                    playerPhysics.getAdjustedLeftmostC() - 1,
+                ) &&
+                // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
+                (!ENABLE_SMOOTH_FALL ||
+                    playerPhysics.isInRBounds(
+                        playerPhysics.getAdjustedBottomR() +
+                            Math.ceil(interp.val / interpMax),
+                    )) &&
+                areTargetSpacesEmpty(
+                    Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
+                    -1,
+                )
+            ) {
+                playerPhysics.setPos(r, c - 1);
+                playerPhysics.hasMoved = true;
             }
-            playerPhysics.cells = rotatedCells;
-            playerPhysics.adjustedCells = rotatedCellsAdjusted;
-            playerPhysics.hasMoved = true;
-        } else {
-            // Get direction of overlapping cell.
-            const dr = Math.floor(playerPhysics.layout.length / 2) -
-                rotatedCells[overlappingI].r;
-            const dc = Math.floor(playerPhysics.layout[0].length / 2) -
-                rotatedCells[overlappingI].c;
-            // Shift it.
-            for (const cell of rotatedCells) {
-                cell.r += dr;
-                cell.c += dc;
+        } else if (keyCode === 39) {
+            // Right
+            if (
+                playerPhysics.isInCBounds(
+                    playerPhysics.getAdjustedRightmostC() + 1,
+                ) &&
+                // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
+                (!ENABLE_SMOOTH_FALL ||
+                    playerPhysics.isInRBounds(
+                        playerPhysics.getAdjustedBottomR() +
+                            Math.ceil(interp.val / interpMax),
+                    )) &&
+                areTargetSpacesEmpty(
+                    Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
+                    1,
+                )
+            ) {
+                playerPhysics.setPos(r, c + 1);
+                playerPhysics.hasMoved = true;
             }
-            rotatedCellsAdjusted = rotatedCells.map((cell) =>
+        } else if (keyCode === 40) {
+            // Down
+            if (repeat) {
+                // TODO: Handle repeated downkey.
+            }
+            if (
+                playerPhysics.getAdjustedBottomR() + 1 < BOARD_ROWS &&
+                areTargetSpacesEmpty(1, 0)
+            ) {
+                if (ENABLE_SMOOTH_FALL) {
+                    interp.val += interpRate * interpKeydownMult;
+                } else {
+                    playerPhysics.setPos(r + 1, c);
+                }
+            }
+        } else if (keyCode === 38) {
+            // Up key
+            if (ENABLE_INSTANT_DROP) {
+                let ground_row = boardPhysics.rows;
+                playerPhysics.adjustedCells.forEach((cell) =>
+                    ground_row = Math.min(
+                        ground_row,
+                        boardPhysics.getGroundHeight(cell.c, cell.r),
+                    )
+                );
+                const mid = Math.floor(playerPhysics.layout.length / 2);
+                // Offset with the lowest cell, centered around layout's midpoint.
+                let dy = 0;
+                playerPhysics.cells.forEach((cell) =>
+                    dy = Math.max(dy, cell.r - mid)
+                );
+                playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
+                playerPhysics.hasMoved = true;
+                didInstantDrop = true;
+            } else if (
+                _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
+                areTargetSpacesEmpty(-1, 0)
+            ) {
+                playerPhysics.setPos(r - 1, c);
+                playerPhysics.hasMoved = true;
+            }
+        } else if (keyCode == 32) {
+            // Space bar.
+            const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
+            let rotatedCellsAdjusted = rotatedCells.map((cell) =>
                 playerPhysics.getAdjustedUserCell(cell)
             );
-            // Check for overlaps with shifted cells.
-            const isOverlapping = rotatedCellsAdjusted.some((cell, i) =>
-                !playerPhysics.isInCBounds(cell.c) ||
-                !playerPhysics.isInRBounds(cell.r) ||
-                board[cell.r][cell.c].char !== EMPTY
-            );
-            if (!isOverlapping) {
+
+            // Get the overlapping cell's respective index in non-adjusted array.
+            let overlappingI = 0;
+            const overlappingCells = rotatedCellsAdjusted.filter((cell, i) => {
+                if (
+                    !playerPhysics.isInCBounds(cell.c) ||
+                    !playerPhysics.isInRBounds(cell.r) ||
+                    board[cell.r][cell.c].char !== EMPTY
+                ) {
+                    overlappingI = i;
+                    return true;
+                }
+                return false;
+            });
+            // If there's no overlap, place it. Otherwise, shift it in the opposite direction of the overlapping cell.
+            if (overlappingCells.length <= 0) {
+                // If rotation puts a block right underneath a placed block, set interp to 0.
+                const isAdjacentToGround = rotatedCellsAdjusted.some((cell) => {
+                    return !playerPhysics.isInRBounds(cell.r + 1) ||
+                        board[cell.r + 1][cell.c].char !== EMPTY;
+                });
+                if (isAdjacentToGround) {
+                    interp.val = 0;
+                }
                 playerPhysics.cells = rotatedCells;
                 playerPhysics.adjustedCells = rotatedCellsAdjusted;
                 playerPhysics.hasMoved = true;
+            } else {
+                // Get direction of overlapping cell.
+                const dr = Math.floor(playerPhysics.layout.length / 2) -
+                    rotatedCells[overlappingI].r;
+                const dc = Math.floor(playerPhysics.layout[0].length / 2) -
+                    rotatedCells[overlappingI].c;
+                // Shift it.
+                for (const cell of rotatedCells) {
+                    cell.r += dr;
+                    cell.c += dc;
+                }
+                rotatedCellsAdjusted = rotatedCells.map((cell) =>
+                    playerPhysics.getAdjustedUserCell(cell)
+                );
+                // Check for overlaps with shifted cells.
+                const isOverlapping = rotatedCellsAdjusted.some((cell, i) =>
+                    !playerPhysics.isInCBounds(cell.c) ||
+                    !playerPhysics.isInRBounds(cell.r) ||
+                    board[cell.r][cell.c].char !== EMPTY
+                );
+                if (!isOverlapping) {
+                    playerPhysics.cells = rotatedCells;
+                    playerPhysics.adjustedCells = rotatedCellsAdjusted;
+                    playerPhysics.hasMoved = true;
+                }
             }
         }
+        playerPhysics.needsRerender = true;
     }
-}
-
-globalThis.addEventListener(
-    "keydown",
-    updatePlayerPos.bind(this, playerPhysics, boardPhysics),
-    false,
-); // Without bind it loses context.
-
-const gameState = {
-    setPlayerCells: null,
-    setPlayerVisible: null,
-    setBoardCells: null,
-};
-
-export function GameLoop() {
-    const res = (
-        <BoardStyled>
-            <PlayerComponent
-                gameState={gameState}
-                init={playerPhysics.adjustedCells.slice()}
-            />
-            <BoardComponent
-                gameState={gameState}
-                init={boardPhysics.boardCellMatrix.slice()}
-            />
-        </BoardStyled>
-    );
-
-    const FPS = 60;
-    // Note: with 60 FPS, this is a float (16.666..7). Might run into issues.
-    const frameStep = 1000 / FPS;
-    let accum = 0;
-    let prevTime = performance.now();
 
     function loop(timestamp) {
         const curTime = performance.now();
-        accum += curTime - prevTime;
-        prevTime = curTime;
+        accumFrameTime += curTime - prevFrameTime;
+        prevFrameTime = curTime;
 
         // Update physics.
-        while (accum >= frameStep) {
-            accum -= frameStep;
+        while (accumFrameTime >= frameStep) {
+            accumFrameTime -= frameStep;
             handleStates();
             if (isPlayerMovementEnabled) {
                 const dr = playerPhysics.doGradualFall(
@@ -294,12 +295,14 @@ export function GameLoop() {
         }
 
         // Update rendering.
-        gameState.setPlayerCells(playerPhysics.adjustedCells);
-        gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        /* This works to re-render b.c. setPos() creates a new array. */
+        setAdjustedCells(
+            playerPhysics.adjustedCells,
+        );
+        setBoardCellMatrix(boardPhysics.boardCellMatrix);
+        // gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
     }
-
-    globalThis.requestAnimationFrame(loop);
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
@@ -361,28 +364,23 @@ export function GameLoop() {
             : [resLeft, resRight];
     }
 
-    // Might be worth it to move this to GameLoop.
-
     function handleStates() {
-        // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
             isPlayerMovementEnabled = true;
-            gameState.setPlayerVisible(true);
+            setPlayerVisibility(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
-            console.log("event: spawningBlock ~ SPAWN");
+            playerPhysics.needsRerender = true;
         } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
                 stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
-                console.log("event: placingBlock ~ TOUCHINGBLOCK");
             }
         } else if ("lockDelay" == stateHandler.state.value) {
             const lockTime = performance.now() - lockStart;
 
             // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
             // if the previous touched ground height is the same as the current one.
-            console.log(lockStart);
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
@@ -402,8 +400,7 @@ export function GameLoop() {
                 stateHandler.send("LOCK");
                 // Disable player block features.
                 isPlayerMovementEnabled = false;
-                gameState.setPlayerVisible(false);
-                console.log("event: lockDelay ~ SEND");
+                setPlayerVisibility(false);
             }
         } else if ("fallingLetters" == stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
@@ -412,7 +409,6 @@ export function GameLoop() {
             );
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
-            console.log("event: fallingLetters ~ GROUNDED");
         } else if ("checkingMatches" == stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardPhysics.boardCellMatrix.slice();
@@ -502,15 +498,12 @@ export function GameLoop() {
                 // newBoard[coord[0]][coord[1]].char = EMPTY;
                 newBoard[coord[0]][coord[1]].hasMatched = true;
             });
-
-            // Allow React to see changes.
             boardPhysics.boardCellMatrix = newBoard;
             if (hasRemovedWord) {
                 isMatchChaining = true;
                 matchAnimStart = performance.now();
             }
             stateHandler.send("PLAYING_ANIM");
-            console.log("event: checkingMatches ~ PLAYING_ANIM");
         } else if ("playMatchAnimation" == stateHandler.state.value) {
             if (isMatchChaining) {
                 const animTime = performance.now() - matchAnimStart;
@@ -525,22 +518,30 @@ export function GameLoop() {
                     // Drop all characters.
                     const [added, _removed] = dropFloatingCells(newBoard);
                     boardPhysics.boardCellMatrix = newBoard;
-                    placedCells = new Set(added);
+                    placedCells.clear();
+                    added.forEach((coord) => placedCells.add(coord));
 
                     // Go back to checkingMatches to see if dropped letters causes more matches.
                     matchedCells.clear();
                     isMatchChaining = false;
                     stateHandler.send("DO_CHAIN");
-                    console.log("event: playMatchAnimation ~ DO_CHAIN");
                 }
             } else {
                 stateHandler.send("DONE");
-                console.log("event: playMatchAnimation ~ DONE");
             }
         }
-        // TODO: Move this to a playerUpdate function.
         playerPhysics.hasMoved = false;
     }
 
-    return res;
+    return (
+        <BoardStyled>
+            <PlayerComponent
+                isVisible={isPlayerVisible}
+                adjustedCells={playerPhysics.adjustedCells}
+            />
+            <BoardComponent
+                boardCellMatrix={boardPhysics.boardCellMatrix}
+            />
+        </BoardStyled>
+    );
 }

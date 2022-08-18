@@ -24,6 +24,7 @@ export class PlayerPhysics {
     spawnPos: [number, number];
     layout: string[][];
     hasMoved: boolean;
+    needsRerender: boolean;
 
     constructor(boardPhysics: BoardPhysics) {
         this.layout = [
@@ -36,6 +37,7 @@ export class PlayerPhysics {
         this.spawnPos = [1, 3];
         this.resetBlock();
         this.hasMoved = false;
+        this.needsRerender = false;
     }
 
     setPos(r: number, c: number) {
@@ -117,6 +119,7 @@ export class PlayerPhysics {
             dr += 1;
             interp.val -= interpMax;
             this.hasMoved = true;
+            this.needsRerender = true;
         }
         return dr;
     }

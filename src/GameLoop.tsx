@@ -89,6 +89,7 @@ const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
 let didInstantDrop = false;
+let totalMatchedWords = 0;
 
 export function GameLoop () {
     const [boardPhysics, _setBoardPhysics] = useState(
@@ -434,6 +435,7 @@ export function GameLoop () {
                             cell.char
                         ).join("")
                     );
+                    totalMatchedWords++;
                     for (let i = row_left; i < row_right + 1; ++i) {
                         matchedCells.add([r, i]);
                     }
@@ -470,6 +472,7 @@ export function GameLoop () {
                                     cell.char
                                 ).join("")
                     );
+                    totalMatchedWords++;
                     for (let i = col_top; i < col_bot + 1; ++i) {
                         matchedCells.add([i, c]);
                     }
@@ -545,7 +548,7 @@ const wordStyle = {
 }
 const WordList = React.memo(({ displayedWords }) => {
     return <div display={'flex'} flex-direction={'column'}>
-        <div >Matched Words</div>
+        <div >Matched Words ({totalMatchedWords})</div>
             <>{displayedWords.map((word) =>
                 <div key={word} style={wordStyle}>{word}</div>)}
             </>

@@ -74,7 +74,7 @@ let isPlayerMovementEnabled = false;
 
 let didInstantDrop = false;
 
-function updatePlayerPos(
+function updatePlayerPos (
     playerPhysics: PlayerPhysics,
     boardPhysics: BoardPhysics,
     { keyCode, repeat }: { keyCode: number; repeat: boolean },
@@ -91,6 +91,7 @@ function updatePlayerPos(
         });
     if (keyCode === 37) {
         // Left
+        if (repeat) console.log('hi')
         if (
             playerPhysics.isInCBounds(
                 playerPhysics.getAdjustedLeftmostC() - 1,
@@ -99,7 +100,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                    Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -119,7 +120,7 @@ function updatePlayerPos(
             (!ENABLE_SMOOTH_FALL ||
                 playerPhysics.isInRBounds(
                     playerPhysics.getAdjustedBottomR() +
-                        Math.ceil(interp.val / interpMax),
+                    Math.ceil(interp.val / interpMax),
                 )) &&
             areTargetSpacesEmpty(
                 Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
@@ -145,32 +146,6 @@ function updatePlayerPos(
             }
         }
     } else if (keyCode === 38) {
-        // Up key
-        if (ENABLE_INSTANT_DROP) {
-            let ground_row = boardPhysics.rows;
-            playerPhysics.adjustedCells.forEach((cell) =>
-                ground_row = Math.min(
-                    ground_row,
-                    boardPhysics.getGroundHeight(cell.c, cell.r),
-                )
-            );
-            const mid = Math.floor(playerPhysics.layout.length / 2);
-            // Offset with the lowest cell, centered around layout's midpoint.
-            let dy = 0;
-            playerPhysics.cells.forEach((cell) =>
-                dy = Math.max(dy, cell.r - mid)
-            );
-            playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
-            playerPhysics.hasMoved = true;
-            didInstantDrop = true;
-        } else if (
-            _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
-            areTargetSpacesEmpty(-1, 0)
-        ) {
-            playerPhysics.setPos(r - 1, c);
-            playerPhysics.hasMoved = true;
-        }
-    } else if (keyCode == 32) {
         // Space bar.
         const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
         let rotatedCellsAdjusted = rotatedCells.map((cell) =>
@@ -229,6 +204,32 @@ function updatePlayerPos(
                 playerPhysics.hasMoved = true;
             }
         }
+    } else if (keyCode == 32) {
+        // Up key
+        if (ENABLE_INSTANT_DROP) {
+            let ground_row = boardPhysics.rows;
+            playerPhysics.adjustedCells.forEach((cell) =>
+                ground_row = Math.min(
+                    ground_row,
+                    boardPhysics.getGroundHeight(cell.c, cell.r),
+                )
+            );
+            const mid = Math.floor(playerPhysics.layout.length / 2);
+            // Offset with the lowest cell, centered around layout's midpoint.
+            let dy = 0;
+            playerPhysics.cells.forEach((cell) =>
+                dy = Math.max(dy, cell.r - mid)
+            );
+            playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
+            playerPhysics.hasMoved = true;
+            didInstantDrop = true;
+        } else if (
+            _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
+            areTargetSpacesEmpty(-1, 0)
+        ) {
+            playerPhysics.setPos(r - 1, c);
+            playerPhysics.hasMoved = true;
+        }
     }
 }
 
@@ -244,7 +245,7 @@ const gameState = {
     setBoardCells: null,
 };
 
-export function GameLoop() {
+export function GameLoop () {
     const res = (
         <BoardStyled>
             <PlayerComponent
@@ -264,7 +265,7 @@ export function GameLoop() {
     let accum = 0;
     let prevTime = performance.now();
 
-    function loop(timestamp) {
+    function loop (timestamp) {
         const curTime = performance.now();
         accum += curTime - prevTime;
         prevTime = curTime;
@@ -286,7 +287,7 @@ export function GameLoop() {
             if (
                 boardPhysics
                     .boardCellMatrix[playerPhysics.spawnPos[0]][
-                        playerPhysics.spawnPos[1]
+                    playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
                 boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
@@ -301,13 +302,13 @@ export function GameLoop() {
 
     globalThis.requestAnimationFrame(loop);
 
-    function isPlayerTouchingGround() {
+    function isPlayerTouchingGround () {
         return playerPhysics.adjustedCells.some((cell) => {
             return cell.r >= boardPhysics.getGroundHeight(cell.c, cell.r);
         });
     }
 
-    function dropFloatingCells(board: BoardCell[][]): number[][] {
+    function dropFloatingCells (board: BoardCell[][]): number[][] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
         const added = [];
         const removed = [];
@@ -329,7 +330,7 @@ export function GameLoop() {
         return [added, removed];
     }
 
-    function findWords(arr: UserCell[], reversed: boolean): number[] {
+    function findWords (arr: UserCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()
@@ -363,7 +364,7 @@ export function GameLoop() {
 
     // Might be worth it to move this to GameLoop.
 
-    function handleStates() {
+    function handleStates () {
         // console.log(stateHandler.state.value)
         if ("spawningBlock" == stateHandler.state.value) {
             isPlayerMovementEnabled = true;

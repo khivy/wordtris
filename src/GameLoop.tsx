@@ -87,6 +87,9 @@ let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
 let didInstantDrop = false;
 
+let leaveGroundPenalty = 0;
+const leaveGroundRate = 250;
+
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
@@ -363,22 +366,27 @@ export function GameLoop() {
 
     function handleStates() {
         if ("spawningBlock" == stateHandler.state.value) {
+            // Reset player.
             isPlayerMovementEnabled = true;
             setPlayerVisibility(true);
+            playerPhysics.needsRerender = true;
+
+            // Reset penalty.
+            leaveGroundPenalty = 0;
+
             placedCells.clear();
             stateHandler.send("SPAWN");
-            playerPhysics.needsRerender = true;
         } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
                 stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
             }
         } else if ("lockDelay" == stateHandler.state.value) {
-            const lockTime = performance.now() - lockStart;
+            const lockTime = performance.now() - lockStart + leaveGroundPenalty;
 
-            // TODO: Instead of running isPlayerTouchingGround(), make it more robust by checking
-            // if the previous touched ground height is the same as the current one.
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
+                // Player has moved off of ground.
+                leaveGroundPenalty += leaveGroundRate;
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
                 const newBoard = boardPhysics.boardCellMatrix.slice();

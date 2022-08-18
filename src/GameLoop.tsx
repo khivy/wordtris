@@ -545,8 +545,8 @@ const WordList = React.memo(({ displayedWords }: {displayedWords: string[]}) => 
         <div display={"flex"} flex-direction={"column"}>
             <div>Matched Words ({displayedWords.length})</div>
             <>
-                {displayedWords.map((word) => (
-                    <div key={word} style={wordStyle}>{word}</div>
+                {displayedWords.map((word, i) => (
+                    <div key={`word${i}`} style={wordStyle}>{word}</div>
                 ))}
             </>
         </div>

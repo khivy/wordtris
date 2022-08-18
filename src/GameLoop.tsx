@@ -177,33 +177,7 @@ export function GameLoop() {
                 }
             }
         } else if (keyCode === 38) {
-            // Up key
-            if (ENABLE_INSTANT_DROP) {
-                let ground_row = boardPhysics.rows;
-                playerPhysics.adjustedCells.forEach((cell) =>
-                    ground_row = Math.min(
-                        ground_row,
-                        boardPhysics.getGroundHeight(cell.c, cell.r),
-                    )
-                );
-                const mid = Math.floor(playerPhysics.layout.length / 2);
-                // Offset with the lowest cell, centered around layout's midpoint.
-                let dy = 0;
-                playerPhysics.cells.forEach((cell) =>
-                    dy = Math.max(dy, cell.r - mid)
-                );
-                playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
-                playerPhysics.hasMoved = true;
-                didInstantDrop = true;
-            } else if (
-                _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
-                areTargetSpacesEmpty(-1, 0)
-            ) {
-                playerPhysics.setPos(r - 1, c);
-                playerPhysics.hasMoved = true;
-            }
-        } else if (keyCode == 32) {
-            // Space bar.
+            // Handle Up key.
             const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) =>
                 playerPhysics.getAdjustedUserCell(cell)
@@ -260,6 +234,32 @@ export function GameLoop() {
                     playerPhysics.adjustedCells = rotatedCellsAdjusted;
                     playerPhysics.hasMoved = true;
                 }
+            }
+        } else if (keyCode == 32) {
+            // Handle space bar.
+            if (ENABLE_INSTANT_DROP) {
+                let ground_row = boardPhysics.rows;
+                playerPhysics.adjustedCells.forEach((cell) =>
+                    ground_row = Math.min(
+                        ground_row,
+                        boardPhysics.getGroundHeight(cell.c, cell.r),
+                    )
+                );
+                const mid = Math.floor(playerPhysics.layout.length / 2);
+                // Offset with the lowest cell, centered around layout's midpoint.
+                let dy = 0;
+                playerPhysics.cells.forEach((cell) =>
+                    dy = Math.max(dy, cell.r - mid)
+                );
+                playerPhysics.setPos(ground_row - dy, playerPhysics.pos[1]); // + the lowest on that row if its >center
+                playerPhysics.hasMoved = true;
+                didInstantDrop = true;
+            } else if (
+                _ENABLE_UP_KEY && 0 <= playerPhysics.getAdjustedTopR() - 1 &&
+                areTargetSpacesEmpty(-1, 0)
+            ) {
+                playerPhysics.setPos(r - 1, c);
+                playerPhysics.hasMoved = true;
             }
         }
         playerPhysics.needsRerender = true;

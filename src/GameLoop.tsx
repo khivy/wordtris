@@ -545,13 +545,14 @@ export function GameLoop () {
 const wordStyle = {
     display: 'block',
     background: 'yellow',
-}
+};
+
 const WordList = React.memo(({ displayedWords }) => {
     return <div display={'flex'} flex-direction={'column'}>
         <div >Matched Words ({totalMatchedWords})</div>
-            <>{displayedWords.map((word) =>
+            <>
+                {displayedWords.map((word) =>
                 <div key={word} style={wordStyle}>{word}</div>)}
             </>
-
     </div>;
-};
+});

@@ -173,7 +173,7 @@ export function GameLoop() {
                     playerPhysics.setPos(r + 1, c);
                 }
             }
-        } else if ('ArrowUp' == code) {
+        } else if ('ArrowUp' == code || 'KeyZ' == code) {
             // Rotate right.
             const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) =>

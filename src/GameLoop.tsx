@@ -109,7 +109,7 @@ export function GameLoop() {
     }, []);
 
     function updatePlayerPos(
-        { keyCode, repeat }: { keyCode: number; repeat: boolean },
+        { code }: { keyCode: number; repeat: boolean },
     ): void {
         if (!isPlayerMovementEnabled) {
             return;
@@ -121,8 +121,8 @@ export function GameLoop() {
             playerPhysics.adjustedCells.every((cell) => {
                 return board[cell.r + dr][cell.c + dc].char === EMPTY;
             });
-        if (keyCode === 37) {
-            // Left
+        if ('ArrowLeft' == code) {
+            // Move left.
             if (
                 playerPhysics.isInCBounds(
                     playerPhysics.getAdjustedLeftmostC() - 1,
@@ -141,8 +141,8 @@ export function GameLoop() {
                 playerPhysics.setPos(r, c - 1);
                 playerPhysics.hasMoved = true;
             }
-        } else if (keyCode === 39) {
-            // Right
+        } else if ('ArrowRight' == code) {
+            // Move right.
             if (
                 playerPhysics.isInCBounds(
                     playerPhysics.getAdjustedRightmostC() + 1,
@@ -161,11 +161,8 @@ export function GameLoop() {
                 playerPhysics.setPos(r, c + 1);
                 playerPhysics.hasMoved = true;
             }
-        } else if (keyCode === 40) {
-            // Down
-            if (repeat) {
-                // TODO: Handle repeated downkey.
-            }
+        } else if ('ArrowDown' == code) {
+            // Move down faster.
             if (
                 playerPhysics.getAdjustedBottomR() + 1 < BOARD_ROWS &&
                 areTargetSpacesEmpty(1, 0)
@@ -176,8 +173,8 @@ export function GameLoop() {
                     playerPhysics.setPos(r + 1, c);
                 }
             }
-        } else if (keyCode === 38) {
-            // Handle Up key.
+        } else if ('ArrowUp' == code) {
+            // Rotate right.
             const rotatedCells = playerPhysics.rotateCells(playerPhysics.cells);
             let rotatedCellsAdjusted = rotatedCells.map((cell) =>
                 playerPhysics.getAdjustedUserCell(cell)
@@ -235,8 +232,8 @@ export function GameLoop() {
                     playerPhysics.hasMoved = true;
                 }
             }
-        } else if (keyCode == 32) {
-            // Handle space bar.
+        } else if ('Space' == code) {
+            // Instant drop.
             if (ENABLE_INSTANT_DROP) {
                 let ground_row = boardPhysics.rows;
                 playerPhysics.adjustedCells.forEach((cell) =>

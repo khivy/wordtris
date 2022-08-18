@@ -20,7 +20,6 @@ import {
     interpKeydownMult,
     interpMax,
     interpRate,
-    MAX_WORDLIST_LEN,
     MIN_WORD_LENGTH,
     TBD,
 } from "./setup";
@@ -479,9 +478,6 @@ export function GameLoop() {
                 }
             });
 
-            while (matchedWords.length > MAX_WORDLIST_LEN) {
-                matchedWords.shift();
-            }
             setMatchedWords(matchedWords.slice()); // TODO: If expensive, force a re-render in a cheaper way.
 
             // Remove characters

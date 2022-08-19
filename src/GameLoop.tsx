@@ -65,17 +65,23 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
 stateHandler.start();
 
 // Various game logic vars.
-const FPS =
-    60; /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
-const frameStep = 1000 / FPS;
+
+/* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
+const framesPerSecLimit = 60;
+
+const frameStep = 1000 / framesPerSecLimit;
 let accumFrameTime = 0;
 let prevFrameTime = performance.now();
-const placedCells =
-    new Set(); /* Block cell coordinates that were placed on the current frame. */
+
+/* Block cell coordinates that were placed/dropped.. */
+const placedCells = new Set();
+
 const matchedCells = new Set();
 let lockStart = null;
-const lockMax =
-    1500; /* The amount of time it takes before a block locks in place. */
+
+/* The amount of time it takes before a block locks in place. */
+const lockMax = 1500;
+
 let matchAnimStart = null;
 const matchAnimLength = 750;
 let isMatchChaining = false;
@@ -292,9 +298,10 @@ export function GameLoop() {
         }
 
         // Update rendering.
+        /* This works to re-render b.c. setPos() creates a new array. */
         setAdjustedCells(
             playerPhysics.adjustedCells,
-        ); /* This works to re-render b.c. setPos() creates a new array. */
+        );
         setBoardCellMatrix(boardPhysics.boardCellMatrix);
         // gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
@@ -366,7 +373,7 @@ export function GameLoop() {
             setPlayerVisibility(true);
             placedCells.clear();
             stateHandler.send("SPAWN");
-            playerPhysics.needsRerender = true; // Re
+            playerPhysics.needsRerender = true;
         } else if ("placingBlock" == stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
                 stateHandler.send("TOUCHINGBLOCK");

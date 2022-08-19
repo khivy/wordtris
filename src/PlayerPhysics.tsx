@@ -49,18 +49,19 @@ export class PlayerPhysics {
         );
     }
 
-    rotateCells(cells: UserCell[]): UserCell[] {
+    rotateCells(cells: UserCell[], isClockwise: boolean): UserCell[] {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
+        console.log(this.adjustedCells);
         const mid = Math.floor(this.layout.length / 2);
-        return cells.map(({ r, c, char, uid }) => {
+        let m = cells.map(({ r, c, uid, char }) => {
             // Center around mid.
             // Remember, top-left is `(0, 0)` and bot-right is `(last, last)`.
             const r2 = r - mid;
             const c2 = c - mid;
             if (r2 !== 0 || c2 !== 0) {
-                r = c2 + mid;
-                c = -r2 + mid;
+                r = (isClockwise ? c2 : -c2) + mid;
+                c = (isClockwise ? -r2 : r2) + mid;
             }
             return {
                 r,
@@ -69,6 +70,7 @@ export class PlayerPhysics {
                 uid,
             };
         });
+        return m;
     }
 
     getAdjustedLeftmostC() {

@@ -34,10 +34,11 @@ fetch("lexicons/Google20000.txt")
     });
 
 // Style of encompassing board.
-export const BoardStyled = styled.div`
-  display: grid;
+const BoardStyled = styled.div`
+  display: inline-grid;
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
   grid-template-columns: repeat(${BOARD_COLS}, 30px);
+  border: solid red 4px;
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
@@ -102,6 +103,8 @@ export function GameLoop() {
         playerPhysics.adjustedCells,
     );
     const [isPlayerVisible, setPlayerVisibility] = useState(true);
+
+    const [matchedWords, setMatchedWords] = useState([]);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -423,28 +426,9 @@ export function GameLoop() {
             affectedRows.forEach((r) => {
                 // Row words
                 const [row_left, row_right] = findWords(newBoard[r], false);
-                // const [row_leftR, row_rightR] = findWords(
-                //     boardPhysics.boardCellMatrix[r],
-                //     true,
-                // );
-                // // Use reversed word if longer.
-                // if (row_rightR - row_leftR > row_right - row_left) {
-                //     row_left = row_leftR;
-                //     row_right = row_rightR;
-                // }
                 // Remove word, but ignore when a candidate isn't found.
                 if (row_left !== -1) {
-                    // console.log(
-                    //     "removing word: ",
-                    //     row_rightR - row_leftR > row_right - row_left
-                    //         ? newBoard[r].slice(row_left, row_right + 1).map((
-                    //             cell,
-                    //         ) => cell.char).reverse().join("")
-                    //         : newBoard[r].slice(row_left, row_right + 1).map((
-                    //             cell,
-                    //         ) => cell.char).reverse().join(""),
-                    // );
-                    console.log(
+                    matchedWords.push(
                         newBoard[r].slice(row_left, row_right + 1).map((cell) =>
                             cell.char
                         ).join(""),
@@ -474,8 +458,7 @@ export function GameLoop() {
                 }
                 // Remove word, but ignore when a candidate isn't found.
                 if (col_top !== -1) {
-                    console.log(
-                        "removing word: ",
+                    matchedWords.push(
                         isColReversed
                             ? boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
@@ -492,6 +475,8 @@ export function GameLoop() {
                     hasRemovedWord = true;
                 }
             });
+
+            setMatchedWords(matchedWords.slice()); // TODO: If expensive, force a re-render in a cheaper way.
 
             // Remove characters
             matchedCells.forEach((coord) => {
@@ -533,15 +518,65 @@ export function GameLoop() {
         playerPhysics.hasMoved = false;
     }
 
+    const appStyle = {
+        display: "flex",
+        border: "solid green 4px",
+        flexWrap: "wrap",
+        flexDirection: "row",
+    };
+
     return (
-        <BoardStyled>
-            <PlayerComponent
-                isVisible={isPlayerVisible}
-                adjustedCells={playerPhysics.adjustedCells}
-            />
-            <BoardComponent
-                boardCellMatrix={boardPhysics.boardCellMatrix}
-            />
-        </BoardStyled>
+        <div style={appStyle}>
+            <BoardStyled>
+                <PlayerComponent
+                    isVisible={isPlayerVisible}
+                    adjustedCells={playerPhysics.adjustedCells}
+                />
+                <BoardComponent
+                    boardCellMatrix={boardPhysics.boardCellMatrix}
+                />
+            </BoardStyled>
+            <WordList displayedWords={matchedWords} />
+        </div>
     );
 }
+
+const WordList = React.memo(
+    ({ displayedWords }: { displayedWords: string[] }) => {
+        const wordStyle = {
+            background: "yellow",
+        };
+
+        const outerStyle = {
+            display: "flex",
+            flexDirection: "column",
+        };
+
+        const scrollBoxStyle = {
+            flex: "auto",
+            overflowY: "auto",
+            height: "0px",
+        };
+
+        return (
+            <div style={outerStyle}>
+                <div flex={"none"}>
+                    Matched Words ({displayedWords.length})
+                </div>
+                <article style={scrollBoxStyle}>
+                    <>
+                        {displayedWords.map((word, i) => (
+                            // Invert the key to keep scroll bar at bottom if set to bottom.
+                            <div
+                                key={displayedWords.length - i}
+                                style={wordStyle}
+                            >
+                                {word}
+                            </div>
+                        ))}
+                    </>
+                </article>
+            </div>
+        );
+    },
+);

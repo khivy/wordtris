@@ -518,7 +518,7 @@ export function GameLoop() {
         playerPhysics.hasMoved = false;
     }
 
-    const AppStyle = {
+    const appStyle = {
         display: "flex",
         border: "solid green 4px",
         flexWrap: "wrap",
@@ -526,7 +526,7 @@ export function GameLoop() {
     };
 
     return (
-        <div style={AppStyle}>
+        <div style={appStyle}>
             <BoardStyled>
                 <PlayerComponent
                     isVisible={isPlayerVisible}
@@ -558,12 +558,6 @@ const WordList = React.memo(
             height: "0px",
         };
 
-        console.log(
-            displayedWords.reverse().map((word, i) => (
-                <div key={`word${i}`} style={wordStyle}>{word}</div>
-            )),
-        );
-
         return (
             <div style={outerStyle}>
                 <div flex={"none"}>
@@ -574,11 +568,11 @@ const WordList = React.memo(
                         {displayedWords.map((word, i) => (
                             // Invert the key to keep scroll bar at bottom if set to bottom.
                             <div
-                                key={`word${displayedWords.length - i}`}
+                                key={displayedWords.length - i}
                                 style={wordStyle}
                             >
                                 {word}
-                            </div> //
+                            </div>
                         ))}
                     </>
                 </article>

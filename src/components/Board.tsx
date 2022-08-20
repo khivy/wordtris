@@ -1,6 +1,4 @@
-import styled from "styled-components";
-
-const weightedChars = {
+const weightedChars: Record<string, number> = {
     a: 8.2,
     b: 1.5,
     c: 2.8,
@@ -29,22 +27,22 @@ const weightedChars = {
     z: 0.074,
 };
 
-function buildWeightedCharacters(dict) {
-    const res = [];
+function buildWeightedCharacters(dict: Record<string, number>): [[string,number][], number] {
     let prefixSum = 0;
-    for (const [ch, weight] of Object.entries(dict)) {
+    const weights: [string, number][] = Object.entries(dict).map((keyValue) => {
+        const [ch, weight]: [string, number] = keyValue;
         prefixSum += weight;
-        res.push([ch, prefixSum]);
-    }
-    return [res, prefixSum];
+        return [ch, prefixSum];
+    });
+    return [weights, prefixSum];
 }
 
-function pickWeightedRandom(weightedChars, totalSum) {
+function pickWeightedRandom(weightedChars: [string, number][], totalSum: number) {
     let l = 0;
     let r = weightedChars.length - 1;
-    const target = Math.random() * totalSum;
+    const target: number = Math.random() * totalSum;
     while (l < r) {
-        const m = Math.floor((r + l) / 2);
+        const m = Math.floor((r + l) / 2)!;
         if (weightedChars[m][1] < target) {
             l = m + 1;
         } else {
@@ -55,8 +53,6 @@ function pickWeightedRandom(weightedChars, totalSum) {
 }
 
 export function generateRandomChar(): string {
-    return pickWeightedRandom(...buildWeightedCharacters(weightedChars));
-    // return String.fromCharCode(
-    //     Math.floor(Math.random() * 26) + 97,
-    // );
+    const rand: [[string, number][], number] = buildWeightedCharacters(weightedChars);
+    return pickWeightedRandom(...rand);
 }

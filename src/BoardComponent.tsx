@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import { BoardCellStyled } from "./components/BoardCell";
 
 export const BoardComponent = React.memo(({ boardCellMatrix }) => {

@@ -30,10 +30,7 @@ jobs:
 
       - name: Format
         run: deno fmt --check
-
-      - name: Lint
-        run: deno lint
-
+        
       - name: Bundle
         run: bun bun
 

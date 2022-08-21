@@ -123,7 +123,7 @@ export function GameLoop() {
         );
 
         // Get the overlapping cell's respective index in non-adjusted array.
-        const overlappingCellIndex = rotatedCellsAdjusted.find((cell) => (
+        const overlappingCellIndex = rotatedCellsAdjusted.findIndex((cell) => (
             !playerPhysics.isInCBounds(cell.c) ||
             !playerPhysics.isInRBounds(cell.r) ||
             board[cell.r][cell.c].char !== EMPTY

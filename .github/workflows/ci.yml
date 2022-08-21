@@ -28,9 +28,6 @@ jobs:
       - name: Install
         run: bun install
 
-      - name: Format
-        run: deno fmt --check
-        
       - name: Bundle
         run: bun bun
 

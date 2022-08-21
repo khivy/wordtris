@@ -129,7 +129,7 @@ export function GameLoop() {
             board[cell.r][cell.c].char !== EMPTY
         ));
         // If there's no overlap, place it. Otherwise, shift it in the opposite direction of the overlapping cell.
-        if (overlappingCellIndex === undefined) {
+        if (overlappingCellIndex === -1) {
             // If rotation puts a block right underneath a placed block, set interp to 0.
             const isAdjacentToGround = rotatedCellsAdjusted.some((cell) => {
                 return !playerPhysics.isInRBounds(cell.r + 1) ||

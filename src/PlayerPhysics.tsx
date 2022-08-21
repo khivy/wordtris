@@ -150,7 +150,7 @@ export class PlayerPhysics {
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    getAdjustedUserCell({ r, c, uid, char }: UserCell): UserCell {
+    getAdjustedUserCell({ r, c, char, uid }: UserCell): UserCell {
         return {
             r: r + this.pos[0] - Math.floor(this.layout.length / 2),
             c: c + this.pos[1] - Math.floor(this.layout[0].length / 2),

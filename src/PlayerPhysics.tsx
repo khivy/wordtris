@@ -49,9 +49,10 @@ export class PlayerPhysics {
         );
     }
 
-    rotateCells(cells: UserCell[]): UserCell[] {
+    rotateCells(cells: UserCell[], isClockwise: boolean): UserCell[] {
         console.assert(this.layout.length == this.layout[0].length);
         console.assert(this.layout.length % 2 == 1);
+        console.log(this.adjustedCells);
         const mid = Math.floor(this.layout.length / 2);
         return cells.map(({ r, c, char, uid }) => {
             // Center around mid.
@@ -59,8 +60,8 @@ export class PlayerPhysics {
             const r2 = r - mid;
             const c2 = c - mid;
             if (r2 !== 0 || c2 !== 0) {
-                r = c2 + mid;
-                c = -r2 + mid;
+                r = (isClockwise ? c2 : -c2) + mid;
+                c = (isClockwise ? -r2 : r2) + mid;
             }
             return {
                 r,
@@ -149,12 +150,12 @@ export class PlayerPhysics {
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    getAdjustedUserCell({ r, c, uid, char }: UserCell): UserCell {
+    getAdjustedUserCell({ r, c, char, uid }: UserCell): UserCell {
         return {
             r: r + this.pos[0] - Math.floor(this.layout.length / 2),
             c: c + this.pos[1] - Math.floor(this.layout[0].length / 2),
-            uid,
             char,
+            uid,
         };
     }
 }

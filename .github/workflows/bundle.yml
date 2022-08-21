@@ -2,8 +2,6 @@ name: Bundle
 
 on:
   push:
-    branches:
-      - '*'
   pull_request:
 
 jobs:

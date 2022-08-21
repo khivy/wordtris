@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Bundle
 
 on:
   push:
@@ -24,4 +24,4 @@ jobs:
         run: bun install
 
       - name: Bundle
-        run: bun test/cellTest.ts
+        run: bun bun

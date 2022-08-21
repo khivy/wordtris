@@ -21,5 +21,5 @@ jobs:
       - name: Install
         run: bun install
 
-      - name: Bundle
+      - name: Unit Tests
         run: bun test/cellTest.ts

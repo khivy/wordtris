@@ -1,4 +1,4 @@
-name: TSC
+name: Type Check
 
 on:
   push:

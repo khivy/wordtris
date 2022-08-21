@@ -54,7 +54,7 @@ export class PlayerPhysics {
         console.assert(this.layout.length % 2 == 1);
         console.log(this.adjustedCells);
         const mid = Math.floor(this.layout.length / 2);
-        return cells.map(({ r, c, uid, char }) => {
+        return cells.map(({ r, c, char, uid }) => {
             // Center around mid.
             // Remember, top-left is `(0, 0)` and bot-right is `(last, last)`.
             const r2 = r - mid;
@@ -154,8 +154,8 @@ export class PlayerPhysics {
         return {
             r: r + this.pos[0] - Math.floor(this.layout.length / 2),
             c: c + this.pos[1] - Math.floor(this.layout[0].length / 2),
-            uid,
             char,
+            uid,
         };
     }
 }

@@ -21,6 +21,6 @@ jobs:
       - name: Install
         run: bun install
 
-      - name: tsc
+      - name: Type Check
         run: bun tsc
 

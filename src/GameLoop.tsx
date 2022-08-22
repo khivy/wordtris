@@ -8,6 +8,7 @@ import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardPhysics } from "./BoardPhysics";
 import { BoardCell } from "./BoardCell";
+import { WordList } from "./WordList";
 import {
     _ENABLE_UP_KEY,
     BOARD_COLS,
@@ -553,43 +554,3 @@ export function GameLoop() {
         </div>
     );
 }
-
-const WordList = React.memo(
-    ({ displayedWords }: { displayedWords: string[] }) => {
-        const wordStyle = {
-            background: "yellow",
-        } as const;
-
-        const outerStyle = {
-            display: "flex",
-            flexDirection: "column",
-        } as const;
-
-        const scrollBoxStyle = {
-            flex: "auto",
-            overflowY: "auto",
-            height: "0px",
-        } as const;
-
-        return (
-            <div style={outerStyle}>
-                <div flex={"none"}>
-                    Matched Words ({displayedWords.length})
-                </div>
-                <article style={scrollBoxStyle}>
-                    <>
-                        {displayedWords.map((word, i) => (
-                            // Invert the key to keep scroll bar at bottom if set to bottom.
-                            <div
-                                key={displayedWords.length - i}
-                                style={wordStyle}
-                            >
-                                {word}
-                            </div>
-                        ))}
-                    </>
-                </article>
-            </div>
-        );
-    },
-);

@@ -107,7 +107,7 @@ export function GameLoop() {
     );
     const [isPlayerVisible, setPlayerVisibility] = useState(true);
 
-    const [matchedWords, setMatchedWords] = useState([]);
+    const [matchedWords, setMatchedWords] = useState([] as string[]);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);

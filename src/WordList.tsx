@@ -19,9 +19,7 @@ export const WordList = React.memo(
 
         return (
             <div style={outerStyle}>
-                <div flex={"none"}>
-                    Matched Words ({displayedWords.length})
-                </div>
+                Matched Words ({displayedWords.length})
                 <article style={scrollBoxStyle}>
                     <>
                         {displayedWords.map((word, i) => (

@@ -313,7 +313,7 @@ export function GameLoop() {
         setBoardCellMatrix(boardPhysics.boardCellMatrix);
         // gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
-    }
+    };
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
@@ -321,7 +321,9 @@ export function GameLoop() {
         });
     }
 
-    function dropFloatingCells(board: BoardCell[][]): [[number, number][], [number, number][]] {
+    function dropFloatingCells(
+        board: BoardCell[][],
+    ): [[number, number][], [number, number][]] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
         const added: [number, number][] = [];
         const removed: [number, number][] = [];

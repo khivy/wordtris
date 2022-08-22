@@ -74,9 +74,9 @@ let accumFrameTime = 0;
 let prevFrameTime = performance.now();
 
 /* Block cell coordinates that were placed/dropped.. */
-const placedCells = new Set();
+const placedCells: Set<[number, number]> = new Set();
 
-const matchedCells = new Set();
+const matchedCells: Set<[number, number]> = new Set();
 let lockStart: number | undefined;
 
 /* The amount of time it takes before a block locks in place. */

@@ -1,0 +1,27 @@
+name: Bundle
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: antongolub/action-setup-bun@v1
+        with:
+          cache: true
+          cache-bin: true
+
+      - name: Install
+        run: bun install
+
+      - name: Bundle
+        run: bun bun

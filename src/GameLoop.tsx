@@ -301,7 +301,7 @@ export function GameLoop() {
                         playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
-                boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
+                boardPhysics.resetBoard();
             }
         }
 

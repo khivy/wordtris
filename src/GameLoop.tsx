@@ -77,12 +77,12 @@ let prevFrameTime = performance.now();
 const placedCells = new Set();
 
 const matchedCells = new Set();
-let lockStart = null;
+let lockStart: number | undefined;
 
 /* The amount of time it takes before a block locks in place. */
 const lockMax = 1500;
 
-let matchAnimStart = null;
+let matchAnimStart: number | undefined;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;

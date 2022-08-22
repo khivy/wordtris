@@ -45,6 +45,7 @@ const BoardStyled = styled.div`
 const stateMachine = createMachine({
     initial: "spawningBlock",
     states: {
+        countdown: { on: { DONE: "spawningBlock "} },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },

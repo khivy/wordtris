@@ -321,10 +321,10 @@ export function GameLoop() {
         });
     }
 
-    function dropFloatingCells(board: BoardCell[][]): number[][] {
+    function dropFloatingCells(board: BoardCell[][]): [[number, number][], [number, number][]] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
-        const added = [];
-        const removed = [];
+        const added: [number, number][] = [];
+        const removed: [number, number][] = [];
         for (let r = BOARD_ROWS - 2; r >= 0; --r) {
             for (let c = BOARD_COLS - 1; c >= 0; --c) {
                 if (

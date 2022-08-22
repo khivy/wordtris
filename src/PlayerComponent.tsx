@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "./setup";
+import { UserCell } from "./UserCell";
 
-export const PlayerComponent = React.memo(({ isVisible, adjustedCells }) => {
+export const PlayerComponent = React.memo(({ isVisible, adjustedCells }: { isVisible: boolean, adjustedCells: UserCell[] }) => {
     // This function contains player information.
 
     const adjustedCellsStyled = adjustedCells.map((cell) => {

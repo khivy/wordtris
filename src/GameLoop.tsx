@@ -114,7 +114,7 @@ export function GameLoop() {
         globalThis.addEventListener("keydown", updatePlayerPos);
     }, []);
 
-    function handleRotation(isClockwise, board) {
+    function handleRotation(isClockwise: boolean, board: BoardCell[][]) {
         // TODO: debug this & rotateCells for !isclockWise
         const rotatedCells = playerPhysics.rotateCells(
             playerPhysics.cells,

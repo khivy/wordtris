@@ -536,7 +536,7 @@ export function GameLoop() {
         border: "solid green 4px",
         flexWrap: "wrap",
         flexDirection: "row",
-    };
+    } as const;
 
     return (
         <div style={appStyle}>
@@ -558,18 +558,18 @@ const WordList = React.memo(
     ({ displayedWords }: { displayedWords: string[] }) => {
         const wordStyle = {
             background: "yellow",
-        };
+        } as const;
 
         const outerStyle = {
             display: "flex",
             flexDirection: "column",
-        };
+        } as const;
 
         const scrollBoxStyle = {
             flex: "auto",
             overflowY: "auto",
             height: "0px",
-        };
+        } as const;
 
         return (
             <div style={outerStyle}>

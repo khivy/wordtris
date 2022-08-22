@@ -29,17 +29,22 @@ const weightedChars = {
     z: 0.074,
 };
 
-function buildWeightedCharacters(dict) {
+function buildWeightedCharacters(
+    dict: Record<string, number>,
+): [[string, number][], number] {
     const res = [];
     let prefixSum = 0;
     for (const [ch, weight] of Object.entries(dict)) {
         prefixSum += weight;
-        res.push([ch, prefixSum]);
+        res.push([ch, prefixSum] as [string, number]);
     }
     return [res, prefixSum];
 }
 
-function pickWeightedRandom(weightedChars, totalSum) {
+function pickWeightedRandom(
+    weightedChars: [string, number][],
+    totalSum: number,
+) {
     let l = 0;
     let r = weightedChars.length - 1;
     const target = Math.random() * totalSum;

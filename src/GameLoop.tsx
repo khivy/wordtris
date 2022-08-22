@@ -7,7 +7,6 @@ import { PlayerComponent } from "./PlayerComponent";
 import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardPhysics } from "./BoardPhysics";
-import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
 import {
     _ENABLE_UP_KEY,
@@ -21,11 +20,10 @@ import {
     interpMax,
     interpRate,
     MIN_WORD_LENGTH,
-    TBD,
 } from "./setup";
 
 // Unpack words that can be created.
-let validWords = null;
+let validWords: Set<string> | undefined;
 fetch("lexicons/Google20000.txt")
     .then((response) => response.text())
     .then((data) => {
@@ -74,15 +72,15 @@ let accumFrameTime = 0;
 let prevFrameTime = performance.now();
 
 /* Block cell coordinates that were placed/dropped.. */
-const placedCells = new Set();
+const placedCells: Set<[number, number]> = new Set();
 
-const matchedCells = new Set();
-let lockStart = null;
+const matchedCells: Set<[number, number]> = new Set();
+let lockStart: number | undefined;
 
 /* The amount of time it takes before a block locks in place. */
 const lockMax = 1500;
 
-let matchAnimStart = null;
+let matchAnimStart: number | undefined;
 const matchAnimLength = 750;
 let isMatchChaining = false;
 let isPlayerMovementEnabled = false;
@@ -107,14 +105,14 @@ export function GameLoop() {
     );
     const [isPlayerVisible, setPlayerVisibility] = useState(true);
 
-    const [matchedWords, setMatchedWords] = useState([]);
+    const [matchedWords, setMatchedWords] = useState([] as string[]);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
         globalThis.addEventListener("keydown", updatePlayerPos);
     }, []);
 
-    function handleRotation(isClockwise, board) {
+    function handleRotation(isClockwise: boolean, board: BoardCell[][]) {
         // TODO: debug this & rotateCells for !isclockWise
         const rotatedCells = playerPhysics.rotateCells(
             playerPhysics.cells,
@@ -160,7 +158,7 @@ export function GameLoop() {
                 playerPhysics.getAdjustedUserCell(cell)
             );
             // Check for overlaps with shifted cells.
-            const isOverlapping = rotatedCellsAdjusted.some((cell, i) =>
+            const isOverlapping = rotatedCellsAdjusted.some((cell) =>
                 !playerPhysics.isInCBounds(cell.c) ||
                 !playerPhysics.isInRBounds(cell.r) ||
                 board[cell.r][cell.c].char !== EMPTY
@@ -182,10 +180,12 @@ export function GameLoop() {
         const board = boardPhysics.boardCellMatrix;
         const r = playerPhysics.pos[0];
         const c = playerPhysics.pos[1];
-        const areTargetSpacesEmpty = (dr, dc) =>
-            playerPhysics.adjustedCells.every((cell) => {
-                return board[cell.r + dr][cell.c + dc].char === EMPTY;
-            });
+        const areTargetSpacesEmpty = (
+            dr: -1 | 0 | 1 | number,
+            dc: -1 | 0 | 1,
+        ) => playerPhysics.adjustedCells.every((cell) => {
+            return board[cell.r + dr][cell.c + dc].char === EMPTY;
+        });
         if ("ArrowLeft" == code) {
             // Move left.
             if (
@@ -274,7 +274,7 @@ export function GameLoop() {
         playerPhysics.needsRerender = true;
     }
 
-    function loop(timestamp) {
+    const loop: FrameRequestCallback = () => {
         const curTime = performance.now();
         accumFrameTime += curTime - prevFrameTime;
         prevFrameTime = curTime;
@@ -299,7 +299,7 @@ export function GameLoop() {
                         playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
-                boardPhysics.resetBoard(BOARD_ROWS, BOARD_COLS);
+                boardPhysics.resetBoard();
             }
         }
 
@@ -311,7 +311,7 @@ export function GameLoop() {
         setBoardCellMatrix(boardPhysics.boardCellMatrix);
         // gameState.setBoardCells(boardPhysics.boardCellMatrix);
         globalThis.requestAnimationFrame(loop);
-    }
+    };
 
     function isPlayerTouchingGround() {
         return playerPhysics.adjustedCells.some((cell) => {
@@ -319,10 +319,12 @@ export function GameLoop() {
         });
     }
 
-    function dropFloatingCells(board: BoardCell[][]): number[][] {
+    function dropFloatingCells(
+        board: BoardCell[][],
+    ): [[number, number][], [number, number][]] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
-        const added = [];
-        const removed = [];
+        const added: [number, number][] = [];
+        const removed: [number, number][] = [];
         for (let r = BOARD_ROWS - 2; r >= 0; --r) {
             for (let c = BOARD_COLS - 1; c >= 0; --c) {
                 if (
@@ -341,7 +343,7 @@ export function GameLoop() {
         return [added, removed];
     }
 
-    function findWords(arr: UserCell[], reversed: boolean): number[] {
+    function findWords(arr: BoardCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()
@@ -534,7 +536,7 @@ export function GameLoop() {
         border: "solid green 4px",
         flexWrap: "wrap",
         flexDirection: "row",
-    };
+    } as const;
 
     return (
         <div style={appStyle}>
@@ -556,18 +558,18 @@ const WordList = React.memo(
     ({ displayedWords }: { displayedWords: string[] }) => {
         const wordStyle = {
             background: "yellow",
-        };
+        } as const;
 
         const outerStyle = {
             display: "flex",
             flexDirection: "column",
-        };
+        } as const;
 
         const scrollBoxStyle = {
             flex: "auto",
             overflowY: "auto",
             height: "0px",
-        };
+        } as const;
 
         return (
             <div style={outerStyle}>

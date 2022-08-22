@@ -182,10 +182,12 @@ export function GameLoop() {
         const board = boardPhysics.boardCellMatrix;
         const r = playerPhysics.pos[0];
         const c = playerPhysics.pos[1];
-        const areTargetSpacesEmpty = (dr, dc) =>
-            playerPhysics.adjustedCells.every((cell) => {
-                return board[cell.r + dr][cell.c + dc].char === EMPTY;
-            });
+        const areTargetSpacesEmpty = (
+            dr: -1 | 0 | 1 | number,
+            dc: -1 | 0 | 1,
+        ) => playerPhysics.adjustedCells.every((cell) => {
+            return board[cell.r + dr][cell.c + dc].char === EMPTY;
+        });
         if ("ArrowLeft" == code) {
             // Move left.
             if (

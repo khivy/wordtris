@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "./setup";
 import { UserCell } from "./UserCell";
 

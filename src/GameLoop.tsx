@@ -7,7 +7,6 @@ import { PlayerComponent } from "./PlayerComponent";
 import { BoardComponent } from "./BoardComponent";
 import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardPhysics } from "./BoardPhysics";
-import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
 import {
     _ENABLE_UP_KEY,
@@ -21,7 +20,6 @@ import {
     interpMax,
     interpRate,
     MIN_WORD_LENGTH,
-    TBD,
 } from "./setup";
 
 // Unpack words that can be created.

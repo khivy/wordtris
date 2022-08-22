@@ -1,5 +1,3 @@
-import styled from "styled-components";
-
 const weightedChars = {
     a: 8.2,
     b: 1.5,

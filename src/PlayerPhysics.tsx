@@ -70,25 +70,25 @@ export class PlayerPhysics {
         });
     }
 
-    getAdjustedLeftmostC() {
+    getAdjustedLeftmostC(): number {
         return this.adjustedCells.reduce((prev, cur) =>
             prev.c < cur.c ? prev.c : cur.c
         );
     }
 
-    getAdjustedRightmostC() {
+    getAdjustedRightmostC(): number {
         return this.adjustedCells.reduce((prev, cur) =>
             prev.c < cur.c ? cur.c : prev.c
         );
     }
 
-    getAdjustedTopR() {
+    getAdjustedTopR(): number {
         return this.adjustedCells.reduce((prev, cur) =>
             prev.r < cur.r ? prev.r : cur.r
         );
     }
 
-    getAdjustedBottomR() {
+    getAdjustedBottomR(): number {
         return this.adjustedCells.reduce((prev, cur) =>
             prev.r < cur.r ? cur.r : prev.r
         );

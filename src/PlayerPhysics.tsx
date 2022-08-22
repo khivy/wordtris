@@ -69,26 +69,26 @@ export class PlayerPhysics {
 
     getAdjustedLeftmostC(): number {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.c < cur.c ? prev.c : cur.c
-        );
+            prev.c < cur.c ? prev : cur
+        ).c;
     }
 
     getAdjustedRightmostC(): number {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.c < cur.c ? cur.c : prev.c
-        );
+            prev.c < cur.c ? cur : prev
+        ).c;
     }
 
     getAdjustedTopR(): number {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.r < cur.r ? prev.r : cur.r
-        );
+            prev.r < cur.r ? prev : cur
+        ).r;
     }
 
     getAdjustedBottomR(): number {
         return this.adjustedCells.reduce((prev, cur) =>
-            prev.r < cur.r ? cur.r : prev.r
-        );
+            prev.r < cur.r ? cur : prev
+        ).r;
     }
 
     isInRBounds(r: number): boolean {

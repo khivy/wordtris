@@ -158,7 +158,7 @@ export function GameLoop() {
                 playerPhysics.getAdjustedUserCell(cell)
             );
             // Check for overlaps with shifted cells.
-            const isOverlapping = rotatedCellsAdjusted.some((cell, i) =>
+            const isOverlapping = rotatedCellsAdjusted.some((cell) =>
                 !playerPhysics.isInCBounds(cell.c) ||
                 !playerPhysics.isInRBounds(cell.r) ||
                 board[cell.r][cell.c].char !== EMPTY
@@ -274,7 +274,7 @@ export function GameLoop() {
         playerPhysics.needsRerender = true;
     }
 
-    const loop: FrameRequestCallback = (timestamp) => {
+    const loop: FrameRequestCallback = () => {
         const curTime = performance.now();
         accumFrameTime += curTime - prevFrameTime;
         prevFrameTime = curTime;

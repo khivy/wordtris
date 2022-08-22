@@ -343,7 +343,7 @@ export function GameLoop() {
         return [added, removed];
     }
 
-    function findWords(arr: UserCell[], reversed: boolean): number[] {
+    function findWords(arr: BoardCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()

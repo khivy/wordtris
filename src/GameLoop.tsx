@@ -25,7 +25,7 @@ import {
 } from "./setup";
 
 // Unpack words that can be created.
-let validWords = null;
+let validWords: Set<string> | undefined;
 fetch("lexicons/Google20000.txt")
     .then((response) => response.text())
     .then((data) => {

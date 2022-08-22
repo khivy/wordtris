@@ -21,20 +21,18 @@ export class PlayerPhysics {
     cells: UserCell[];
     adjustedCells: UserCell[];
     pos: [number, number]; // r, c
-    spawnPos: [number, number];
-    layout: string[][];
+    spawnPos = [1, 3] as const;
+    layout = [
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+        [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+    ] as const;
     hasMoved: boolean;
     needsRerender: boolean;
 
     constructor(boardPhysics: BoardPhysics) {
-        this.layout = [
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-            [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-        ];
-        this.spawnPos = [1, 3];
         this.resetBlock();
         this.hasMoved = false;
         this.needsRerender = false;

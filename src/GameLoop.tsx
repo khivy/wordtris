@@ -276,7 +276,7 @@ export function GameLoop() {
         playerPhysics.needsRerender = true;
     }
 
-    function loop(timestamp) {
+    const loop: FrameRequestCallback = (timestamp) => {
         const curTime = performance.now();
         accumFrameTime += curTime - prevFrameTime;
         prevFrameTime = curTime;

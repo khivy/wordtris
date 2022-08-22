@@ -43,9 +43,10 @@ const BoardStyled = styled.div`
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
 const stateMachine = createMachine({
-    initial: "spawningBlock",
+    initial: "startingGame",
     states: {
-        countdown: { on: { DONE: "spawningBlock "} },
+        startingGame: { on: { START: "countdown"} },
+        countdown: { on: { DONE: "spawningBlock"} },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
@@ -91,6 +92,10 @@ let didInstantDrop = false;
 let leaveGroundPenalty = 0;
 const leaveGroundRate = 250;
 
+let countdownStartTime: number = 0;
+let countdownTimeElapsed: number = 0;
+let countdownTotalSteps: number = 3;
+
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
@@ -105,9 +110,12 @@ export function GameLoop() {
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
     );
-    const [isPlayerVisible, setPlayerVisibility] = useState(true);
+    const [isPlayerVisible, setPlayerVisibility] = useState(false);
 
     const [matchedWords, setMatchedWords] = useState([] as string[]);
+
+    const [isCountdownVisible, setCountdownVisibility] = useState(false);
+    const [countdownComponentIndex, setCountdownComponentIndex] = useState(0);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -378,7 +386,24 @@ export function GameLoop() {
     }
 
     function handleStates() {
-        if ("spawningBlock" == stateHandler.state.value) {
+        if ("startingGame" === stateHandler.state.value) {
+            setCountdownVisibility(true);
+            countdownStartTime = performance.now();
+            stateHandler.send("START");
+        }
+        else if ("countdown" === stateHandler.state.value) {
+            countdownTimeElapsed = performance.now() - countdownStartTime;
+            let index = countdownTotalSteps - Math.floor(countdownTimeElapsed / 1000);
+            if (index !== 0) {
+                setCountdownComponentIndex(index);
+            }
+            else {
+                stateHandler.send("DONE");
+            }
+        } else if ("spawningBlock" == stateHandler.state.value) {
+            // Hide countdown.
+            setCountdownVisibility(false);
+
             // Reset player.
             isPlayerMovementEnabled = true;
             setPlayerVisibility(true);
@@ -542,6 +567,7 @@ export function GameLoop() {
 
     return (
         <div style={appStyle}>
+            <CountdownOverlay isVisible={isCountdownVisible} countdownComponentIndex={countdownComponentIndex}/>
             <BoardStyled>
                 <PlayerComponent
                     isVisible={isPlayerVisible}
@@ -555,3 +581,14 @@ export function GameLoop() {
         </div>
     );
 }
+
+export const CountdownOverlay = React.memo(
+    ({ isVisible, countdownComponentIndex }: { isVisible: boolean, countdownComponentIndex: number }) => {
+        const divStyle = {
+            visibility: isVisible ? "visible" as const : "hidden" as const,
+        };
+        return <div style={divStyle}>
+            {countdownComponentIndex}
+        </div>;
+    },
+);

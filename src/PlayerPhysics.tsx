@@ -94,11 +94,11 @@ export class PlayerPhysics {
         );
     }
 
-    isInRBounds(r: number) {
+    isInRBounds(r: number): boolean {
         return 0 <= r && r < BOARD_ROWS;
     }
 
-    isInCBounds(c: number) {
+    isInCBounds(c: number): boolean {
         return 0 <= c && c < BOARD_COLS;
     }
 

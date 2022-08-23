@@ -80,7 +80,9 @@ let prevFrameTime = performance.now();
 /* Block cell coordinates that were placed/dropped.. */
 const placedCells: Set<[number, number]> = new Set();
 
-const matchedCells: Set<[number, number]> = new Set();
+/* matchedCells stores string coordinates, rather than [number, number],
+to allow for `.has()` to find equivalent coordinates. */
+const matchedCells: Set<string> = new Set();
 let lockStart: number | undefined;
 
 /* The amount of time it takes before a block locks in place. */
@@ -495,7 +497,7 @@ export function GameLoop() {
                         ).join(""),
                     );
                     for (let i = row_left; i < row_right + 1; ++i) {
-                        matchedCells.add([r, i]);
+                        matchedCells.add([r, i].toString());
                     }
                     hasRemovedWord = true;
                 }
@@ -532,7 +534,7 @@ export function GameLoop() {
                                 ).join(""),
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
-                        matchedCells.add([i, c]);
+                        matchedCells.add([i, c].toString());
                     }
                     hasRemovedWord = true;
                 }
@@ -540,11 +542,15 @@ export function GameLoop() {
 
             setMatchedWords(matchedWords => matchedWords.concat(newMatchedWords));
 
-            // Remove characters
-            matchedCells.forEach((coord) => {
-                // newBoard[coord[0]][coord[1]].char = EMPTY;
-                newBoard[coord[0]][coord[1]].hasMatched = true;
+            // Signal characters to remove.
+            newBoard.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    if (matchedCells.has([r, c].toString())) {
+                        cell.hasMatched = true;
+                    }
+                })
             });
+
             boardPhysics.boardCellMatrix = newBoard;
             setBoardCellMatrix(boardPhysics.boardCellMatrix);
             if (hasRemovedWord) {
@@ -557,10 +563,14 @@ export function GameLoop() {
                 const animTime = performance.now() - matchAnimStart;
                 if (matchAnimLength <= animTime) {
                     // Also remove characters. (hasMatched)
-                    const newBoard = boardPhysics.boardCellMatrix.slice();
-                    matchedCells.forEach((coord) => {
-                        newBoard[coord[0]][coord[1]].char = EMPTY;
-                        newBoard[coord[0]][coord[1]].hasMatched = false;
+                    let newBoard = boardPhysics.boardCellMatrix.slice();
+                    newBoard.forEach((row, r) => {
+                        row.forEach((cell, c) => {
+                            if (matchedCells.has([r, c].toString())) {
+                                cell.char = EMPTY;
+                                cell.hasMatched = false;
+                            }
+                        })
                     });
 
                     // Drop all characters.

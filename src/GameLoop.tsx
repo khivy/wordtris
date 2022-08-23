@@ -95,7 +95,7 @@ const leaveGroundRate = 250;
 
 // This has trouble being used as React state due to React's asynchronous updates.
 let countdownMillisecondsElapsed = 0;
-const countdownTotalSteps = 3;
+const countdownTotalSecs = 3;
 
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(
@@ -395,7 +395,7 @@ export function GameLoop() {
         }
         else if ("countdown" === stateHandler.state.value) {
             countdownMillisecondsElapsed = performance.now() - countdownStartTime;
-            const currCountdownSec = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
+            const currCountdownSec = countdownTotalSecs - Math.floor(countdownMillisecondsElapsed / 1000);
             if (currCountdownSec !== 0) {
                 setcountdownSec(currCountdownSec);
             }

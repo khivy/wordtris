@@ -7,9 +7,9 @@ export class BoardPhysics {
     cols: number;
 
     constructor(rows: number, cols: number) {
-        this.boardCellMatrix = this.createBoard(rows, cols);
         this.rows = rows;
         this.cols = cols;
+        this.boardCellMatrix = this.createBoard(rows, cols);
         // this.boardCellMatrix[8][2].char = 'o'
         // this.boardCellMatrix[9][2].char = 't'
         // this.boardCellMatrix[9][3].char = 'z'
@@ -21,14 +21,6 @@ export class BoardPhysics {
         // this.boardCellMatrix[7][3].char = 'e'
         // this.boardCellMatrix[7][4].char = 'a'
         // this.boardCellMatrix[7][5].char = 'r'
-    }
-
-    resetBoard() {
-        this.boardCellMatrix.forEach((row) =>
-            row.forEach((cell) => {
-                cell.char = EMPTY;
-            })
-        );
     }
 
     createBoard(rows: number, cols: number): BoardCell[][] {

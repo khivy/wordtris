@@ -106,7 +106,7 @@ export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
     );
-    const [_boardCellMatrix, setBoardCellMatrix] = useState(
+    const [boardCellMatrix, setBoardCellMatrix] = useState(
         boardPhysics.boardCellMatrix,
     );
 
@@ -456,8 +456,7 @@ export function GameLoop() {
                     newBoard[cell.r][cell.c].char = cell.char;
                 });
                 // Allow React to see change with a new object:
-                boardPhysics.boardCellMatrix = newBoard;
-                setBoardCellMatrix(boardPhysics.boardCellMatrix);
+                setBoardCellMatrix(newBoard);
                 interp.val = 0;
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
@@ -551,8 +550,7 @@ export function GameLoop() {
                 })
             });
 
-            boardPhysics.boardCellMatrix = newBoard;
-            setBoardCellMatrix(boardPhysics.boardCellMatrix);
+            setBoardCellMatrix(newBoard);
             if (hasRemovedWord) {
                 isMatchChaining = true;
                 matchAnimStart = performance.now();
@@ -575,8 +573,7 @@ export function GameLoop() {
 
                     // Drop all characters.
                     const [added, _removed] = dropFloatingCellsInplace(newBoard);
-                    boardPhysics.boardCellMatrix = newBoard;
-                    setBoardCellMatrix(boardPhysics.boardCellMatrix);
+                    setBoardCellMatrix(newBoard);
                     placedCells.clear();
                     added.forEach((coord) => placedCells.add(coord));
 
@@ -613,7 +610,7 @@ export function GameLoop() {
                     adjustedCells={playerPhysics.adjustedCells}
                 />
                 <BoardComponent
-                    boardCellMatrix={boardPhysics.boardCellMatrix} gameRound={gameRound}
+                    boardCellMatrix={boardCellMatrix} gameRound={gameRound}
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over

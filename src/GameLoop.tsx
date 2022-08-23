@@ -94,7 +94,7 @@ let leaveGroundPenalty = 0;
 const leaveGroundRate = 250;
 
 // This has trouble being used as React state due to React's asynchronous updates.
-let countdownTimeElapsed: number = 0;
+let countdownMillisecondsElapsed: number = 0;
 const countdownTotalSteps: number = 3;
 
 export function GameLoop() {
@@ -394,8 +394,8 @@ export function GameLoop() {
             stateHandler.send("START");
         }
         else if ("countdown" === stateHandler.state.value) {
-            countdownTimeElapsed = performance.now() - countdownStartTime;
-            let index: number = countdownTotalSteps - Math.floor(countdownTimeElapsed / 1000);
+            countdownMillisecondsElapsed = performance.now() - countdownStartTime;
+            let index: number = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
             if (index !== 0) {
                 setCountdownNum(index);
             }

@@ -116,7 +116,7 @@ export function GameLoop() {
     const [matchedWords, setMatchedWords] = useState([] as string[]);
 
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
-    const [countdownComponentIndex, setCountdownComponentIndex] = useState(0);
+    const [countdownNum, setCountdownNum] = useState(0);
     const [countdownStartTime, setCountdownStartTime] = useState(0);
 
     useEffect(() => {
@@ -397,7 +397,7 @@ export function GameLoop() {
             countdownTimeElapsed = performance.now() - countdownStartTime;
             let index: number = countdownTotalSteps - Math.floor(countdownTimeElapsed / 1000);
             if (index !== 0) {
-                setCountdownComponentIndex(index);
+                setCountdownNum(index);
             }
             else {
                 stateHandler.send("DONE");
@@ -570,7 +570,7 @@ export function GameLoop() {
     return (
         <div style={appStyle}>
             <BoardStyled>
-                <CountdownOverlay isVisible={isCountdownVisible} countdownComponentIndex={countdownComponentIndex}/>
+                <CountdownOverlay isVisible={isCountdownVisible} countdownNum={countdownNum}/>
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerPhysics.adjustedCells}
@@ -585,7 +585,7 @@ export function GameLoop() {
 }
 
 export const CountdownOverlay = React.memo(
-    ({ isVisible, countdownComponentIndex }: { isVisible: boolean, countdownComponentIndex: number }) => {
+    ({ isVisible, countdownNum }: { isVisible: boolean, countdownNum: number }) => {
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: 'absolute',
@@ -597,7 +597,7 @@ export const CountdownOverlay = React.memo(
             fontSize: '200%',
         };
         return <div style={divStyle}>
-            {countdownComponentIndex}
+            {countdownNum}
         </div>;
     },
 );

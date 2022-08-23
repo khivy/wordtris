@@ -623,13 +623,25 @@ export const GameOverOverlay = React.memo(
             position: 'absolute',
             top: '35%',
             left: '50%',
-            transform: 'translate(-50%, -50%)',
+            transform: 'translate(-25%, -25%)',
             zIndex: 2,
             color: 'red',
             fontSize: '200%',
         };
         return <div style={divStyle}>
             Game Over
+            <PlayAgainButton/>
         </div>;
+    },
+);
+
+const PlayAgainButton = React.memo(
+    () => {
+        const buttonStyle = {
+            cursor: 'pointer',
+            border: 'none',
+            display: 'inline-block',
+        };
+        return <button style={buttonStyle}>Play Again</button>
     },
 );

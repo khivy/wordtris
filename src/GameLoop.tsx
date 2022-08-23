@@ -93,7 +93,6 @@ let didInstantDrop = false;
 let leaveGroundPenalty = 0;
 const leaveGroundRate = 250;
 
-let countdownStartTime: number = 0;
 let countdownTimeElapsed: number = 0;
 let countdownTotalSteps: number = 3;
 
@@ -117,6 +116,7 @@ export function GameLoop() {
 
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
     const [countdownComponentIndex, setCountdownComponentIndex] = useState(0);
+    const [countdownStartTime, setCountdownStartTime] = useState(0);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -389,7 +389,7 @@ export function GameLoop() {
     function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
             setCountdownVisibility(true);
-            countdownStartTime = performance.now();
+            setCountdownStartTime(performance.now());
             stateHandler.send("START");
         }
         else if ("countdown" === stateHandler.state.value) {

@@ -116,7 +116,7 @@ export function GameLoop() {
     const [matchedWords, setMatchedWords] = useState([] as string[]);
 
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
-    const [countdownNum, setCountdownNum] = useState(0);
+    const [countdownSec, setcountdownSec] = useState(0);
     const [countdownStartTime, setCountdownStartTime] = useState(0);
 
     useEffect(() => {
@@ -395,9 +395,9 @@ export function GameLoop() {
         }
         else if ("countdown" === stateHandler.state.value) {
             countdownMillisecondsElapsed = performance.now() - countdownStartTime;
-            const currCountdownNum = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
-            if (currCountdownNum !== 0) {
-                setCountdownNum(currCountdownNum);
+            const currCountdownSec = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
+            if (currCountdownSec !== 0) {
+                setcountdownSec(currCountdownSec);
             }
             else {
                 stateHandler.send("DONE");
@@ -570,7 +570,7 @@ export function GameLoop() {
     return (
         <div style={appStyle}>
             <BoardStyled>
-                <CountdownOverlay isVisible={isCountdownVisible} countdownNum={countdownNum}/>
+                <CountdownOverlay isVisible={isCountdownVisible} countdownSec={countdownSec}/>
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerPhysics.adjustedCells}
@@ -585,7 +585,7 @@ export function GameLoop() {
 }
 
 export const CountdownOverlay = React.memo(
-    ({ isVisible, countdownNum }: { isVisible: boolean, countdownNum: number }) => {
+    ({ isVisible, countdownSec }: { isVisible: boolean, countdownSec: number }) => {
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: "absolute",
@@ -597,7 +597,7 @@ export const CountdownOverlay = React.memo(
             fontSize: "200%",
         } as const;
         return <div style={divStyle}>
-            {countdownNum}
+            {countdownSec}
         </div>;
     },
 );

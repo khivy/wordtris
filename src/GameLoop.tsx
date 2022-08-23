@@ -38,6 +38,7 @@ const BoardStyled = styled.div`
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
   grid-template-columns: repeat(${BOARD_COLS}, 30px);
   border: solid red 4px;
+  position: relative;
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
@@ -393,7 +394,7 @@ export function GameLoop() {
         }
         else if ("countdown" === stateHandler.state.value) {
             countdownTimeElapsed = performance.now() - countdownStartTime;
-            let index = countdownTotalSteps - Math.floor(countdownTimeElapsed / 1000);
+            let index: number = countdownTotalSteps - Math.floor(countdownTimeElapsed / 1000);
             if (index !== 0) {
                 setCountdownComponentIndex(index);
             }
@@ -567,8 +568,8 @@ export function GameLoop() {
 
     return (
         <div style={appStyle}>
-            <CountdownOverlay isVisible={isCountdownVisible} countdownComponentIndex={countdownComponentIndex}/>
             <BoardStyled>
+                <CountdownOverlay isVisible={isCountdownVisible} countdownComponentIndex={countdownComponentIndex}/>
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerPhysics.adjustedCells}
@@ -586,6 +587,13 @@ export const CountdownOverlay = React.memo(
     ({ isVisible, countdownComponentIndex }: { isVisible: boolean, countdownComponentIndex: number }) => {
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
+            position: 'absolute',
+            top: '35%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2,
+            color: 'red',
+            fontSize: '200%',
         };
         return <div style={divStyle}>
             {countdownComponentIndex}

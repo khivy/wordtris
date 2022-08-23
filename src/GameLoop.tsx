@@ -56,7 +56,8 @@ const stateMachine = createMachine({
         playMatchAnimation: {
             on: { DO_CHAIN: "checkingMatches", DONE: "spawningBlock" },
         },
-        gameOver: { on: { START: "countdown"} },
+        gameOver: { on: { RESTART: "startingGame"} },
+
     },
     predictableActionArguments: true,
 });
@@ -318,9 +319,6 @@ export function GameLoop() {
                 setPlayerVisibility(false);
                 isPlayerMovementEnabled = false;
 
-                // Clean up game state. TODO: Move to when the player picks 'Play Again'
-                boardPhysics.resetBoard();
-
                 setGameOverVisibility(true);
                 stateHandler.send("BLOCKED");
             }
@@ -400,6 +398,16 @@ export function GameLoop() {
 
     function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
+            // Clean up game state.
+            boardPhysics.resetBoard();
+            // TODO: This doesn't seem to be updating
+            setBoardCellMatrix(structuredClone(boardPhysics.boardCellMatrix));
+
+            // Reset Word List.
+            setMatchedWords([] as string[]);
+
+            setGameOverVisibility(false);
+
             setCountdownVisibility(true);
             setCountdownStartTime(performance.now());
             stateHandler.send("START");
@@ -596,7 +604,7 @@ export function GameLoop() {
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over
-                    <PlayAgainButton/>
+                    <PlayAgainButton />
                 </GameOverOverlay>
             </BoardStyled>
             <WordList displayedWords={matchedWords} />
@@ -656,6 +664,6 @@ const PlayAgainButton = React.memo(
             border: 'none',
             display: 'inline-block',
         };
-        return <button style={buttonStyle}>Play Again</button>
+        return <button style={buttonStyle} onClick={() => {stateHandler.send("RESTART")}} >Play Again</button>
     },
 );

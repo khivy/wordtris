@@ -100,6 +100,7 @@ let countdownMillisecondsElapsed = 0;
 const countdownTotalSecs = 3;
 
 export function GameLoop() {
+    const [gameRound, setGameRound] = useState(0);
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
     );
@@ -398,13 +399,15 @@ export function GameLoop() {
 
     function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
+            // Takes care of multiple enqueued state changes.
+            setGameRound(gameRound => 1 + gameRound);
             // Clean up game state.
             boardPhysics.resetBoard();
             // TODO: This doesn't seem to be updating
             setBoardCellMatrix(structuredClone(boardPhysics.boardCellMatrix));
 
             // Reset Word List.
-            setMatchedWords([] as string[]);
+            setMatchedWords([]);
 
             setGameOverVisibility(false);
 
@@ -500,6 +503,7 @@ export function GameLoop() {
                     hasRemovedWord = true;
                 }
             });
+            const newMatchedWords = [] as string[];
             affectedCols.forEach((c) => {
                 // Column words
                 let [col_top, col_bot] = findWords(
@@ -519,7 +523,7 @@ export function GameLoop() {
                 }
                 // Remove word, but ignore when a candidate isn't found.
                 if (col_top !== -1) {
-                    matchedWords.push(
+                    newMatchedWords.push(
                         isColReversed
                             ? boardPhysics.boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
@@ -537,7 +541,7 @@ export function GameLoop() {
                 }
             });
 
-            setMatchedWords(matchedWords.slice()); // TODO: If expensive, force a re-render in a cheaper way.
+            setMatchedWords(matchedWords => matchedWords.concat(newMatchedWords));
 
             // Remove characters
             matchedCells.forEach((coord) => {
@@ -600,7 +604,7 @@ export function GameLoop() {
                     adjustedCells={playerPhysics.adjustedCells}
                 />
                 <BoardComponent
-                    boardCellMatrix={boardPhysics.boardCellMatrix}
+                    boardCellMatrix={boardPhysics.boardCellMatrix} gameRound={gameRound}
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over

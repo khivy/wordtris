@@ -395,7 +395,7 @@ export function GameLoop() {
         }
         else if ("countdown" === stateHandler.state.value) {
             countdownMillisecondsElapsed = performance.now() - countdownStartTime;
-            let currCountdownNum: number = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
+            let currCountdownNum = countdownTotalSteps - Math.floor(countdownMillisecondsElapsed / 1000);
             if (currCountdownNum !== 0) {
                 setCountdownNum(currCountdownNum);
             }

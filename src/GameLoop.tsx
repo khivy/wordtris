@@ -327,11 +327,7 @@ export function GameLoop() {
 
         // Update rendering.
         /* This works to re-render b.c. setPos() creates a new array. */
-        setAdjustedCells(
-            playerPhysics.adjustedCells,
-        );
-        setBoardCellMatrix(boardPhysics.boardCellMatrix);
-        // gameState.setBoardCells(boardPhysics.boardCellMatrix);
+        setAdjustedCells( playerPhysics.adjustedCells, );
         globalThis.requestAnimationFrame(loop);
     };
 
@@ -459,6 +455,7 @@ export function GameLoop() {
                 });
                 // Allow React to see change with a new object:
                 boardPhysics.boardCellMatrix = newBoard;
+                setBoardCellMatrix(boardPhysics.boardCellMatrix);
                 interp.val = 0;
                 // Allow React to see change with a new object:
                 playerPhysics.resetBlock();
@@ -549,6 +546,7 @@ export function GameLoop() {
                 newBoard[coord[0]][coord[1]].hasMatched = true;
             });
             boardPhysics.boardCellMatrix = newBoard;
+            setBoardCellMatrix(boardPhysics.boardCellMatrix);
             if (hasRemovedWord) {
                 isMatchChaining = true;
                 matchAnimStart = performance.now();
@@ -568,6 +566,7 @@ export function GameLoop() {
                     // Drop all characters.
                     const [added, _removed] = dropFloatingCells(newBoard);
                     boardPhysics.boardCellMatrix = newBoard;
+                    setBoardCellMatrix(boardPhysics.boardCellMatrix);
                     placedCells.clear();
                     added.forEach((coord) => placedCells.add(coord));
 

@@ -339,7 +339,7 @@ export function GameLoop() {
         });
     }
 
-    function dropFloatingCells(
+    function dropFloatingCellsInplace(
         board: BoardCell[][],
     ): [[number, number][], [number, number][]] {
         // Returns 2 arrays: 1 array for the coords of the floating cells, 1 array for the new coords of the floating cells.
@@ -470,7 +470,7 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [added, _removed] = dropFloatingCells(
+            const [added, _removed] = dropFloatingCellsInplace(
                 boardPhysics.boardCellMatrix,
             );
             added.forEach((coord) => placedCells.add(coord));
@@ -574,7 +574,7 @@ export function GameLoop() {
                     });
 
                     // Drop all characters.
-                    const [added, _removed] = dropFloatingCells(newBoard);
+                    const [added, _removed] = dropFloatingCellsInplace(newBoard);
                     boardPhysics.boardCellMatrix = newBoard;
                     setBoardCellMatrix(boardPhysics.boardCellMatrix);
                     placedCells.clear();

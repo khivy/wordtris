@@ -93,8 +93,9 @@ let didInstantDrop = false;
 let leaveGroundPenalty = 0;
 const leaveGroundRate = 250;
 
+// This has trouble being used as React state due to React's asynchronous updates.
 let countdownTimeElapsed: number = 0;
-let countdownTotalSteps: number = 3;
+const countdownTotalSteps: number = 3;
 
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(

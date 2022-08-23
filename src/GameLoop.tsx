@@ -591,7 +591,10 @@ export function GameLoop() {
                 <BoardComponent
                     boardCellMatrix={boardPhysics.boardCellMatrix}
                 />
-                <GameOverOverlay isVisible={isGameOverVisible}/>
+                <GameOverOverlay isVisible={isGameOverVisible}>
+                    Game Over
+                    <PlayAgainButton/>
+                </GameOverOverlay>
             </BoardStyled>
             <WordList displayedWords={matchedWords} />
         </div>
@@ -617,7 +620,7 @@ export const CountdownOverlay = React.memo(
 );
 
 export const GameOverOverlay = React.memo(
-    ({ isVisible }: { isVisible: boolean }) => {
+    ({ children, isVisible }: { children: React.Component ,isVisible: boolean }) => {
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: 'absolute',
@@ -629,8 +632,9 @@ export const GameOverOverlay = React.memo(
             fontSize: '200%',
         };
         return <div style={divStyle}>
-            Game Over
-            <PlayAgainButton/>
+            <>
+                {children}
+            </>
         </div>;
     },
 );

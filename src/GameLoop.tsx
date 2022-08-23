@@ -49,13 +49,14 @@ const stateMachine = createMachine({
         startingGame: { on: { START: "countdown"} },
         countdown: { on: { DONE: "spawningBlock"} },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
-        placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
+        placingBlock: { on: { TOUCHINGBLOCK: "lockDelay", BLOCKED: "gameOver" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
         checkingMatches: { on: { PLAYING_ANIM: "playMatchAnimation" } },
         playMatchAnimation: {
             on: { DO_CHAIN: "checkingMatches", DONE: "spawningBlock" },
         },
+        gameOver: { on: { START: "countdown"} },
     },
     predictableActionArguments: true,
 });
@@ -118,6 +119,8 @@ export function GameLoop() {
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
     const [countdownNum, setCountdownNum] = useState(0);
     const [countdownStartTime, setCountdownStartTime] = useState(0);
+
+    const [isGameOverVisible, setGameOverVisibility] = useState(false);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -305,13 +308,21 @@ export function GameLoop() {
                 );
             }
             // Reset if spawn point is blocked.
-            if (
+            if ("placingBlock" === stateHandler.state.value &&
                 boardPhysics
                     .boardCellMatrix[playerPhysics.spawnPos[0]][
                         playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
+                // Pause player movement.
+                setPlayerVisibility(false);
+                isPlayerMovementEnabled = false;
+
+                // Clean up game state. TODO: Move to when the player picks 'Play Again'
                 boardPhysics.resetBoard();
+
+                setGameOverVisibility(true);
+                stateHandler.send("BLOCKED");
             }
         }
 
@@ -556,6 +567,8 @@ export function GameLoop() {
             } else {
                 stateHandler.send("DONE");
             }
+        } else if ("gameOver" === stateHandler.state.value) {
+            // TODO Add 'play again' button
         }
         playerPhysics.hasMoved = false;
     }
@@ -578,6 +591,7 @@ export function GameLoop() {
                 <BoardComponent
                     boardCellMatrix={boardPhysics.boardCellMatrix}
                 />
+                <GameOverOverlay isVisible={isGameOverVisible}/>
             </BoardStyled>
             <WordList displayedWords={matchedWords} />
         </div>
@@ -598,6 +612,24 @@ export const CountdownOverlay = React.memo(
         };
         return <div style={divStyle}>
             {countdownNum}
+        </div>;
+    },
+);
+
+export const GameOverOverlay = React.memo(
+    ({ isVisible }: { isVisible: boolean }) => {
+        const divStyle = {
+            visibility: isVisible ? "visible" as const : "hidden" as const,
+            position: 'absolute',
+            top: '35%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2,
+            color: 'red',
+            fontSize: '200%',
+        };
+        return <div style={divStyle}>
+            Game Over
         </div>;
     },
 );

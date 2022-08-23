@@ -595,7 +595,7 @@ export const CountdownOverlay = React.memo(
             zIndex: 2,
             color: "red",
             fontSize: "200%",
-        };
+        } as const;
         return <div style={divStyle}>
             {countdownNum}
         </div>;

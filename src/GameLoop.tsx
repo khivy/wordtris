@@ -402,7 +402,7 @@ export function GameLoop() {
             else {
                 stateHandler.send("DONE");
             }
-        } else if ("spawningBlock" == stateHandler.state.value) {
+        } else if ("spawningBlock" === stateHandler.state.value) {
             // Hide countdown.
             setCountdownVisibility(false);
 
@@ -416,12 +416,12 @@ export function GameLoop() {
 
             placedCells.clear();
             stateHandler.send("SPAWN");
-        } else if ("placingBlock" == stateHandler.state.value) {
+        } else if ("placingBlock" === stateHandler.state.value) {
             if (isPlayerTouchingGround()) {
                 stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
             }
-        } else if ("lockDelay" == stateHandler.state.value) {
+        } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - lockStart + leaveGroundPenalty;
 
             if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
@@ -447,14 +447,14 @@ export function GameLoop() {
                 isPlayerMovementEnabled = false;
                 setPlayerVisibility(false);
             }
-        } else if ("fallingLetters" == stateHandler.state.value) {
+        } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
             const [added, _removed] = dropFloatingCells(
                 boardPhysics.boardCellMatrix,
             );
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
-        } else if ("checkingMatches" == stateHandler.state.value) {
+        } else if ("checkingMatches" === stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardPhysics.boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
@@ -531,7 +531,7 @@ export function GameLoop() {
                 matchAnimStart = performance.now();
             }
             stateHandler.send("PLAYING_ANIM");
-        } else if ("playMatchAnimation" == stateHandler.state.value) {
+        } else if ("playMatchAnimation" === stateHandler.state.value) {
             if (isMatchChaining) {
                 const animTime = performance.now() - matchAnimStart;
                 if (matchAnimLength <= animTime) {

@@ -400,9 +400,7 @@ export function GameLoop() {
             // Takes care of multiple enqueued state changes.
             setGameRound(gameRound => 1 + gameRound);
             // Clean up game state.
-            boardPhysics.resetBoard();
-            // TODO: This doesn't seem to be updating
-            setBoardCellMatrix(structuredClone(boardPhysics.boardCellMatrix));
+            setBoardCellMatrix(boardPhysics.createBoard(BOARD_ROWS, BOARD_COLS));
 
             // Reset Word List.
             setMatchedWords([]);

@@ -26,6 +26,7 @@ import { createBoard, getGroundHeight } from "./BoardPhysics";
 import { BoardCell } from "./BoardCell";
 import { WordList } from "./WordList";
 import { useInterval } from "./useInterval";
+import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import {
     _ENABLE_UP_KEY,
     BOARD_COLS,
@@ -599,7 +600,7 @@ export function GameLoop () {
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over
-                    <PlayAgainButton/>
+                    <PlayAgainButton stateHandler={stateHandler}/>
                 </GameOverOverlay>
             </BoardStyled>
             <WordList displayedWords={matchedWords}/>
@@ -629,38 +630,5 @@ export const CountdownOverlay = React.memo(
                 {countdownSec}
             </div>
         );
-    },
-);
-
-export const GameOverOverlay = React.memo(
-    ({ children, isVisible }: { children: React.Component, isVisible: boolean }) => {
-        const divStyle = {
-            visibility: isVisible ? "visible" as const : "hidden" as const,
-            position: 'absolute',
-            top: '35%',
-            left: '50%',
-            transform: 'translate(-25%, -25%)',
-            zIndex: 2,
-            color: 'red',
-            fontSize: '200%',
-        };
-        return <div style={divStyle}>
-            <>
-                {children}
-            </>
-        </div>;
-    },
-);
-
-const PlayAgainButton = React.memo(
-    () => {
-        const buttonStyle = {
-            cursor: 'pointer',
-            border: 'none',
-            display: 'inline-block',
-        };
-        return <button style={buttonStyle} onClick={() => {
-            stateHandler.send("RESTART")
-        }}>Play Again</button>
     },
 );

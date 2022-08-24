@@ -27,6 +27,7 @@ import { BoardCell } from "./BoardCell";
 import { WordList } from "./WordList";
 import { useInterval } from "./useInterval";
 import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
+import { CountdownOverlay } from "./components/CountdownOverlay";
 import {
     _ENABLE_UP_KEY,
     BOARD_COLS,
@@ -607,28 +608,3 @@ export function GameLoop () {
         </div>
     );
 }
-
-export const CountdownOverlay = React.memo(
-    (
-        { isVisible, countdownSec }: {
-            isVisible: boolean;
-            countdownSec: number;
-        },
-    ) => {
-        const divStyle = {
-            visibility: isVisible ? "visible" as const : "hidden" as const,
-            position: "absolute",
-            top: "35%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 2,
-            color: "red",
-            fontSize: "200%",
-        } as const;
-        return (
-            <div style={divStyle}>
-                {countdownSec}
-            </div>
-        );
-    },
-);

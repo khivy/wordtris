@@ -38,13 +38,16 @@ const BoardStyled = styled.div`
   grid-template-rows: repeat(${BOARD_ROWS}, 30px);
   grid-template-columns: repeat(${BOARD_COLS}, 30px);
   border: solid red 4px;
+  position: relative;
 `;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
 const stateMachine = createMachine({
-    initial: "spawningBlock",
+    initial: "startingGame",
     states: {
+        startingGame: { on: { START: "countdown" } },
+        countdown: { on: { DONE: "spawningBlock" } },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
@@ -90,6 +93,10 @@ let didInstantDrop = false;
 let leaveGroundPenalty = 0;
 const leaveGroundRate = 250;
 
+// This has trouble being used as React state due to React's asynchronous updates.
+let countdownMillisecondsElapsed = 0;
+const countdownTotalSecs = 3;
+
 export function GameLoop() {
     const [boardPhysics, _setBoardPhysics] = useState(
         new BoardPhysics(BOARD_ROWS, BOARD_COLS),
@@ -104,9 +111,13 @@ export function GameLoop() {
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
     );
-    const [isPlayerVisible, setPlayerVisibility] = useState(true);
+    const [isPlayerVisible, setPlayerVisibility] = useState(false);
 
     const [matchedWords, setMatchedWords] = useState([] as string[]);
+
+    const [isCountdownVisible, setCountdownVisibility] = useState(false);
+    const [countdownSec, setcountdownSec] = useState(0);
+    const [countdownStartTime, setCountdownStartTime] = useState(0);
 
     useEffect(() => {
         globalThis.requestAnimationFrame(loop);
@@ -377,7 +388,24 @@ export function GameLoop() {
     }
 
     function handleStates() {
-        if ("spawningBlock" === stateHandler.state.value) {
+        if ("startingGame" === stateHandler.state.value) {
+            setCountdownVisibility(true);
+            setCountdownStartTime(performance.now());
+            stateHandler.send("START");
+        } else if ("countdown" === stateHandler.state.value) {
+            countdownMillisecondsElapsed = performance.now() -
+                countdownStartTime;
+            const currCountdownSec = countdownTotalSecs -
+                Math.floor(countdownMillisecondsElapsed / 1000);
+            if (currCountdownSec !== 0) {
+                setcountdownSec(currCountdownSec);
+            } else {
+                stateHandler.send("DONE");
+            }
+        } else if ("spawningBlock" === stateHandler.state.value) {
+            // Hide countdown.
+            setCountdownVisibility(false);
+
             // Reset player.
             isPlayerMovementEnabled = true;
             setPlayerVisibility(true);
@@ -542,6 +570,10 @@ export function GameLoop() {
     return (
         <div style={appStyle}>
             <BoardStyled>
+                <CountdownOverlay
+                    isVisible={isCountdownVisible}
+                    countdownSec={countdownSec}
+                />
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerPhysics.adjustedCells}
@@ -554,3 +586,28 @@ export function GameLoop() {
         </div>
     );
 }
+
+export const CountdownOverlay = React.memo(
+    (
+        { isVisible, countdownSec }: {
+            isVisible: boolean;
+            countdownSec: number;
+        },
+    ) => {
+        const divStyle = {
+            visibility: isVisible ? "visible" as const : "hidden" as const,
+            position: "absolute",
+            top: "35%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 2,
+            color: "red",
+            fontSize: "200%",
+        } as const;
+        return (
+            <div style={divStyle}>
+                {countdownSec}
+            </div>
+        );
+    },
+);

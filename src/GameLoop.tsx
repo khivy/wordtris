@@ -46,8 +46,8 @@ const BoardStyled = styled.div`
 const stateMachine = createMachine({
     initial: "startingGame",
     states: {
-        startingGame: { on: { START: "countdown"} },
-        countdown: { on: { DONE: "spawningBlock"} },
+        startingGame: { on: { START: "countdown" } },
+        countdown: { on: { DONE: "spawningBlock" } },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
@@ -392,14 +392,14 @@ export function GameLoop() {
             setCountdownVisibility(true);
             setCountdownStartTime(performance.now());
             stateHandler.send("START");
-        }
-        else if ("countdown" === stateHandler.state.value) {
-            countdownMillisecondsElapsed = performance.now() - countdownStartTime;
-            const currCountdownSec = countdownTotalSecs - Math.floor(countdownMillisecondsElapsed / 1000);
+        } else if ("countdown" === stateHandler.state.value) {
+            countdownMillisecondsElapsed = performance.now() -
+                countdownStartTime;
+            const currCountdownSec = countdownTotalSecs -
+                Math.floor(countdownMillisecondsElapsed / 1000);
             if (currCountdownSec !== 0) {
                 setcountdownSec(currCountdownSec);
-            }
-            else {
+            } else {
                 stateHandler.send("DONE");
             }
         } else if ("spawningBlock" === stateHandler.state.value) {
@@ -570,7 +570,10 @@ export function GameLoop() {
     return (
         <div style={appStyle}>
             <BoardStyled>
-                <CountdownOverlay isVisible={isCountdownVisible} countdownSec={countdownSec}/>
+                <CountdownOverlay
+                    isVisible={isCountdownVisible}
+                    countdownSec={countdownSec}
+                />
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerPhysics.adjustedCells}
@@ -585,7 +588,12 @@ export function GameLoop() {
 }
 
 export const CountdownOverlay = React.memo(
-    ({ isVisible, countdownSec }: { isVisible: boolean, countdownSec: number }) => {
+    (
+        { isVisible, countdownSec }: {
+            isVisible: boolean;
+            countdownSec: number;
+        },
+    ) => {
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: "absolute",
@@ -596,8 +604,10 @@ export const CountdownOverlay = React.memo(
             color: "red",
             fontSize: "200%",
         } as const;
-        return <div style={divStyle}>
-            {countdownSec}
-        </div>;
+        return (
+            <div style={divStyle}>
+                {countdownSec}
+            </div>
+        );
     },
 );

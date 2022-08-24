@@ -9,7 +9,7 @@ export class BoardPhysics {
     constructor(rows: number, cols: number) {
         this.rows = rows;
         this.cols = cols;
-        this.boardCellMatrix = this.createBoard(rows, cols);
+        this.boardCellMatrix = BoardPhysics.createBoard(rows, cols);
         // this.boardCellMatrix[8][2].char = 'o'
         // this.boardCellMatrix[9][2].char = 't'
         // this.boardCellMatrix[9][3].char = 'z'
@@ -23,7 +23,7 @@ export class BoardPhysics {
         // this.boardCellMatrix[7][5].char = 'r'
     }
 
-    createBoard(rows: number, cols: number): BoardCell[][] {
+    static createBoard(rows: number, cols: number): BoardCell[][] {
         // Init cells.
         const cells = [];
         for (let r = 0; r < rows; ++r) {
@@ -36,13 +36,13 @@ export class BoardPhysics {
         return cells;
     }
 
-    getGroundHeight(col: number, startRow: number): number {
+    static getGroundHeight(col: number, startRow: number, board: BoardCell[][]): number {
         // Search for first non-EMPTY board cell from the top.
-        for (let row = startRow; row < this.rows - 1; ++row) {
-            if (this.boardCellMatrix[row + 1][col].char !== EMPTY) {
+        for (let row = startRow; row < board.length - 1; ++row) {
+            if (board[row + 1][col].char !== EMPTY) {
                 return row;
             }
         }
-        return this.rows - 1;
+        return board.length - 1;
     }
 }

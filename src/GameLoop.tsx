@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -9,6 +9,7 @@ import { PlayerPhysics } from "./PlayerPhysics";
 import { BoardPhysics } from "./BoardPhysics";
 import { BoardCell } from "./BoardCell";
 import { WordList } from "./WordList";
+import { useInterval } from "./useInterval";
 import {
     _ENABLE_UP_KEY,
     BOARD_COLS,
@@ -102,16 +103,12 @@ let countdownMillisecondsElapsed = 0;
 const countdownTotalSecs = 3;
 
 export function GameLoop() {
-    const [gameRound, setGameRound] = useState(0);
-    const [boardPhysics, _setBoardPhysics] = useState(
-        new BoardPhysics(BOARD_ROWS, BOARD_COLS),
-    );
     const [boardCellMatrix, setBoardCellMatrix] = useState(
-        boardPhysics.boardCellMatrix,
+        BoardPhysics.createBoard(BOARD_ROWS, BOARD_COLS)
     );
 
     const [playerPhysics, _setPlayerPhysics] = useState(
-        new PlayerPhysics(boardPhysics),
+        new PlayerPhysics(),
     );
     const [_adjustedCells, setAdjustedCells] = useState(
         playerPhysics.adjustedCells,
@@ -127,9 +124,13 @@ export function GameLoop() {
     const [isGameOverVisible, setGameOverVisibility] = useState(false);
 
     useEffect(() => {
-        globalThis.requestAnimationFrame(loop);
         globalThis.addEventListener("keydown", updatePlayerPos);
-    }, []);
+        return () => { globalThis.removeEventListener("keydown", updatePlayerPos) };
+    });
+
+    useInterval(() => {
+        loop();
+    }, 10);
 
     function handleRotation(isClockwise: boolean, board: BoardCell[][]) {
         // TODO: debug this & rotateCells for !isclockWise
@@ -196,7 +197,7 @@ export function GameLoop() {
         if (!isPlayerMovementEnabled) {
             return;
         }
-        const board = boardPhysics.boardCellMatrix;
+        const board = boardCellMatrix;
         const r = playerPhysics.pos[0];
         const c = playerPhysics.pos[1];
         const areTargetSpacesEmpty = (
@@ -266,11 +267,11 @@ export function GameLoop() {
         } else if ("Space" == code) {
             // Instant drop.
             if (ENABLE_INSTANT_DROP) {
-                let ground_row = boardPhysics.rows;
+                let ground_row = BOARD_ROWS;
                 playerPhysics.adjustedCells.forEach((cell) =>
                     ground_row = Math.min(
                         ground_row,
-                        boardPhysics.getGroundHeight(cell.c, cell.r),
+                        BoardPhysics.getGroundHeight(cell.c, cell.r, boardCellMatrix),
                     )
                 );
                 const mid = Math.floor(playerPhysics.layout.length / 2);
@@ -293,7 +294,7 @@ export function GameLoop() {
         playerPhysics.needsRerender = true;
     }
 
-    const loop: FrameRequestCallback = () => {
+    const loop = () => {
         const curTime = performance.now();
         accumFrameTime += curTime - prevFrameTime;
         prevFrameTime = curTime;
@@ -304,7 +305,7 @@ export function GameLoop() {
             handleStates();
             if (isPlayerMovementEnabled) {
                 const dr = playerPhysics.doGradualFall(
-                    boardPhysics.boardCellMatrix,
+                    boardCellMatrix,
                 );
                 playerPhysics.setPos(
                     playerPhysics.pos[0] + dr,
@@ -313,8 +314,7 @@ export function GameLoop() {
             }
             // Reset if spawn point is blocked.
             if ("placingBlock" === stateHandler.state.value &&
-                boardPhysics
-                    .boardCellMatrix[playerPhysics.spawnPos[0]][
+                boardCellMatrix[playerPhysics.spawnPos[0]][
                         playerPhysics.spawnPos[1]
                     ].char !== EMPTY
             ) {
@@ -330,12 +330,11 @@ export function GameLoop() {
         // Update rendering.
         /* This works to re-render b.c. setPos() creates a new array. */
         setAdjustedCells( playerPhysics.adjustedCells, );
-        globalThis.requestAnimationFrame(loop);
     };
 
-    function isPlayerTouchingGround() {
+    function isPlayerTouchingGround(board: BoardCell[][]) {
         return playerPhysics.adjustedCells.some((cell) => {
-            return cell.r >= boardPhysics.getGroundHeight(cell.c, cell.r);
+            return cell.r >= BoardPhysics.getGroundHeight(cell.c, cell.r, board);
         });
     }
 
@@ -351,7 +350,7 @@ export function GameLoop() {
                     board[r][c].char !== EMPTY &&
                     board[r + 1][c].char === EMPTY
                 ) {
-                    const g = boardPhysics.getGroundHeight(c, r);
+                    const g = BoardPhysics.getGroundHeight(c, r, boardCellMatrix);
                     board[g][c].char = board[r][c].char;
                     board[r][c].char = EMPTY;
                     // Update cell in placedCells.
@@ -398,9 +397,7 @@ export function GameLoop() {
     function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
             // Takes care of multiple enqueued state changes.
-            setGameRound(gameRound => 1 + gameRound);
-            // Clean up game state.
-            setBoardCellMatrix(boardPhysics.createBoard(BOARD_ROWS, BOARD_COLS));
+            setBoardCellMatrix(BoardPhysics.createBoard(BOARD_ROWS, BOARD_COLS));
 
             // Reset Word List.
             setMatchedWords([]);
@@ -435,19 +432,19 @@ export function GameLoop() {
             placedCells.clear();
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
-            if (isPlayerTouchingGround()) {
+            if (isPlayerTouchingGround(boardCellMatrix)) {
                 stateHandler.send("TOUCHINGBLOCK");
                 lockStart = performance.now();
             }
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - lockStart + leaveGroundPenalty;
 
-            if (playerPhysics.hasMoved && !isPlayerTouchingGround()) {
+            if (playerPhysics.hasMoved && !isPlayerTouchingGround(boardCellMatrix)) {
                 // Player has moved off of ground.
                 leaveGroundPenalty += leaveGroundRate;
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
-                const newBoard = boardPhysics.boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 playerPhysics.adjustedCells.forEach((cell) => {
                     placedCells.add([cell.r, cell.c]);
                     // Give player cells to board.
@@ -468,13 +465,13 @@ export function GameLoop() {
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
             const [added, _removed] = dropFloatingCellsInplace(
-                boardPhysics.boardCellMatrix,
+                boardCellMatrix,
             );
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
         } else if ("checkingMatches" === stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
-            const newBoard = boardPhysics.boardCellMatrix.slice();
+            const newBoard = boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
             let hasRemovedWord = false;
             const affectedRows = new Set(
@@ -503,11 +500,11 @@ export function GameLoop() {
             affectedCols.forEach((c) => {
                 // Column words
                 let [col_top, col_bot] = findWords(
-                    boardPhysics.boardCellMatrix.map((row) => row[c]),
+                    boardCellMatrix.map((row) => row[c]),
                     false,
                 );
                 const [col_topR, col_botR] = findWords(
-                    boardPhysics.boardCellMatrix.map((row) => row[c]),
+                    boardCellMatrix.map((row) => row[c]),
                     true,
                 );
                 // Use reversed word if longer.
@@ -521,11 +518,11 @@ export function GameLoop() {
                 if (col_top !== -1) {
                     newMatchedWords.push(
                         isColReversed
-                            ? boardPhysics.boardCellMatrix.map((row) => row[c])
+                            ? boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
                                 ).reverse().join("")
-                            : boardPhysics.boardCellMatrix.map((row) => row[c])
+                            : boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
                                 ).join(""),
@@ -559,7 +556,7 @@ export function GameLoop() {
                 const animTime = performance.now() - matchAnimStart;
                 if (matchAnimLength <= animTime) {
                     // Also remove characters. (hasMatched)
-                    let newBoard = boardPhysics.boardCellMatrix.slice();
+                    let newBoard = boardCellMatrix.slice();
                     newBoard.forEach((row, r) => {
                         row.forEach((cell, c) => {
                             if (matchedCells.has([r, c].toString())) {
@@ -608,7 +605,7 @@ export function GameLoop() {
                     adjustedCells={playerPhysics.adjustedCells}
                 />
                 <BoardComponent
-                    boardCellMatrix={boardCellMatrix} gameRound={gameRound}
+                    boardCellMatrix={boardCellMatrix}
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over

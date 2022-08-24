@@ -29,7 +29,7 @@ export class PlayerPhysics {
     hasMoved: boolean;
     needsRerender: boolean;
 
-    constructor(boardPhysics: BoardPhysics) {
+    constructor() {
         this.resetBlock();
         this.hasMoved = false;
         this.needsRerender = false;

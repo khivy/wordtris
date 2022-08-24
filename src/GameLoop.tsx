@@ -22,7 +22,7 @@ import {
     isInCBounds,
     isPlayerTouchingGround,
 } from "./PlayerPhysics";
-import { BoardPhysics } from "./BoardPhysics";
+import { createBoard, getGroundHeight } from "./BoardPhysics";
 import { BoardCell } from "./BoardCell";
 import { WordList } from "./WordList";
 import { useInterval } from "./useInterval";
@@ -120,7 +120,7 @@ const countdownTotalSecs = 3;
 
 export function GameLoop () {
     const [boardCellMatrix, setBoardCellMatrix] = useState(
-        BoardPhysics.createBoard(BOARD_ROWS, BOARD_COLS)
+        createBoard(BOARD_ROWS, BOARD_COLS)
     );
 
     const [playerPos, setPlayerPos] = useState(spawnPos.slice() as [number, number]);
@@ -290,7 +290,7 @@ export function GameLoop () {
                 playerAdjustedCells.forEach((cell) =>
                     ground_row = Math.min(
                         ground_row,
-                        BoardPhysics.getGroundHeight(cell.c, cell.r, boardCellMatrix),
+                        getGroundHeight(cell.c, cell.r, boardCellMatrix),
                     )
                 );
                 const mid = Math.floor(layout.length / 2);
@@ -386,7 +386,7 @@ export function GameLoop () {
     function handleStates () {
         if ("startingGame" === stateHandler.state.value) {
             // Takes care of multiple enqueued state changes.
-            setBoardCellMatrix(BoardPhysics.createBoard(BOARD_ROWS, BOARD_COLS));
+            setBoardCellMatrix(createBoard(BOARD_ROWS, BOARD_COLS));
 
             // Reset Word List.
             setMatchedWords([]);

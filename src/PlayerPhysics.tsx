@@ -11,9 +11,9 @@ import {
 } from "./setup";
 import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
-import { BoardPhysics } from "./BoardPhysics";
+import { getGroundHeight } from "./BoardPhysics";
 
-export const spawnPos = [1, 3];
+export const spawnPos = [1, 3] as const;
 export const layout = [
     [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
     [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -129,7 +129,7 @@ export function getAdjustedUserCell({ r, c, char, uid }: UserCell, pos: [number,
 
 export function isPlayerTouchingGround (cells: UserCell[], board: BoardCell[][]) {
     return cells.some((cell) => {
-        return cell.r >= BoardPhysics.getGroundHeight(cell.c, cell.r, board);
+        return cell.r >= getGroundHeight(cell.c, cell.r, board);
     });
 }
 
@@ -149,7 +149,7 @@ export function dropFloatingCells (
                 newBoard[r][c].char !== EMPTY &&
                 newBoard[r + 1][c].char === EMPTY
             ) {
-                const g = BoardPhysics.getGroundHeight(c, r, newBoard);
+                const g = getGroundHeight(c, r, newBoard);
                 newBoard[g][c].char = newBoard[r][c].char;
                 newBoard[r][c].char = EMPTY;
                 // Update cell in placedCells.

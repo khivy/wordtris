@@ -1,7 +1,6 @@
 import "./App.css";
 import { generateRandomChar } from "./components/Board";
 import {
-    _ENABLE_UP_KEY,
     BOARD_COLS,
     BOARD_ROWS,
     EMPTY,
@@ -12,43 +11,21 @@ import {
 } from "./setup";
 import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
-import { BoardPhysics } from "./BoardPhysics";
 
 export class PlayerPhysics {
-    cells: UserCell[];
-    adjustedCells: UserCell[];
-    pos: [number, number]; // r, c
-    spawnPos = [1, 3] as const;
-    layout = [
+    static spawnPos = [1, 3] as const;
+    static layout = [
         [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
         [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
         [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
         [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
     ] as const;
-    hasMoved: boolean;
-    needsRerender: boolean;
 
-    constructor() {
-        this.resetBlock();
-        this.hasMoved = false;
-        this.needsRerender = false;
-    }
-
-    setPos(r: number, c: number) {
-        this.pos[0] = r;
-        this.pos[1] = c;
-        // Update adjusted cells, which also allows React to see new updates.
-        this.adjustedCells = this.cells.map((cell) =>
-            this.getAdjustedUserCell(cell)
-        );
-    }
-
-    rotateCells(cells: UserCell[], isClockwise: boolean): UserCell[] {
-        console.assert(this.layout.length == this.layout[0].length);
-        console.assert(this.layout.length % 2 == 1);
-        console.log(this.adjustedCells);
-        const mid = Math.floor(this.layout.length / 2);
+    static rotateCells(cells: UserCell[], isClockwise: boolean): UserCell[] {
+        console.assert(PlayerPhysics.layout.length == PlayerPhysics.layout[0].length);
+        console.assert(PlayerPhysics.layout.length % 2 == 1);
+        const mid = Math.floor(PlayerPhysics.layout.length / 2);
         return cells.map(({ r, c, char, uid }) => {
             // Center around mid.
             // Remember, top-left is `(0, 0)` and bot-right is `(last, last)`.
@@ -67,43 +44,43 @@ export class PlayerPhysics {
         });
     }
 
-    getAdjustedLeftmostC(): number {
-        return this.adjustedCells.reduce((prev, cur) =>
+    static getAdjustedLeftmostC(adjustedCells: UserCell[]): number {
+        return adjustedCells.reduce((prev, cur) =>
             prev.c < cur.c ? prev : cur
         ).c;
     }
 
-    getAdjustedRightmostC(): number {
-        return this.adjustedCells.reduce((prev, cur) =>
+    static getAdjustedRightmostC(adjustedCells: UserCell[]): number {
+        return adjustedCells.reduce((prev, cur) =>
             prev.c < cur.c ? cur : prev
         ).c;
     }
 
-    getAdjustedTopR(): number {
-        return this.adjustedCells.reduce((prev, cur) =>
+    static getAdjustedTopR(adjustedCells: UserCell[]): number {
+        return adjustedCells.reduce((prev, cur) =>
             prev.r < cur.r ? prev : cur
         ).r;
     }
 
-    getAdjustedBottomR(): number {
-        return this.adjustedCells.reduce((prev, cur) =>
+    static getAdjustedBottomR(adjustedCells: UserCell[]): number {
+        return adjustedCells.reduce((prev, cur) =>
             prev.r < cur.r ? cur : prev
         ).r;
     }
 
-    isInRBounds(r: number): boolean {
+    static isInRBounds(r: number): boolean {
         return 0 <= r && r < BOARD_ROWS;
     }
 
-    isInCBounds(c: number): boolean {
+    static isInCBounds(c: number): boolean {
         return 0 <= c && c < BOARD_COLS;
     }
 
     // Returns the number of times crossed onto a new row.
-    doGradualFall(board: BoardCell[][]): number {
+    static doGradualFall(board: BoardCell[][], adjustedCells: UserCell[], hasMoved: boolean): number {
         interp.val += interpRate;
         if (
-            this.adjustedCells.some((cell) =>
+            adjustedCells.some((cell) =>
                 !this.isInRBounds(cell.r + 1) ||
                 board[cell.r + 1][cell.c].char !== EMPTY
             )
@@ -114,16 +91,15 @@ export class PlayerPhysics {
         while (interpMax <= interp.val) {
             dr += 1;
             interp.val -= interpMax;
-            this.hasMoved = true;
-            this.needsRerender = true;
+            hasMoved = true;
         }
         return dr;
     }
 
-    generateUserCells(): UserCell[] {
+    static generateUserCells(): UserCell[] {
         // Return starting block matrix of UserCells with randomly-assigned characters.
         // TODO: Make it pseudo-random.
-        return this.layout.flatMap((row, r) =>
+        return PlayerPhysics.layout.flatMap((row, r) =>
             row.map((ch, c) =>
                 ch === TBD && ({
                     r,
@@ -135,20 +111,17 @@ export class PlayerPhysics {
         );
     }
 
-    resetBlock() {
-        this.pos = [...this.spawnPos];
-        this.cells = this.generateUserCells();
-        this.setPos(this.pos[0], this.pos[1]);
-        this.adjustedCells = this.cells.map((cell) =>
-            this.getAdjustedUserCell(cell)
+    static convertCellsToAdjusted(cells: UserCell[], pos: [number, number]) {
+        return cells.map((cell) =>
+            PlayerPhysics.getAdjustedUserCell(cell, pos)
         );
     }
 
     // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
-    getAdjustedUserCell({ r, c, char, uid }: UserCell): UserCell {
+    static getAdjustedUserCell({ r, c, char, uid }: UserCell, pos: [number, number]): UserCell {
         return {
-            r: r + this.pos[0] - Math.floor(this.layout.length / 2),
-            c: c + this.pos[1] - Math.floor(this.layout[0].length / 2),
+            r: r + pos[0] - Math.floor(PlayerPhysics.layout.length / 2),
+            c: c + pos[1] - Math.floor(PlayerPhysics.layout[0].length / 2),
             char,
             uid,
         };

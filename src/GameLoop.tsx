@@ -71,9 +71,12 @@ const stateMachine = createMachine({
         placingBlock: { on: { TOUCHINGBLOCK: "lockDelay", BLOCKED: "gameOver" } },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
-        checkingMatches: { on: { PLAYING_ANIM: "playMatchAnimation" } },
+        checkingMatches: { on: { PLAYING_ANIM: "playMatchAnimation", SKIP_ANIM: "postMatchAnimation" } },
         playMatchAnimation: {
-            on: { DO_CHAIN: "checkingMatches", DONE: "spawningBlock" },
+            on: { CHECK_FOR_CHAIN: "checkingMatches" },
+        },
+        postMatchAnimation: {
+            on: { DONE: "spawningBlock" },
         },
         gameOver: { on: { RESTART: "startingGame" } },
 
@@ -88,13 +91,9 @@ const stateHandler = interpret(stateMachine).onTransition((state) => {
 stateHandler.start();
 
 // Various game logic vars.
-
 /* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
 const framesPerSecLimit = 60;
-
 const frameStep = 1000 / framesPerSecLimit;
-let accumFrameTime = 0;
-let prevFrameTime = performance.now();
 
 /* Block cell coordinates that were placed/dropped.. */
 const placedCells: Set<[number, number]> = new Set();
@@ -102,43 +101,48 @@ const placedCells: Set<[number, number]> = new Set();
 /* matchedCells stores string coordinates, rather than [number, number],
 to allow for `.has()` to find equivalent coordinates. */
 const matchedCells: Set<string> = new Set();
-let lockStart: number | undefined;
 
 /* The amount of time it takes before a block locks in place. */
 const lockMax = 1500;
-
-let matchAnimStart: number | undefined;
 const matchAnimLength = 750;
-let isMatchChaining = false;
-let isPlayerMovementEnabled = false;
-let didInstantDrop = false;
+const groundExitPenaltyRate = 250;
 
-let leaveGroundPenalty = 0;
-const leaveGroundRate = 250;
-
-// This has trouble being used as React state due to React's asynchronous updates.
-let countdownMillisecondsElapsed = 0;
 const countdownTotalSecs = 3;
+const timestamps = {
+    matchAnimStart: 0,
+    lockStart: 0,
+    countdownStartTime: 0,
+    accumFrameTime: 0,
+    prevFrameTime: performance.now(),
+    countdownMillisecondsElapsed: 0,
+    
+}
 
 export function GameLoop () {
     const [boardCellMatrix, setBoardCellMatrix] = useState(
         createBoard(BOARD_ROWS, BOARD_COLS)
     );
 
+    // Player state.
     const [playerPos, setPlayerPos] = useState(spawnPos.slice() as [number, number]);
     const [playerCells, setPlayerCells] = useState(generateUserCells());
     const [playerAdjustedCells, setPlayerAdjustedCells] = useState(convertCellsToAdjusted(playerCells, playerPos));
     const [playerHasMoved, setPlayerHasMoved] = useState(false);
-
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
+    const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(false);
 
     const [matchedWords, setMatchedWords] = useState([] as string[]);
 
+    // Variables for `<CountdownOverlay/>`
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
     const [countdownSec, setcountdownSec] = useState(0);
     const [countdownStartTime, setCountdownStartTime] = useState(0);
 
+    // Variable(s) to prevent infinite stalling.
     const [isGameOverVisible, setGameOverVisibility] = useState(false);
+    const [groundExitPenalty, setGroundExitPenalty] = useState(0);
+
+    const [didInstantDrop, setDidInstantDrop] = useState(false);
 
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
@@ -216,8 +220,6 @@ export function GameLoop () {
             return;
         }
         const board = boardCellMatrix;
-        const r = playerPos[0];
-        const c = playerPos[1];
         const areTargetSpacesEmpty = (
             dr: -1 | 0 | 1 | number,
             dc: -1 | 0 | 1,
@@ -241,8 +243,11 @@ export function GameLoop () {
                     -1,
                 )
             ) {
-                setPlayerPos([r, c - 1]);
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                setPlayerPos(prev => {
+                    const pos = [prev[0], prev[1] - 1] as [number, number];
+                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    return pos;
+                });
                 setPlayerHasMoved(true);
             }
         } else if ("ArrowRight" == code) {
@@ -262,8 +267,11 @@ export function GameLoop () {
                     1,
                 )
             ) {
-                setPlayerPos([r, c + 1]);
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                setPlayerPos(prev => {
+                    const pos = [prev[0], prev[1] + 1] as [number, number];
+                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    return pos;
+                });
                 setPlayerHasMoved(true);
             }
         } else if ("ArrowDown" == code) {
@@ -275,8 +283,13 @@ export function GameLoop () {
                 if (ENABLE_SMOOTH_FALL) {
                     interp.val += interpRate * interpKeydownMult;
                 } else {
-                    setPlayerPos([r + 1, c]);
-                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                    setPlayerPos(prev => {
+                        const pos = [prev[0] + 1, prev[1]] as [number, number];
+                        setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                        return pos;
+                    });
+                    // Reset interp.
+                    interp.val = 0;
                 }
             }
         } else if ("KeyZ" == code) {
@@ -301,16 +314,22 @@ export function GameLoop () {
                 playerCells.forEach((cell) =>
                     dy = Math.max(dy, cell.r - mid)
                 );
-                setPlayerPos([ground_row - dy, playerPos[1]]); // + the lowest on that row if its >center
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                setPlayerPos(prev => {
+                    const pos = [ground_row - dy, prev[1]] as [number, number];
+                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    return pos;
+                });
                 setPlayerHasMoved(true);
-                didInstantDrop = true;
+                setDidInstantDrop(true);
             } else if (
                 _ENABLE_UP_KEY && 0 <= getAdjustedTopR(playerAdjustedCells) - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {
-                setPlayerPos([r - 1, c]);
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                setPlayerPos(prev => {
+                    const pos = [prev[0] - 1, prev[1]] as [number, number];
+                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    return pos;
+                });
                 setPlayerHasMoved(true);
             }
         }
@@ -318,12 +337,12 @@ export function GameLoop () {
 
     const loop = () => {
         const curTime = performance.now();
-        accumFrameTime += curTime - prevFrameTime;
-        prevFrameTime = curTime;
+        timestamps.accumFrameTime += curTime - timestamps.prevFrameTime;
+        timestamps.prevFrameTime = curTime;
 
         // Update physics.
-        while (accumFrameTime >= frameStep) {
-            accumFrameTime -= frameStep;
+        while (timestamps.accumFrameTime >= frameStep) {
+            timestamps.accumFrameTime -= frameStep;
             handleStates();
             if (isPlayerMovementEnabled) {
                 const dr = doGradualFall(
@@ -345,7 +364,7 @@ export function GameLoop () {
             ) {
                 // Pause player movement.
                 setPlayerVisibility(false);
-                isPlayerMovementEnabled = false;
+                setIsPlayerMovementEnabled(false);
 
                 setGameOverVisibility(true);
                 stateHandler.send("BLOCKED");
@@ -396,11 +415,11 @@ export function GameLoop () {
             setGameOverVisibility(false);
 
             setCountdownVisibility(true);
-            setCountdownStartTime(performance.now());
+            timestamps.countdownStartTime = performance.now();
             stateHandler.send("START");
         } else if ("countdown" === stateHandler.state.value) {
-            countdownMillisecondsElapsed = performance.now() - countdownStartTime;
-            const currCountdownSec = countdownTotalSecs - Math.floor(countdownMillisecondsElapsed / 1000);
+            timestamps.countdownMillisecondsElapsed = performance.now() - timestamps.countdownStartTime;
+            const currCountdownSec = countdownTotalSecs - Math.floor(timestamps.countdownMillisecondsElapsed / 1000);
             if (currCountdownSec !== 0) {
                 setcountdownSec(currCountdownSec);
             } else {
@@ -411,53 +430,55 @@ export function GameLoop () {
             setCountdownVisibility(false);
 
             // Reset player.
-            isPlayerMovementEnabled = true;
+            // This nested structure prevents desync between the given state variables.
+            setPlayerPos(() => {
+                const pos = spawnPos.slice() as [number, number];
+                setPlayerCells(() => {
+                    const cells = generateUserCells();
+                    setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
+                    return cells;
+                });
+                return pos;
+            });
+            setIsPlayerMovementEnabled(true);
             setPlayerVisibility(true);
 
             // Reset penalty.
-            leaveGroundPenalty = 0;
+            setGroundExitPenalty(0);
 
             placedCells.clear();
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
             if (isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
+                timestamps.lockStart = performance.now();
                 stateHandler.send("TOUCHINGBLOCK");
-                lockStart = performance.now();
             }
         } else if ("lockDelay" === stateHandler.state.value) {
-            const lockTime = performance.now() - lockStart + leaveGroundPenalty;
-
+            const lockTime = performance.now() - timestamps.lockStart + groundExitPenalty;
+            console.log(playerHasMoved)
             if (playerHasMoved && !isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
                 // Player has moved off of ground.
-                leaveGroundPenalty += leaveGroundRate;
+                setGroundExitPenalty(prev => prev + groundExitPenaltyRate);
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
+                // Lock in block.
                 const newBoard = boardCellMatrix.slice();
                 playerAdjustedCells.forEach((cell) => {
                     placedCells.add([cell.r, cell.c]);
                     // Give player cells to board.
                     newBoard[cell.r][cell.c].char = cell.char;
                 });
-                // Allow React to see change with a new object:
                 setBoardCellMatrix(newBoard);
                 interp.val = 0;
-                // Allow React to see change with a new object:
-                setPlayerPos(spawnPos.slice());
-                setPlayerCells(generateUserCells());
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
-
-                didInstantDrop = false;
-
-                stateHandler.send("LOCK");
+                setDidInstantDrop(false);
                 // Disable player block features.
-                isPlayerMovementEnabled = false;
+                setIsPlayerMovementEnabled(false);
                 setPlayerVisibility(false);
+                stateHandler.send("LOCK");
             }
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [newBoardWithDrops, added, _removed] = dropFloatingCells(
-                boardCellMatrix,
-            );
+            const [newBoardWithDrops, added, _removed] = dropFloatingCells(boardCellMatrix);
             setBoardCellMatrix(newBoardWithDrops);
             added.forEach((coord) => placedCells.add(coord));
             stateHandler.send("GROUNDED");
@@ -527,6 +548,7 @@ export function GameLoop () {
             });
 
             setMatchedWords(matchedWords => matchedWords.concat(newMatchedWords));
+            timestamps.matchAnimStart = performance.now();
 
             // Signal characters to remove.
             newBoard.forEach((row, r) => {
@@ -539,39 +561,37 @@ export function GameLoop () {
 
             setBoardCellMatrix(newBoard);
             if (hasRemovedWord) {
-                isMatchChaining = true;
-                matchAnimStart = performance.now();
-            }
-            stateHandler.send("PLAYING_ANIM");
-        } else if ("playMatchAnimation" === stateHandler.state.value) {
-            if (isMatchChaining) {
-                const animTime = performance.now() - matchAnimStart;
-                if (matchAnimLength <= animTime) {
-                    // Also remove characters. (hasMatched)
-                    let newBoard = boardCellMatrix.slice();
-                    newBoard.forEach((row, r) => {
-                        row.forEach((cell, c) => {
-                            if (matchedCells.has([r, c].toString())) {
-                                cell.char = EMPTY;
-                                cell.hasMatched = false;
-                            }
-                        })
-                    });
-
-                    // Drop all characters.
-                    const [newBoardWithDrops, added, _removed] = dropFloatingCells(newBoard);
-                    setBoardCellMatrix(newBoardWithDrops);
-                    placedCells.clear();
-                    added.forEach((coord) => placedCells.add(coord));
-
-                    // Go back to checkingMatches to see if dropped letters causes more matches.
-                    matchedCells.clear();
-                    isMatchChaining = false;
-                    stateHandler.send("DO_CHAIN");
-                }
+                stateHandler.send("PLAYING_ANIM");
             } else {
-                stateHandler.send("DONE");
+                stateHandler.send("SKIP_ANIM");
             }
+        } else if ("playMatchAnimation" === stateHandler.state.value) {
+            const animTime = performance.now() - timestamps.matchAnimStart;
+            if (matchAnimLength <= animTime) {
+                // Also remove characters. (hasMatched)
+                let newBoard = boardCellMatrix.slice();
+                newBoard.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        if (matchedCells.has([r, c].toString())) {
+                            cell.char = EMPTY;
+                            cell.hasMatched = false;
+                        }
+                    })
+                });
+
+                // Drop all characters.
+                const [newBoardWithDrops, added, _removed] = dropFloatingCells(newBoard);
+                setBoardCellMatrix(newBoardWithDrops);
+                placedCells.clear();
+                added.forEach((coord) => placedCells.add(coord));
+
+                // Go back to checkingMatches to see if dropped letters causes more matches.
+                matchedCells.clear();
+                stateHandler.send("CHECK_FOR_CHAIN");
+            }
+        } else if ("postMatchAnimation" === stateHandler.state.value) {
+            placedCells.clear();
+            stateHandler.send("DONE");
         } else if ("gameOver" === stateHandler.state.value) {
             // TODO Add 'play again' button
         }

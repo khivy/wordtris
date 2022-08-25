@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
@@ -108,7 +108,7 @@ export function GameLoop() {
 
     useEffect(() => {
         // Fetch validWords during countdown.
-        const webpath = "https://raw.githubusercontent.com/khivy/wordtris/main/lexicons/Google20000.txt";
+        const webpath = "../lexicons/Scrabble80K.txt";
         fetch(webpath)
             .then((res) =>  res.text() )
             .then((res) => res.split('\n'))

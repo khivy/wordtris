@@ -1,5 +1,5 @@
 import { BoardCell } from "./BoardCell";
-import { EMPTY } from "./setup";
+import { EMPTY } from "../setup";
 
 export function createBoard(rows: number, cols: number): BoardCell[][] {
     // Init cells.

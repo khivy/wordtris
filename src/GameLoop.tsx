@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
-import { PlayerComponent } from "./PlayerComponent";
-import { BoardComponent } from "./BoardComponent";
+import { PlayerBlock } from "./components/PlayerBlock";
+import { BoardCells } from "./components/BoardCells";
 import {
     convertCellsToAdjusted,
     doGradualFall,
@@ -21,11 +21,11 @@ import {
     layout,
     rotateCells,
     spawnPos,
-} from "./PlayerPhysics";
-import { createBoard, getGroundHeight } from "./BoardPhysics";
-import { BoardCell } from "./BoardCell";
-import { WordList } from "./WordList";
-import { useInterval } from "./useInterval";
+} from "./util/playerUtil";
+import { createBoard, getGroundHeight } from "./util/boardUtil";
+import { BoardCell } from "./util/BoardCell";
+import { WordList } from "./components/WordList";
+import { useInterval } from "./util/useInterval";
 import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import { CountdownOverlay } from "./components/CountdownOverlay";
 import {
@@ -659,11 +659,11 @@ export function GameLoop() {
                     countdownSec={countdownSec}
                 />
 
-                <PlayerComponent
+                <PlayerBlock
                     isVisible={isPlayerVisible}
                     adjustedCells={playerAdjustedCells}
                 />
-                <BoardComponent
+                <BoardCells
                     boardCellMatrix={boardCellMatrix}
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>

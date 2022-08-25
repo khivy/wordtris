@@ -1,8 +1,8 @@
 import * as React from "react";
-import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "./setup";
-import { UserCell } from "./UserCell";
+import { _ENABLE_UP_KEY, ENABLE_SMOOTH_FALL, interp } from "../setup";
+import { UserCell } from "../util/UserCell";
 
-export const PlayerComponent = React.memo(
+export const PlayerBlock = React.memo(
     (
         { isVisible, adjustedCells }: {
             isVisible: boolean;

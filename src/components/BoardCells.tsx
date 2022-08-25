@@ -1,8 +1,8 @@
 import * as React from "react";
-import { BoardCell } from "./BoardCell";
-import { EMPTY } from "./setup";
+import { BoardCell } from "../util/BoardCell";
+import { EMPTY } from "../setup";
 
-export const BoardComponent = React.memo(
+export const BoardCells = React.memo(
     ({ boardCellMatrix }: { boardCellMatrix: BoardCell[][] }) => {
         const boardCells = boardCellMatrix.map((row, r) =>
             row.map((cell, c) => {

@@ -59,7 +59,4 @@ function pickWeightedRandom(
 
 export function generateRandomChar(): string {
     return pickWeightedRandom(...buildWeightedCharacters(weightedChars));
-    // return String.fromCharCode(
-    //     Math.floor(Math.random() * 26) + 97,
-    // );
 }

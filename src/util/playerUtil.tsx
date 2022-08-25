@@ -1,5 +1,5 @@
-import "./App.css";
-import { generateRandomChar } from "./components/Board";
+import "../App.css";
+import { generateRandomChar } from "../components/Board";
 import {
     BOARD_COLS,
     BOARD_ROWS,
@@ -8,10 +8,10 @@ import {
     interpMax,
     interpRate,
     TBD,
-} from "./setup";
+} from "../setup";
 import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
-import { getGroundHeight } from "./BoardPhysics";
+import { getGroundHeight } from "./boardUtil";
 
 export const spawnPos = [1, 3];
 export const layout = [

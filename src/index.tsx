@@ -5,7 +5,6 @@ import "./index.css";
 import { GameLoop } from "./GameLoop";
 import { reportWebVitals } from "./reportWebVitals";
 import { StrictMode } from "react";
-import { fetchValidWords } from "./validWords";
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(

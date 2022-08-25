@@ -75,7 +75,6 @@ export function isInCBounds(c: number): boolean {
 export function doGradualFall(
     board: BoardCell[][],
     adjustedCells: UserCell[],
-    hasMoved: boolean,
 ): number {
     interp.val += interpRate;
     if (
@@ -90,7 +89,6 @@ export function doGradualFall(
     while (interpMax <= interp.val) {
         dr += 1;
         interp.val -= interpMax;
-        hasMoved = true;
     }
     return dr;
 }

@@ -103,7 +103,6 @@ const timestamps = {
 };
 
 export function GameLoop() {
-    // const [validWords, _setValidWords] = useState(new Set(validWordsResponse.read()));
     const [validWords, setValidWords] = useState(new Set());
 
     useEffect(() => {
@@ -127,7 +126,6 @@ export function GameLoop() {
     const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
         convertCellsToAdjusted(playerCells, playerPos),
     );
-    const [playerHasMoved, setPlayerHasMoved] = useState(false);
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
     const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(
         false,
@@ -147,7 +145,6 @@ export function GameLoop() {
     // Variables for `<CountdownOverlay/>`
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
     const [countdownSec, setcountdownSec] = useState(0);
-    const [countdownStartTime, setCountdownStartTime] = useState(0);
 
     // Variable(s) to prevent infinite stalling.
     const [isGameOverVisible, setGameOverVisibility] = useState(false);
@@ -194,7 +191,6 @@ export function GameLoop() {
             }
             setPlayerCells(rotatedCells);
             setPlayerAdjustedCells(rotatedCellsAdjusted);
-            setPlayerHasMoved(true);
         } else {
             console.assert(playerAdjustedCells.length === 2);
             // Get direction of overlapping cell.
@@ -219,7 +215,6 @@ export function GameLoop() {
             if (!isOverlapping) {
                 setPlayerCells(rotatedCells);
                 setPlayerAdjustedCells(rotatedCellsAdjusted);
-                setPlayerHasMoved(true);
             }
         }
     }
@@ -237,7 +232,7 @@ export function GameLoop() {
         ) => playerAdjustedCells.every((cell) => {
             return board[cell.r + dr][cell.c + dc].char === EMPTY;
         });
-        if ("ArrowLeft" == code) {
+        if ("ArrowLeft" === code) {
             // Move left.
             if (
                 isInCBounds(
@@ -261,9 +256,8 @@ export function GameLoop() {
                     );
                     return pos;
                 });
-                setPlayerHasMoved(true);
             }
-        } else if ("ArrowRight" == code) {
+        } else if ("ArrowRight" === code) {
             // Move right.
             if (
                 isInCBounds(
@@ -287,9 +281,8 @@ export function GameLoop() {
                     );
                     return pos;
                 });
-                setPlayerHasMoved(true);
             }
-        } else if ("ArrowDown" == code) {
+        } else if ("ArrowDown" === code) {
             // Move down faster.
             if (
                 getAdjustedBottomR(playerAdjustedCells) + 1 < BOARD_ROWS &&
@@ -309,13 +302,13 @@ export function GameLoop() {
                     interp.val = 0;
                 }
             }
-        } else if ("KeyZ" == code) {
+        } else if ("KeyZ" === code) {
             // Rotate left.
             rotatePlayerBlock(false, board);
-        } else if ("ArrowUp" == code || "KeyX" == code) {
+        } else if ("ArrowUp" === code || "KeyX" === code) {
             // Rotate right.
             rotatePlayerBlock(true, board);
-        } else if ("Space" == code) {
+        } else if ("Space" === code) {
             // Instant drop.
             if (ENABLE_INSTANT_DROP) {
                 let ground_row = BOARD_ROWS;
@@ -336,7 +329,6 @@ export function GameLoop() {
                     );
                     return pos;
                 });
-                setPlayerHasMoved(true);
                 setDidInstantDrop(true);
             } else if (
                 _ENABLE_UP_KEY &&
@@ -350,7 +342,6 @@ export function GameLoop() {
                     );
                     return pos;
                 });
-                setPlayerHasMoved(true);
             }
         }
     }
@@ -468,7 +459,6 @@ export function GameLoop() {
                 const dr = doGradualFall(
                     boardCellMatrix,
                     playerAdjustedCells,
-                    playerHasMoved,
                 );
                 setPlayerPos([
                     playerPos[0] + dr,
@@ -487,10 +477,7 @@ export function GameLoop() {
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
                 groundExitPenalty;
-            if (
-                playerHasMoved &&
-                !isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)
-            ) {
+            if (!isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
                 // Player has moved off of ground.
                 setGroundExitPenalty((prev) => prev + groundExitPenaltyRate);
                 stateHandler.send("UNLOCK");
@@ -654,9 +641,7 @@ export function GameLoop() {
             });
             stateHandler.send("DONE");
         } else if ("gameOver" === stateHandler.state.value) {
-            // TODO Add 'play again' button
         }
-        setPlayerHasMoved(false);
     }
 
     const appStyle = {

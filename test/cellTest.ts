@@ -1,10 +1,12 @@
-import { BoardPhysics } from "../src/BoardPhysics";
+import { createBoard, getGroundHeight } from "../src/BoardPhysics";
 
 function testBaseHeight() {
     const len = 5;
-    const b = new BoardPhysics(len, len);
+    const matrix = createBoard(len, len);
     for (let i = 0; i < len; ++i) {
-        console.assert(b.getGroundHeight(i, len - 1) == len - 1);
+        console.assert(
+            getGroundHeight(i, len - 1, matrix) == len - 1,
+        );
     }
 }
 

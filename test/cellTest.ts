@@ -1,4 +1,4 @@
-import { createBoard, getGroundHeight } from "../src/BoardPhysics";
+import { createBoard, getGroundHeight } from "../src/util/boardUtil";
 
 function testBaseHeight() {
     const len = 5;

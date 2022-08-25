@@ -1,5 +1,5 @@
-import "./App.css";
-import { generateRandomChar } from "./components/Board";
+import "../App.css";
+import { generateRandomChar } from "../components/Board";
 import {
     BOARD_COLS,
     BOARD_ROWS,
@@ -8,10 +8,10 @@ import {
     interpMax,
     interpRate,
     TBD,
-} from "./setup";
+} from "../setup";
 import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
-import { getGroundHeight } from "./BoardPhysics";
+import { getGroundHeight } from "./boardUtil";
 
 export const spawnPos = [1, 3];
 export const layout = [
@@ -75,7 +75,6 @@ export function isInCBounds(c: number): boolean {
 export function doGradualFall(
     board: BoardCell[][],
     adjustedCells: UserCell[],
-    hasMoved: boolean,
 ): number {
     interp.val += interpRate;
     if (
@@ -90,7 +89,6 @@ export function doGradualFall(
     while (interpMax <= interp.val) {
         dr += 1;
         interp.val -= interpMax;
-        hasMoved = true;
     }
     return dr;
 }

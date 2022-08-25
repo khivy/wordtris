@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Suspense } from "react";
 import * as ReactDOM from "react-dom/client";
 import "./index.css";
 import { GameLoop } from "./GameLoop";
@@ -8,7 +9,9 @@ import { StrictMode } from "react";
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
     <StrictMode>
-        <GameLoop />
+        <Suspense fallback={<div>Loading...</div>}>
+            <GameLoop />
+        </Suspense>
     </StrictMode>,
 );
 

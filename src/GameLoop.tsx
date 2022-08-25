@@ -640,7 +640,6 @@ export function GameLoop() {
                 return prev;
             });
             stateHandler.send("DONE");
-        } else if ("gameOver" === stateHandler.state.value) {
         }
     }
 

@@ -481,7 +481,6 @@ export function GameLoop() {
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
                 groundExitPenalty;
-            console.log(playerHasMoved);
             if (
                 playerHasMoved &&
                 !isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)

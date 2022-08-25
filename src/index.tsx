@@ -11,7 +11,7 @@ const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
     <StrictMode>
         <Suspense fallback={<div>Loading...</div>}>
-            <GameLoop validWordsResponse={fetchValidWords()}/>
+            <GameLoop />
         </Suspense>
     </StrictMode>,
 );

@@ -5,7 +5,6 @@ import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { PlayerComponent } from "./PlayerComponent";
 import { BoardComponent } from "./BoardComponent";
-import { readFile } from "fs/promises";
 import {
     convertCellsToAdjusted,
     doGradualFall,
@@ -103,8 +102,19 @@ const timestamps = {
     countdownMillisecondsElapsed: 0,
 };
 
-export function GameLoop({validWordsResponse}: {validWordsResponse}) {
-    const [validWords, _setValidWords] = useState(new Set(validWordsResponse.read()));
+export function GameLoop() {
+    // const [validWords, _setValidWords] = useState(new Set(validWordsResponse.read()));
+    const [validWords, setValidWords] = useState(new Set());
+
+    useEffect(() => {
+        // Fetch validWords during countdown.
+        const webpath = "https://raw.githubusercontent.com/khivy/wordtris/main/lexicons/Google20000.txt";
+        fetch(webpath)
+            .then((res) =>  res.text() )
+            .then((res) => res.split('\n'))
+            .then((data) => setValidWords(new Set(data))
+            );
+    }, []);
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(
         createBoard(BOARD_ROWS, BOARD_COLS),
@@ -355,34 +365,6 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
         while (timestamps.accumFrameTime >= frameStep) {
             timestamps.accumFrameTime -= frameStep;
             handleStates();
-            if (isPlayerMovementEnabled) {
-                const dr = doGradualFall(
-                    boardCellMatrix,
-                    playerAdjustedCells,
-                    playerHasMoved,
-                );
-                setPlayerPos([
-                    playerPos[0] + dr,
-                    playerPos[1],
-                ]);
-                setPlayerAdjustedCells(
-                    convertCellsToAdjusted(playerCells, playerPos),
-                );
-            }
-            // Reset if spawn point is blocked.
-            if (
-                "placingBlock" === stateHandler.state.value &&
-                boardCellMatrix[spawnPos[0]][
-                        spawnPos[1]
-                    ].char !== EMPTY
-            ) {
-                // Pause player movement.
-                setPlayerVisibility(false);
-                setIsPlayerMovementEnabled(false);
-
-                setGameOverVisibility(true);
-                stateHandler.send("BLOCKED");
-            }
         }
     };
 
@@ -442,6 +424,9 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
                 stateHandler.send("DONE");
             }
         } else if ("spawningBlock" === stateHandler.state.value) {
+            if (validWords.size === 0) {
+                return;
+            }
             // Hide countdown.
             setCountdownVisibility(false);
 
@@ -462,12 +447,40 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
             // Reset penalty.
             setGroundExitPenalty(0);
 
+            // Empty placedCells.
             setPlacedCells((prev) => {
                 prev.clear();
                 return prev;
             });
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
+            // Reset if spawn point is blocked.
+            if ( boardCellMatrix[spawnPos[0]][spawnPos[1]].char !== EMPTY) {
+                // Pause player movement.
+                setPlayerVisibility(false);
+                setIsPlayerMovementEnabled(false);
+                // Signal Game Over.
+                setGameOverVisibility(true);
+                stateHandler.send("BLOCKED");
+            }
+
+            // Handle gradual fall.
+            if (isPlayerMovementEnabled) {
+                const dr = doGradualFall(
+                    boardCellMatrix,
+                    playerAdjustedCells,
+                    playerHasMoved,
+                );
+                setPlayerPos([
+                    playerPos[0] + dr,
+                    playerPos[1],
+                ]);
+                setPlayerAdjustedCells(
+                    convertCellsToAdjusted(playerCells, playerPos),
+                );
+            }
+
+            // Check if player is touching ground.
             if (isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
                 timestamps.lockStart = performance.now();
                 stateHandler.send("TOUCHINGBLOCK");
@@ -496,6 +509,7 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
                 setBoardCellMatrix(newBoard);
                 interp.val = 0;
                 setDidInstantDrop(false);
+
                 // Disable player block features.
                 setIsPlayerMovementEnabled(false);
                 setPlayerVisibility(false);
@@ -660,6 +674,7 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
                     isVisible={isCountdownVisible}
                     countdownSec={countdownSec}
                 />
+
                 <PlayerComponent
                     isVisible={isPlayerVisible}
                     adjustedCells={playerAdjustedCells}
@@ -671,11 +686,9 @@ export function GameLoop({validWordsResponse}: {validWordsResponse}) {
                     Game Over
                     <PlayAgainButton stateHandler={stateHandler} />
                 </GameOverOverlay>
+
             </BoardStyled>
             <WordList displayedWords={matchedWords} />
         </div>
     );
 }
-
-// - suspend gameloop logic from running until suspense loads. once suspense is done it sets the READY boolean in the game loop. actually, that var might not
-// even be needed. I think we can just run async in the game loop code.

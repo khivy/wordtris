@@ -1,26 +1,26 @@
 import * as React from "react";
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { PlayerComponent } from "./PlayerComponent";
 import { BoardComponent } from "./BoardComponent";
 import {
-    spawnPos,
-    layout,
-    rotateCells,
     convertCellsToAdjusted,
+    doGradualFall,
     dropFloatingCells,
-    getAdjustedTopR,
+    generateUserCells,
     getAdjustedBottomR,
     getAdjustedLeftmostC,
-    getAdjustedUserCell,
-    generateUserCells,
     getAdjustedRightmostC,
-    doGradualFall,
-    isInRBounds,
+    getAdjustedTopR,
+    getAdjustedUserCell,
     isInCBounds,
+    isInRBounds,
     isPlayerTouchingGround,
+    layout,
+    rotateCells,
+    spawnPos,
 } from "./PlayerPhysics";
 import { createBoard, getGroundHeight } from "./BoardPhysics";
 import { BoardCell } from "./BoardCell";
@@ -33,19 +33,19 @@ import {
     _IS_PRINTING_STATE,
     BOARD_COLS,
     BOARD_ROWS,
+    countdownTotalSecs,
     EMPTY,
     ENABLE_INSTANT_DROP,
     ENABLE_SMOOTH_FALL,
+    frameStep,
+    groundExitPenaltyRate,
     interp,
     interpKeydownMult,
     interpMax,
     interpRate,
-    MIN_WORD_LENGTH,
-    countdownTotalSecs,
-    frameStep,
-    groundExitPenaltyRate,
-    matchAnimLength,
     lockMax,
+    matchAnimLength,
+    MIN_WORD_LENGTH,
 } from "./setup";
 
 // Unpack words that can be created.
@@ -74,10 +74,17 @@ const stateMachine = createMachine({
         startingGame: { on: { START: "countdown" } },
         countdown: { on: { DONE: "spawningBlock" } },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
-        placingBlock: { on: { TOUCHINGBLOCK: "lockDelay", BLOCKED: "gameOver" } },
+        placingBlock: {
+            on: { TOUCHINGBLOCK: "lockDelay", BLOCKED: "gameOver" },
+        },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
         fallingLetters: { on: { GROUNDED: "checkingMatches" } },
-        checkingMatches: { on: { PLAYING_ANIM: "playMatchAnimation", SKIP_ANIM: "postMatchAnimation" } },
+        checkingMatches: {
+            on: {
+                PLAYING_ANIM: "playMatchAnimation",
+                SKIP_ANIM: "postMatchAnimation",
+            },
+        },
         playMatchAnimation: {
             on: { CHECK_FOR_CHAIN: "checkingMatches" },
         },
@@ -85,7 +92,6 @@ const stateMachine = createMachine({
             on: { DONE: "spawningBlock" },
         },
         gameOver: { on: { RESTART: "startingGame" } },
-
     },
     predictableActionArguments: true,
 });
@@ -103,23 +109,31 @@ const timestamps = {
     accumFrameTime: 0,
     prevFrameTime: performance.now(),
     countdownMillisecondsElapsed: 0,
-}
+};
 
-export function GameLoop () {
+export function GameLoop() {
     const [boardCellMatrix, setBoardCellMatrix] = useState(
-        createBoard(BOARD_ROWS, BOARD_COLS)
+        createBoard(BOARD_ROWS, BOARD_COLS),
     );
 
     // Player state.
-    const [playerPos, setPlayerPos] = useState(spawnPos.slice() as [number, number]);
+    const [playerPos, setPlayerPos] = useState(
+        spawnPos.slice() as [number, number],
+    );
     const [playerCells, setPlayerCells] = useState(generateUserCells());
-    const [playerAdjustedCells, setPlayerAdjustedCells] = useState(convertCellsToAdjusted(playerCells, playerPos));
+    const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
+        convertCellsToAdjusted(playerCells, playerPos),
+    );
     const [playerHasMoved, setPlayerHasMoved] = useState(false);
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
-    const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(false);
+    const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(
+        false,
+    );
 
     /* Block cell coordinates that were placed/dropped.. */
-    const [placedCells, setPlacedCells] = useState(new Set() as Set<[number, number]>);
+    const [placedCells, setPlacedCells] = useState(
+        new Set() as Set<[number, number]>,
+    );
 
     // Variables for valid word matches.
     const [matchedWords, setMatchedWords] = useState([] as string[]);
@@ -141,7 +155,7 @@ export function GameLoop () {
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
         return () => {
-            globalThis.removeEventListener("keydown", updatePlayerPos)
+            globalThis.removeEventListener("keydown", updatePlayerPos);
         };
     });
 
@@ -149,7 +163,7 @@ export function GameLoop () {
         loop();
     }, 10);
 
-    function rotatePlayerBlock (isClockwise: boolean, board: BoardCell[][]) {
+    function rotatePlayerBlock(isClockwise: boolean, board: BoardCell[][]) {
         const rotatedCells = rotateCells(
             playerCells,
             isClockwise,
@@ -207,7 +221,7 @@ export function GameLoop () {
         }
     }
 
-    function updatePlayerPos (
+    function updatePlayerPos(
         { code }: { code: string },
     ): void {
         if (!isPlayerMovementEnabled) {
@@ -230,16 +244,18 @@ export function GameLoop () {
                 (!ENABLE_SMOOTH_FALL ||
                     isInRBounds(
                         getAdjustedBottomR(playerAdjustedCells) +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
                     -1,
                 )
             ) {
-                setPlayerPos(prev => {
+                setPlayerPos((prev) => {
                     const pos = [prev[0], prev[1] - 1] as [number, number];
-                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    setPlayerAdjustedCells(
+                        convertCellsToAdjusted(playerCells, pos),
+                    );
                     return pos;
                 });
                 setPlayerHasMoved(true);
@@ -254,16 +270,18 @@ export function GameLoop () {
                 (!ENABLE_SMOOTH_FALL ||
                     isInRBounds(
                         getAdjustedBottomR(playerAdjustedCells) +
-                        Math.ceil(interp.val / interpMax),
+                            Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
                     Math.ceil(ENABLE_SMOOTH_FALL ? interp.val / interpMax : 0),
                     1,
                 )
             ) {
-                setPlayerPos(prev => {
+                setPlayerPos((prev) => {
                     const pos = [prev[0], prev[1] + 1] as [number, number];
-                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    setPlayerAdjustedCells(
+                        convertCellsToAdjusted(playerCells, pos),
+                    );
                     return pos;
                 });
                 setPlayerHasMoved(true);
@@ -277,9 +295,11 @@ export function GameLoop () {
                 if (ENABLE_SMOOTH_FALL) {
                     interp.val += interpRate * interpKeydownMult;
                 } else {
-                    setPlayerPos(prev => {
+                    setPlayerPos((prev) => {
                         const pos = [prev[0] + 1, prev[1]] as [number, number];
-                        setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                        setPlayerAdjustedCells(
+                            convertCellsToAdjusted(playerCells, pos),
+                        );
                         return pos;
                     });
                     // Reset interp.
@@ -305,23 +325,26 @@ export function GameLoop () {
                 const mid = Math.floor(layout.length / 2);
                 // Offset with the lowest cell, centered around layout's midpoint.
                 let dy = 0;
-                playerCells.forEach((cell) =>
-                    dy = Math.max(dy, cell.r - mid)
-                );
-                setPlayerPos(prev => {
+                playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
+                setPlayerPos((prev) => {
                     const pos = [ground_row - dy, prev[1]] as [number, number];
-                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    setPlayerAdjustedCells(
+                        convertCellsToAdjusted(playerCells, pos),
+                    );
                     return pos;
                 });
                 setPlayerHasMoved(true);
                 setDidInstantDrop(true);
             } else if (
-                _ENABLE_UP_KEY && 0 <= getAdjustedTopR(playerAdjustedCells) - 1 &&
+                _ENABLE_UP_KEY &&
+                0 <= getAdjustedTopR(playerAdjustedCells) - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {
-                setPlayerPos(prev => {
+                setPlayerPos((prev) => {
                     const pos = [prev[0] - 1, prev[1]] as [number, number];
-                    setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                    setPlayerAdjustedCells(
+                        convertCellsToAdjusted(playerCells, pos),
+                    );
                     return pos;
                 });
                 setPlayerHasMoved(true);
@@ -346,14 +369,17 @@ export function GameLoop () {
                 );
                 setPlayerPos([
                     playerPos[0] + dr,
-                    playerPos[1]
+                    playerPos[1],
                 ]);
-                setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, playerPos));
+                setPlayerAdjustedCells(
+                    convertCellsToAdjusted(playerCells, playerPos),
+                );
             }
             // Reset if spawn point is blocked.
-            if ("placingBlock" === stateHandler.state.value &&
+            if (
+                "placingBlock" === stateHandler.state.value &&
                 boardCellMatrix[spawnPos[0]][
-                    spawnPos[1]
+                        spawnPos[1]
                     ].char !== EMPTY
             ) {
                 // Pause player movement.
@@ -366,7 +392,7 @@ export function GameLoop () {
         }
     };
 
-    function findWords (arr: BoardCell[], reversed: boolean): number[] {
+    function findWords(arr: BoardCell[], reversed: boolean): number[] {
         // Given the array of a row or column, returns the left and right indices (inclusive) of the longest word.
         const contents = reversed
             ? arr.map((cell) => cell.char === EMPTY ? "-" : cell.char).reverse()
@@ -398,7 +424,7 @@ export function GameLoop () {
             : [resLeft, resRight];
     }
 
-    function handleStates () {
+    function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
             // Takes care of multiple enqueued state changes.
             setBoardCellMatrix(createBoard(BOARD_ROWS, BOARD_COLS));
@@ -412,8 +438,10 @@ export function GameLoop () {
             timestamps.countdownStartTime = performance.now();
             stateHandler.send("START");
         } else if ("countdown" === stateHandler.state.value) {
-            timestamps.countdownMillisecondsElapsed = performance.now() - timestamps.countdownStartTime;
-            const currCountdownSec = countdownTotalSecs - Math.floor(timestamps.countdownMillisecondsElapsed / 1000);
+            timestamps.countdownMillisecondsElapsed = performance.now() -
+                timestamps.countdownStartTime;
+            const currCountdownSec = countdownTotalSecs -
+                Math.floor(timestamps.countdownMillisecondsElapsed / 1000);
             if (currCountdownSec !== 0) {
                 setcountdownSec(currCountdownSec);
             } else {
@@ -440,7 +468,7 @@ export function GameLoop () {
             // Reset penalty.
             setGroundExitPenalty(0);
 
-            setPlacedCells(prev => {
+            setPlacedCells((prev) => {
                 prev.clear();
                 return prev;
             });
@@ -451,16 +479,20 @@ export function GameLoop () {
                 stateHandler.send("TOUCHINGBLOCK");
             }
         } else if ("lockDelay" === stateHandler.state.value) {
-            const lockTime = performance.now() - timestamps.lockStart + groundExitPenalty;
-            console.log(playerHasMoved)
-            if (playerHasMoved && !isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
+            const lockTime = performance.now() - timestamps.lockStart +
+                groundExitPenalty;
+            console.log(playerHasMoved);
+            if (
+                playerHasMoved &&
+                !isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)
+            ) {
                 // Player has moved off of ground.
-                setGroundExitPenalty(prev => prev + groundExitPenaltyRate);
+                setGroundExitPenalty((prev) => prev + groundExitPenaltyRate);
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
                 // Lock in block.
                 const newBoard = boardCellMatrix.slice();
-                setPlacedCells(prev => {
+                setPlacedCells((prev) => {
                     playerAdjustedCells.forEach((cell) => {
                         prev.add([cell.r, cell.c]);
                         // Give player cells to board.
@@ -478,9 +510,11 @@ export function GameLoop () {
             }
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [newBoardWithDrops, added, _removed] = dropFloatingCells(boardCellMatrix);
+            const [newBoardWithDrops, added, _removed] = dropFloatingCells(
+                boardCellMatrix,
+            );
             setBoardCellMatrix(newBoardWithDrops);
-            setPlacedCells(prev => {
+            setPlacedCells((prev) => {
                 added.forEach((coord) => prev.add(coord));
                 return prev;
             });
@@ -551,16 +585,18 @@ export function GameLoop () {
                 }
             });
 
-            setMatchedWords(matchedWords => matchedWords.concat(newMatchedWords));
-            setMatchedCells(prev => {
-                newMatchedCells.forEach(word => prev.add(word));
+            setMatchedWords((matchedWords) =>
+                matchedWords.concat(newMatchedWords)
+            );
+            setMatchedCells((prev) => {
+                newMatchedCells.forEach((word) => prev.add(word));
                 // Signal characters to remove.
                 newBoard.forEach((row, r) => {
                     row.forEach((cell, c) => {
                         if (matchedCells.has([r, c].toString())) {
                             cell.hasMatched = true;
                         }
-                    })
+                    });
                 });
                 return prev;
             });
@@ -584,27 +620,29 @@ export function GameLoop () {
                             cell.char = EMPTY;
                             cell.hasMatched = false;
                         }
-                    })
+                    });
                 });
 
                 // Drop all characters.
-                const [newBoardWithDrops, added, _removed] = dropFloatingCells(newBoard);
+                const [newBoardWithDrops, added, _removed] = dropFloatingCells(
+                    newBoard,
+                );
                 setBoardCellMatrix(newBoardWithDrops);
-                setPlacedCells(prev => {
+                setPlacedCells((prev) => {
                     prev.clear();
                     added.forEach((coord) => prev.add(coord));
                     return prev;
                 });
 
                 // Go back to checkingMatches to see if dropped letters causes more matches.
-                setMatchedCells(prev => {
+                setMatchedCells((prev) => {
                     prev.clear();
                     return prev;
                 });
                 stateHandler.send("CHECK_FOR_CHAIN");
             }
         } else if ("postMatchAnimation" === stateHandler.state.value) {
-            setPlacedCells(prev => {
+            setPlacedCells((prev) => {
                 prev.clear();
                 return prev;
             });
@@ -638,10 +676,10 @@ export function GameLoop () {
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over
-                    <PlayAgainButton stateHandler={stateHandler}/>
+                    <PlayAgainButton stateHandler={stateHandler} />
                 </GameOverOverlay>
             </BoardStyled>
-            <WordList displayedWords={matchedWords}/>
+            <WordList displayedWords={matchedWords} />
         </div>
     );
 }

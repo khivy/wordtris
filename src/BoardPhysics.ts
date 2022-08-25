@@ -14,7 +14,11 @@ export function createBoard(rows: number, cols: number): BoardCell[][] {
     return cells;
 }
 
-export function getGroundHeight(col: number, startRow: number, board: BoardCell[][]): number {
+export function getGroundHeight(
+    col: number,
+    startRow: number,
+    board: BoardCell[][],
+): number {
     // Search for first non-EMPTY board cell from the top.
     for (let row = startRow; row < board.length - 1; ++row) {
         if (board[row + 1][col].char !== EMPTY) {

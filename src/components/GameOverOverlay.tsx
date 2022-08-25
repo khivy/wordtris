@@ -28,7 +28,7 @@ export const GameOverOverlay = React.memo(
 );
 
 export const PlayAgainButton = React.memo(
-    ({ stateHandler }: { stateHandler: { send: (arg0: string) => any } }) => {
+    ({ stateHandler }: { stateHandler: { send: (arg0: string) => void } }) => {
         const buttonStyle = {
             cursor: "pointer",
             border: "none",

@@ -1,10 +1,11 @@
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { PlayerComponent } from "./PlayerComponent";
 import { BoardComponent } from "./BoardComponent";
+import { readFile } from "fs/promises";
 import {
     convertCellsToAdjusted,
     doGradualFall,
@@ -47,15 +48,6 @@ import {
     matchAnimLength,
     MIN_WORD_LENGTH,
 } from "./setup";
-
-// Unpack words that can be created.
-let validWords: Set<string> | undefined;
-fetch("lexicons/Google20000.txt")
-    .then((response) => response.text())
-    .then((data) => {
-        // Do something with your data
-        validWords = new Set(data.split("\n"));
-    });
 
 // Style of encompassing board.
 const BoardStyled = styled.div`
@@ -111,7 +103,9 @@ const timestamps = {
     countdownMillisecondsElapsed: 0,
 };
 
-export function GameLoop() {
+export function GameLoop({validWordsResponse}: {validWordsResponse}) {
+    const [validWords, _setValidWords] = useState(new Set(validWordsResponse.read()));
+
     const [boardCellMatrix, setBoardCellMatrix] = useState(
         createBoard(BOARD_ROWS, BOARD_COLS),
     );
@@ -682,3 +676,6 @@ export function GameLoop() {
         </div>
     );
 }
+
+// - suspend gameloop logic from running until suspense loads. once suspense is done it sets the READY boolean in the game loop. actually, that var might not
+// even be needed. I think we can just run async in the game loop code.

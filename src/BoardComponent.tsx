@@ -2,7 +2,6 @@ import * as React from "react";
 import { BoardCell } from "./BoardCell";
 import { EMPTY } from "./setup";
 
-
 export const BoardComponent = React.memo(
     ({ boardCellMatrix }: { boardCellMatrix: BoardCell[][] }) => {
         const boardCells = boardCellMatrix.map((row, r) =>
@@ -26,14 +25,15 @@ export const BoardComponent = React.memo(
                     background: bg(),
                 };
 
-                return <div
-                    key={`cell(${r.toString()},${c.toString()})`}
-                    style={divStyle}
-                >
-                    {cell.char}
-                </div>
-                }
-            )
+                return (
+                    <div
+                        key={`cell(${r.toString()},${c.toString()})`}
+                        style={divStyle}
+                    >
+                        {cell.char}
+                    </div>
+                );
+            })
         );
 
         return <>{boardCells}</>;

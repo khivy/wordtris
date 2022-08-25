@@ -110,10 +110,9 @@ export function GameLoop() {
         // Fetch validWords during countdown.
         const webpath = "../lexicons/Scrabble80K.txt";
         fetch(webpath)
-            .then((res) =>  res.text() )
-            .then((res) => res.split('\n'))
-            .then((data) => setValidWords(new Set(data))
-            );
+            .then((res) => res.text())
+            .then((res) => res.split("\n"))
+            .then((data) => setValidWords(new Set(data)));
     }, []);
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(
@@ -455,7 +454,7 @@ export function GameLoop() {
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
             // Reset if spawn point is blocked.
-            if ( boardCellMatrix[spawnPos[0]][spawnPos[1]].char !== EMPTY) {
+            if (boardCellMatrix[spawnPos[0]][spawnPos[1]].char !== EMPTY) {
                 // Pause player movement.
                 setPlayerVisibility(false);
                 setIsPlayerMovementEnabled(false);
@@ -686,7 +685,6 @@ export function GameLoop() {
                     Game Over
                     <PlayAgainButton stateHandler={stateHandler} />
                 </GameOverOverlay>
-
             </BoardStyled>
             <WordList displayedWords={matchedWords} />
         </div>

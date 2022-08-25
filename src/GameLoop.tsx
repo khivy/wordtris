@@ -107,7 +107,9 @@ export function GameLoop() {
 
     useEffect(() => {
         // Fetch validWords during countdown.
-        fetch("https://raw.githubusercontent.com/khivy/wordtris/fetch_validWords/lexicons/Scrabble80K.txt")
+        fetch(
+            "https://raw.githubusercontent.com/khivy/wordtris/fetch_validWords/lexicons/Scrabble80K.txt",
+        )
             .then((res) => res.text())
             .then((res) => res.split("\n"))
             .then((data) => setValidWords(new Set(data)));

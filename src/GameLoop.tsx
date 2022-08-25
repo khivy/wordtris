@@ -30,6 +30,7 @@ import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import { CountdownOverlay } from "./components/CountdownOverlay";
 import {
     _ENABLE_UP_KEY,
+    _IS_PRINTING_STATE,
     BOARD_COLS,
     BOARD_ROWS,
     EMPTY,
@@ -40,6 +41,11 @@ import {
     interpMax,
     interpRate,
     MIN_WORD_LENGTH,
+    countdownTotalSecs,
+    frameStep,
+    groundExitPenaltyRate,
+    matchAnimLength,
+    lockMax,
 } from "./setup";
 
 // Unpack words that can be created.
@@ -86,21 +92,10 @@ const stateMachine = createMachine({
 
 // Handle states.
 const stateHandler = interpret(stateMachine).onTransition((state) => {
-    console.log("   STATE:", state.value);
+    if (_IS_PRINTING_STATE) console.log("   STATE:", state.value);
 });
 stateHandler.start();
 
-// Various game logic vars.
-/* Note: with 60 FPS, this is a float (16.666..7). Might run into issues. */
-const framesPerSecLimit = 60;
-const frameStep = 1000 / framesPerSecLimit;
-
-/* The amount of time it takes before a block locks in place. */
-const lockMax = 1500;
-const matchAnimLength = 750;
-const groundExitPenaltyRate = 250;
-
-const countdownTotalSecs = 3;
 const timestamps = {
     matchAnimStart: 0,
     lockStart: 0,
@@ -108,7 +103,6 @@ const timestamps = {
     accumFrameTime: 0,
     prevFrameTime: performance.now(),
     countdownMillisecondsElapsed: 0,
-    
 }
 
 export function GameLoop () {
@@ -583,7 +577,7 @@ export function GameLoop () {
             const animTime = performance.now() - timestamps.matchAnimStart;
             if (matchAnimLength <= animTime) {
                 // Also remove characters. (hasMatched)
-                let newBoard = boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 newBoard.forEach((row, r) => {
                     row.forEach((cell, c) => {
                         if (matchedCells.has([r, c].toString())) {

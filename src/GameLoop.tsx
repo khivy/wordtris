@@ -95,13 +95,6 @@ stateHandler.start();
 const framesPerSecLimit = 60;
 const frameStep = 1000 / framesPerSecLimit;
 
-/* Block cell coordinates that were placed/dropped.. */
-const placedCells: Set<[number, number]> = new Set();
-
-/* matchedCells stores string coordinates, rather than [number, number],
-to allow for `.has()` to find equivalent coordinates. */
-const matchedCells: Set<string> = new Set();
-
 /* The amount of time it takes before a block locks in place. */
 const lockMax = 1500;
 const matchAnimLength = 750;
@@ -131,7 +124,14 @@ export function GameLoop () {
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
     const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(false);
 
+    /* Block cell coordinates that were placed/dropped.. */
+    const [placedCells, setPlacedCells] = useState(new Set() as Set<[number, number]>);
+
+    // Variables for valid word matches.
     const [matchedWords, setMatchedWords] = useState([] as string[]);
+    /* matchedCells stores string coordinates, rather than [number, number],
+    to allow for `.has()` to find equivalent coordinates. */
+    const [matchedCells, setMatchedCells] = useState(new Set() as Set<string>);
 
     // Variables for `<CountdownOverlay/>`
     const [isCountdownVisible, setCountdownVisibility] = useState(false);
@@ -446,7 +446,10 @@ export function GameLoop () {
             // Reset penalty.
             setGroundExitPenalty(0);
 
-            placedCells.clear();
+            setPlacedCells(prev => {
+                prev.clear();
+                return prev;
+            });
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
             if (isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
@@ -463,10 +466,13 @@ export function GameLoop () {
             } else if (lockMax <= lockTime || didInstantDrop) {
                 // Lock in block.
                 const newBoard = boardCellMatrix.slice();
-                playerAdjustedCells.forEach((cell) => {
-                    placedCells.add([cell.r, cell.c]);
-                    // Give player cells to board.
-                    newBoard[cell.r][cell.c].char = cell.char;
+                setPlacedCells(prev => {
+                    playerAdjustedCells.forEach((cell) => {
+                        prev.add([cell.r, cell.c]);
+                        // Give player cells to board.
+                        newBoard[cell.r][cell.c].char = cell.char;
+                    });
+                    return prev;
                 });
                 setBoardCellMatrix(newBoard);
                 interp.val = 0;
@@ -480,7 +486,10 @@ export function GameLoop () {
             // For each floating block, move it 1 + the ground.
             const [newBoardWithDrops, added, _removed] = dropFloatingCells(boardCellMatrix);
             setBoardCellMatrix(newBoardWithDrops);
-            added.forEach((coord) => placedCells.add(coord));
+            setPlacedCells(prev => {
+                added.forEach((coord) => prev.add(coord));
+                return prev;
+            });
             stateHandler.send("GROUNDED");
         } else if ("checkingMatches" === stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
@@ -493,6 +502,7 @@ export function GameLoop () {
             const affectedCols = new Set(
                 [...placedCells].map((cell) => cell[1]),
             );
+            const newMatchedCells = [] as string[];
             affectedRows.forEach((r) => {
                 // Row words
                 const [row_left, row_right] = findWords(newBoard[r], false);
@@ -504,7 +514,7 @@ export function GameLoop () {
                         ).join(""),
                     );
                     for (let i = row_left; i < row_right + 1; ++i) {
-                        matchedCells.add([r, i].toString());
+                        newMatchedCells.push([r, i].toString());
                     }
                     hasRemovedWord = true;
                 }
@@ -541,25 +551,29 @@ export function GameLoop () {
                                 ).join(""),
                     );
                     for (let i = col_top; i < col_bot + 1; ++i) {
-                        matchedCells.add([i, c].toString());
+                        newMatchedCells.push([i, c].toString());
                     }
                     hasRemovedWord = true;
                 }
             });
 
             setMatchedWords(matchedWords => matchedWords.concat(newMatchedWords));
-            timestamps.matchAnimStart = performance.now();
-
-            // Signal characters to remove.
-            newBoard.forEach((row, r) => {
-                row.forEach((cell, c) => {
-                    if (matchedCells.has([r, c].toString())) {
-                        cell.hasMatched = true;
-                    }
-                })
+            setMatchedCells(prev => {
+                newMatchedCells.forEach(word => prev.add(word));
+                // Signal characters to remove.
+                newBoard.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        if (matchedCells.has([r, c].toString())) {
+                            cell.hasMatched = true;
+                        }
+                    })
+                });
+                return prev;
             });
 
+            timestamps.matchAnimStart = performance.now();
             setBoardCellMatrix(newBoard);
+
             if (hasRemovedWord) {
                 stateHandler.send("PLAYING_ANIM");
             } else {
@@ -582,15 +596,24 @@ export function GameLoop () {
                 // Drop all characters.
                 const [newBoardWithDrops, added, _removed] = dropFloatingCells(newBoard);
                 setBoardCellMatrix(newBoardWithDrops);
-                placedCells.clear();
-                added.forEach((coord) => placedCells.add(coord));
+                setPlacedCells(prev => {
+                    prev.clear();
+                    added.forEach((coord) => prev.add(coord));
+                    return prev;
+                });
 
                 // Go back to checkingMatches to see if dropped letters causes more matches.
-                matchedCells.clear();
+                setMatchedCells(prev => {
+                    prev.clear();
+                    return prev;
+                });
                 stateHandler.send("CHECK_FOR_CHAIN");
             }
         } else if ("postMatchAnimation" === stateHandler.state.value) {
-            placedCells.clear();
+            setPlacedCells(prev => {
+                prev.clear();
+                return prev;
+            });
             stateHandler.send("DONE");
         } else if ("gameOver" === stateHandler.state.value) {
             // TODO Add 'play again' button

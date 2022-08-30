@@ -1,9 +1,10 @@
 import * as React from "react";
+import { ReactNode } from "react";
 
 export const GameOverOverlay = React.memo(
     (
         { children, isVisible }: {
-            children: React.Component;
+            children: ReactNode[];
             isVisible: boolean;
         },
     ) => {
@@ -16,7 +17,7 @@ export const GameOverOverlay = React.memo(
             zIndex: 2,
             color: "red",
             fontSize: "200%",
-        };
+        } as const;
         return (
             <div style={divStyle}>
                 <>

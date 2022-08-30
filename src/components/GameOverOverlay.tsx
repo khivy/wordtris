@@ -16,7 +16,7 @@ export const GameOverOverlay = React.memo(
             zIndex: 2,
             color: "red",
             fontSize: "200%",
-        };
+        } as const;
         return (
             <div style={divStyle}>
                 <>

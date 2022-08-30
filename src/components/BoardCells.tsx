@@ -23,7 +23,7 @@ export const BoardCells = React.memo(
                     gridColumn: c + 1,
                     textAlign: "center",
                     background: bg(),
-                };
+                } as const;
 
                 return (
                     <div

@@ -13,7 +13,7 @@ import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
 import { getGroundHeight } from "./boardUtil";
 
-export const spawnPos = [1, 3];
+export const spawnPos: readonly [number, number] = [1, 3];
 export const layout = [
     [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
     [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -110,7 +110,7 @@ export function generateUserCells(): UserCell[] {
 
 export function convertCellsToAdjusted(
     cells: UserCell[],
-    pos: [number, number],
+    pos: readonly [number, number],
 ) {
     return cells.map((cell) => getAdjustedUserCell(cell, pos));
 }
@@ -118,7 +118,7 @@ export function convertCellsToAdjusted(
 // Take a UserCell with coordinates based on the matrix, and adjust its height by `pos` and matrix center.
 export function getAdjustedUserCell(
     { r, c, char, uid }: UserCell,
-    pos: [number, number],
+    pos: readonly [number, number],
 ): UserCell {
     return {
         r: r + pos[0] - Math.floor(layout.length / 2),

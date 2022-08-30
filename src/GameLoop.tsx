@@ -120,9 +120,7 @@ export function GameLoop() {
     );
 
     // Player state.
-    const [playerPos, setPlayerPos] = useState(
-        spawnPos.slice() as [number, number],
-    );
+    const [playerPos, setPlayerPos] = useState([...spawnPos] as const);
     const [playerCells, setPlayerCells] = useState(generateUserCells());
     const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
         convertCellsToAdjusted(playerCells, playerPos),
@@ -424,7 +422,7 @@ export function GameLoop() {
             // Reset player.
             // This nested structure prevents desync between the given state variables.
             setPlayerPos(() => {
-                const pos = spawnPos.slice() as [number, number];
+                const pos = [...spawnPos] as const;
                 setPlayerCells(() => {
                     const cells = generateUserCells();
                     setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));

@@ -31,7 +31,7 @@
         "xstate": "^4.32.1"
     },
     "scripts": {
-        "build": "react-scripts build"
+        "build": "TSC_COMPILE_ON_ERROR=true react-scripts build"
     },
     "eslintConfig": {
         "extends": [

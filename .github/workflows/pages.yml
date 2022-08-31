@@ -37,9 +37,6 @@ jobs:
       - name: Install packages with NPM
         run: npm install
 
-      - name: Ignore Typescript Compilation Errors for Build
-        run: echo 'TSC_COMPILE_ON_ERROR=true' > .env
-
       - name: Build
         run: npm run build
 

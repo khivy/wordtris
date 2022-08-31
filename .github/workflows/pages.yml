@@ -37,6 +37,15 @@ jobs:
       - name: Install packages with NPM
         run: npm install
 
+      - name: Install react-scripts
+        run: npm install react-scripts
+
+      - name: Install a package that adds `script`s to package.json programatically
+        run: sudo npm install -g npm-add-script
+
+      - name: Add `build` script to `package.json`
+        run: npmAddScript -k build -v "TSC_COMPILE_ON_ERROR=true react-scripts build"
+
       - name: Build
         run: npm run build
 

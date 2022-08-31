@@ -30,6 +30,9 @@
         "web-vitals": "^2.1.4",
         "xstate": "^4.32.1"
     },
+    "scripts": {
+        "build": "react-scripts build"
+    },
     "eslintConfig": {
         "extends": [
             "react-app"

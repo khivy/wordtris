@@ -36,6 +36,9 @@ jobs:
           cache: true
           cache-bin: true
 
+      - name: test
+        run: ls; cat package.json
+
       - name: Install Bun
         run: bun install
 

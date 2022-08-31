@@ -30,23 +30,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Bun
-        uses: antongolub/action-setup-bun@v1
-        with:
-          cache: true
-          cache-bin: true
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.4.1
 
       - name: test
         run: ls; cat package.json
 
-      - name: Install Bun
-        run: bun install
+      - name: Install npm
+        run: npm install
 
       - name: Ignore Typescript Compilation Errors for Build
         run: echo 'TSC_COMPILE_ON_ERROR=true' > .env
 
       - name: Build
-        run: bun react-scripts build
+        run: npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v1

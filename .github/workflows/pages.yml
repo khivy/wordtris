@@ -42,9 +42,6 @@ jobs:
       - name: Install Bun
         run: bun install
 
-      - name: Install react-scripts
-        run: bun a react-scripts -d
-
       - name: Ignore Typescript Compilation Errors for Build
         run: echo 'TSC_COMPILE_ON_ERROR=true' > .env
 

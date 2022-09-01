@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/ivyraine/wordtris/static/css/main.073c9b0a.css",
+    "main.js": "/ivyraine/wordtris/static/js/main.d47e694b.js",
+    "static/js/787.02cf3868.chunk.js": "/ivyraine/wordtris/static/js/787.02cf3868.chunk.js",
+    "index.html": "/ivyraine/wordtris/index.html",
+    "main.073c9b0a.css.map": "/ivyraine/wordtris/static/css/main.073c9b0a.css.map",
+    "main.d47e694b.js.map": "/ivyraine/wordtris/static/js/main.d47e694b.js.map",
+    "787.02cf3868.chunk.js.map": "/ivyraine/wordtris/static/js/787.02cf3868.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.073c9b0a.css",
+    "static/js/main.d47e694b.js"
+  ]
+}

@@ -9,6 +9,7 @@
     "homepage": "https://khivy.github.io/wordtris/",
     "bugs": "https://github.com/khivy/wordtris/issues",
     "license": "MIT",
+    "private": "false",
     "contributors": [
         {
             "name": "Ivy Raine"

@@ -1,5 +1,5 @@
 import "../App.css";
-import { generateRandomChar } from "../components/Board";
+import { generateRandomChar } from "../util/weightedDistribution";
 import {
     BOARD_COLS,
     BOARD_ROWS,

@@ -109,6 +109,8 @@ const initialState = {
     playerPos:[...spawnPos] as const,
     playerCells: generateUserCells(),
     playerAdjustedCells: convertCellsToAdjusted(playerCellsInit, [...spawnPos] as const),
+    playerFallingLettersBeforeAndAfter: [],
+    fallingLettersBeforeAndAfter: [],
 };
 
 const reducer = (state, action) => {
@@ -145,6 +147,10 @@ const reducer = (state, action) => {
         case "updatePlayerPosAndAdjustedCells":
             const newPlayerPos = [state.playerPos[0] + action.playerPosUpdate[0], state.playerPos[1] + action.playerPosUpdate[1]] as [number, number];
             return {...state, playerPos: newPlayerPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPlayerPos)};
+        case "setFallingLettersBeforeAndAfter":
+            return {...state, fallingLettersBeforeAndAfter: action.newFallingLettersBeforeAndAfter};
+        case "setPlayerFallingLettersBeforeAndAfter":
+            return {...state, playerFallingLettersBeforeAndAfter: action.newPlayerFallingLettersBeforeAndAfter};
         default:
                 throw new Error();
     }
@@ -201,8 +207,8 @@ export function GameLoop() {
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
 
-    const [fallingLettersBeforeAndAfter, setFallingLetters] = useState([]);
-    const [playerFallingLettersBeforeAndAfter, setPlayerFallingLettersBeforeAndAfter] = useState([]);
+    // const [fallingLettersBeforeAndAfter, setFallingLetters] = useState([]);
+    // const [playerFallingLettersBeforeAndAfter, setPlayerFallingLettersBeforeAndAfter] = useState([]);
 
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
@@ -530,20 +536,19 @@ export function GameLoop() {
                 const minDist = closestGround - closestPlayerCellToGround.r;
                 timestamps.playerInstantDropAnimStart = performance.now();
                 timestamps.playerInstantDropAnimDurationMilliseconds = 25 * minDist;
-                setPlayerFallingLettersBeforeAndAfter(
+                dispatch({type: "setPlayerFallingLettersBeforeAndAfter", newPlayerFallingLettersBeforeAndAfter:
                     state.playerAdjustedCells.map(cell =>
                         [
                             {...cell},
                             {...cell, r: closestGround}
                         ]
                     )
-                );
+                });
                 stateHandler.send("DO_INSTANT_DROP_ANIM");
             }
         } else if ("playerInstantDropAnim" === stateHandler.state.value) {
             if (timestamps.playerInstantDropAnimDurationMilliseconds < performance.now() - timestamps.playerInstantDropAnimStart) {
                 setPlayerVisibility(true);
-                setPlayerFallingLettersBeforeAndAfter([]);
                 let ground_row = BOARD_ROWS;
                 state.playerAdjustedCells.forEach((cell) =>
                     ground_row = Math.min(
@@ -574,6 +579,7 @@ export function GameLoop() {
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
                 // Lock in block.
+                dispatch({type: "setPlayerFallingLettersBeforeAndAfter", newPlayerFallingLettersBeforeAndAfter: []});
                 const newBoard = state.boardCellMatrix.slice();
                 setPlacedCells((prev) => {
                     state.playerAdjustedCells.forEach((cell) => {
@@ -599,22 +605,18 @@ export function GameLoop() {
             );
 
             // Update falling letters & animation information.
-            setFallingLetters(_ => {
-                const newFallingLettersBeforeAndAfter = preFallCells.map((k, i) => [k, postFallCells[i]]);
-
-                // Handle animation duration.
-                let animDuration = 0;
-                if (postFallCells.length !== 0) {
-                    const [maxFallBeforeCell, maxFallAfterCell] = newFallingLettersBeforeAndAfter.reduce((prev, cur) =>
-                        prev[1].r - prev[0].r > cur[1].r - cur[0].r ? prev : cur
-                    );
-                    animDuration = boardCellFallDurationMillisecondsRate * (maxFallAfterCell.r - maxFallBeforeCell.r);
-                }
-                timestamps.fallingLettersAnimDurationMilliseconds = animDuration;
-                timestamps.fallingLettersAnimStartMilliseconds = performance.now();
-
-                return newFallingLettersBeforeAndAfter;
-            });
+            const newFallingLettersBeforeAndAfter = preFallCells.map((k, i) => [k, postFallCells[i]]);
+            // Handle animation duration.
+            let animDuration = 0;
+            if (postFallCells.length !== 0) {
+                const [maxFallBeforeCell, maxFallAfterCell] = newFallingLettersBeforeAndAfter.reduce((prev, cur) =>
+                    prev[1].r - prev[0].r > cur[1].r - cur[0].r ? prev : cur
+                );
+                animDuration = boardCellFallDurationMillisecondsRate * (maxFallAfterCell.r - maxFallBeforeCell.r);
+            }
+            dispatch({type: "setFallingLettersBeforeAndAfter", newFallingLettersBeforeAndAfter: newFallingLettersBeforeAndAfter});
+            timestamps.fallingLettersAnimDurationMilliseconds = animDuration;
+            timestamps.fallingLettersAnimStartMilliseconds = performance.now();
 
             dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: boardWithoutFallCells});
 
@@ -628,12 +630,13 @@ export function GameLoop() {
             if (timestamps.fallingLettersAnimDurationMilliseconds < performance.now() - timestamps.fallingLettersAnimStartMilliseconds) {
                 // Add in fallen-block changes. TODO remove from board above.
                 const newBoard = state.boardCellMatrix.slice();
-                fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
+                state.fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
                     const [before, after] = beforeAndAfter;
                     newBoard[before.r][before.c].char = EMPTY;
                     newBoard[after.r][after.c].char = after.char;
                 })
                 // setBoardCellMatrix(newBoard);
+                dispatch({type: "setFallingLettersBeforeAndAfter", newFallingLettersBeforeAndAfter: []});
                 dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
                 stateHandler.send("GROUNDED");
             }
@@ -790,12 +793,12 @@ export function GameLoop() {
                 />
 
                 <FallingBlock
-                    fallingLetters={playerFallingLettersBeforeAndAfter}
+                    fallingLetters={state.playerFallingLettersBeforeAndAfter}
                     durationRate={playerCellFallDurationMillisecondsRate}
                 />
 
                 <FallingBlock
-                    fallingLetters={fallingLettersBeforeAndAfter}
+                    fallingLetters={state.fallingLettersBeforeAndAfter}
                     durationRate={boardCellFallDurationMillisecondsRate}
                 />
 

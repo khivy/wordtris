@@ -533,7 +533,7 @@ export function GameLoop() {
         } else if ("fallingLettersAnim" === stateHandler.state.value) {
             if (timestamps.fallingLettersAnimDurationMilliseconds < performance.now() - timestamps.fallingLettersAnimStartMilliseconds) {
                 // Add in fallen-block changes. TODO remove from board above.
-                let newBoard = boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
                     const [before, after] = beforeAndAfter;
                     newBoard[before.r][before.c].char = EMPTY;

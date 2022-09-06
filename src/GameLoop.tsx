@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useReducer } from "react";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { PlayerBlock } from "./components/PlayerBlock";
@@ -103,6 +103,51 @@ const timestamps = {
     playerInstantDropAnimDurationMilliseconds: 0,
 };
 
+const playerCellsInit = generateUserCells();
+const initialState = {
+    playerPos:[...spawnPos] as const,
+    playerCells: generateUserCells(),
+    playerAdjustedCells: convertCellsToAdjusted(playerCellsInit, [...spawnPos] as const),
+};
+
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "setPlayerCells":
+            return {...state, playerCells: action.newPlayerCells}; 
+        case "setGroundedPlayerPosAndAdjustedCells":
+            const newPos = [action.playerRowPos, state.playerPos[1]] as [number, number];
+            return {...state, playerPos: newPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPos)};
+        // setPlayerPos((prev) => {
+        //     const pos = [ground_row - dy, prev[1]] as [number, number];
+        //     setPlayerAdjustedCells(
+        //         convertCellsToAdjusted(playerCells, pos),
+        //     );
+        //     return pos;
+        // });
+        case "setPlayerCellsAndAdjustedCells":
+            return {...state, playerCells: action.newPlayerCells, playerAdjustedCells: action.newPlayerAdjustedCells};
+        case "setPlayerPosAndCellsAndAdjustedCells":
+            return {...state, playerPos: action.newPlayerPos, playerCells: action.newPlayerCells, playerAdjustedCells: convertCellsToAdjusted(action.newPlayerCells, action.newPlayerPos)};
+        // setPlayerPos(() => {
+        //     const pos = [...spawnPos] as const;
+        //     setPlayerCells(() => {
+        //         const cells = generateUserCells();
+        //         setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
+        //         return cells;
+        //     });
+        //     return pos;
+        // });
+        case "setPlayerPos":
+            return {...state, playerPos: action.playerPos};
+        case "updatePlayerPosAndAdjustedCells":
+            const newPlayerPos = [state.playerPos[0] + action.playerPosUpdate[0], state.playerPos[1] + action.playerPosUpdate[1]] as [number, number];
+            return {...state, playerPos: newPlayerPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPlayerPos)};
+        default:
+            throw new Error();
+    }
+};
+
+
 export function GameLoop() {
     const [validWords, setValidWords] = useState(new Set());
 
@@ -121,11 +166,13 @@ export function GameLoop() {
     );
 
     // Player state.
-    const [playerPos, setPlayerPos] = useState([...spawnPos] as const);
-    const [playerCells, setPlayerCells] = useState(generateUserCells());
-    const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
-        convertCellsToAdjusted(playerCells, playerPos),
-    );
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    // const [playerPos, setPlayerPos] = useState([...spawnPos] as const);
+    // const [playerCells, setPlayerCells] = useState(generateUserCells());
+    // const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
+    //     convertCellsToAdjusted(playerCells, playerPos),
+    // );
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
     const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(
         false,
@@ -168,12 +215,12 @@ export function GameLoop() {
 
     function rotatePlayerBlock(isClockwise: boolean, board: BoardCell[][]) {
         const rotatedCells = rotateCells(
-            playerCells,
+            state.playerCells,
             isClockwise,
         );
 
         let rotatedCellsAdjusted = rotatedCells.map((cell) =>
-            getAdjustedUserCell(cell, playerPos)
+            getAdjustedUserCell(cell, state.playerPos)
         );
 
         // Get the overlapping cell's respective index in non-adjusted array.
@@ -192,10 +239,11 @@ export function GameLoop() {
             if (isAdjacentToGround) {
                 interp.val = 0;
             }
-            setPlayerCells(rotatedCells);
-            setPlayerAdjustedCells(rotatedCellsAdjusted);
+            // setPlayerCells(rotatedCells);
+            // setPlayerAdjustedCells(rotatedCellsAdjusted);
+            dispatch({type: "setPlayerCellsAndAdjustedCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
         } else {
-            console.assert(playerAdjustedCells.length === 2);
+            console.assert(state.playerAdjustedCells.length === 2);
             // Get direction of overlapping cell.
             const dr = Math.floor(layout.length / 2) -
                 rotatedCells[overlappingCellIndex].r;
@@ -207,7 +255,7 @@ export function GameLoop() {
                 cell.c += dc;
             }
             rotatedCellsAdjusted = rotatedCells.map((cell) =>
-                getAdjustedUserCell(cell, playerPos)
+                getAdjustedUserCell(cell, state.playerPos)
             );
             // Check for overlaps with shifted cells.
             const isOverlapping = rotatedCellsAdjusted.some((cell) =>
@@ -216,8 +264,9 @@ export function GameLoop() {
                 board[cell.r][cell.c].char !== EMPTY
             );
             if (!isOverlapping) {
-                setPlayerCells(rotatedCells);
-                setPlayerAdjustedCells(rotatedCellsAdjusted);
+                dispatch({type: "setPlayerCellsAndAdjustedCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
+                // setPlayerCells(rotatedCells);
+                // setPlayerAdjustedCells(rotatedCellsAdjusted);
             }
         }
     }
@@ -232,19 +281,19 @@ export function GameLoop() {
         const areTargetSpacesEmpty = (
             dr: -1 | 0 | 1 | number,
             dc: -1 | 0 | 1,
-        ) => playerAdjustedCells.every((cell) => {
+        ) => state.playerAdjustedCells.every((cell) => {
             return board[cell.r + dr][cell.c + dc].char === EMPTY;
         });
         if ("ArrowLeft" === code) {
             // Move left.
             if (
                 isInCBounds(
-                    getAdjustedLeftmostC(playerAdjustedCells) - 1,
+                    getAdjustedLeftmostC(state.playerAdjustedCells) - 1,
                 ) &&
                 // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
                 (!ENABLE_SMOOTH_FALL ||
                     isInRBounds(
-                        getAdjustedBottomR(playerAdjustedCells) +
+                        getAdjustedBottomR(state.playerAdjustedCells) +
                             Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
@@ -252,24 +301,27 @@ export function GameLoop() {
                     -1,
                 )
             ) {
-                setPlayerPos((prev) => {
-                    const pos = [prev[0], prev[1] - 1] as [number, number];
-                    setPlayerAdjustedCells(
-                        convertCellsToAdjusted(playerCells, pos),
-                    );
-                    return pos;
-                });
+                // const pos = [prev[0], prev[1] - 1] as [number, number];
+                // setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
+                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [0, -1]});
+                // setPlayerPos((prev) => {
+                //     const pos = [prev[0], prev[1] - 1] as [number, number];
+                //     setPlayerAdjustedCells(
+                //         convertCellsToAdjusted(playerCells, pos),
+                //     );
+                //     return pos;
+                // });
             }
         } else if ("ArrowRight" === code) {
             // Move right.
             if (
                 isInCBounds(
-                    getAdjustedRightmostC(playerAdjustedCells) + 1,
+                    getAdjustedRightmostC(state.playerAdjustedCells) + 1,
                 ) &&
                 // Ensure blocks don't cross over to ground higher than it, regarding interpolation.
                 (!ENABLE_SMOOTH_FALL ||
                     isInRBounds(
-                        getAdjustedBottomR(playerAdjustedCells) +
+                        getAdjustedBottomR(state.playerAdjustedCells) +
                             Math.ceil(interp.val / interpMax),
                     )) &&
                 areTargetSpacesEmpty(
@@ -277,30 +329,32 @@ export function GameLoop() {
                     1,
                 )
             ) {
-                setPlayerPos((prev) => {
-                    const pos = [prev[0], prev[1] + 1] as [number, number];
-                    setPlayerAdjustedCells(
-                        convertCellsToAdjusted(playerCells, pos),
-                    );
-                    return pos;
-                });
+                // setPlayerPos((prev) => {
+                //     const pos = [prev[0], prev[1] + 1] as [number, number];
+                //     setPlayerAdjustedCells(
+                //         convertCellsToAdjusted(playerCells, pos),
+                //     );
+                //     return pos;
+                // });
+                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [0, 1]});
             }
         } else if ("ArrowDown" === code) {
             // Move down faster.
             if (
-                getAdjustedBottomR(playerAdjustedCells) + 1 < BOARD_ROWS &&
+                getAdjustedBottomR(state.playerAdjustedCells) + 1 < BOARD_ROWS &&
                 areTargetSpacesEmpty(1, 0)
             ) {
                 if (ENABLE_SMOOTH_FALL) {
                     interp.val += interpRate * interpKeydownMult;
                 } else {
-                    setPlayerPos((prev) => {
-                        const pos = [prev[0] + 1, prev[1]] as [number, number];
-                        setPlayerAdjustedCells(
-                            convertCellsToAdjusted(playerCells, pos),
-                        );
-                        return pos;
-                    });
+                    // setPlayerPos((prev) => {
+                    //     const pos = [prev[0] + 1, prev[1]] as [number, number];
+                    //     setPlayerAdjustedCells(
+                    //         convertCellsToAdjusted(playerCells, pos),
+                    //     );
+                    //     return pos;
+                    // });
+                    dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [1, 0]});
                     // Reset interp.
                     interp.val = 0;
                 }
@@ -317,16 +371,17 @@ export function GameLoop() {
                 setDidInstantDrop(true);
             } else if (
                 _ENABLE_UP_KEY &&
-                0 <= getAdjustedTopR(playerAdjustedCells) - 1 &&
+                0 <= getAdjustedTopR(state.playerAdjustedCells) - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {
-                setPlayerPos((prev) => {
-                    const pos = [prev[0] - 1, prev[1]] as [number, number];
-                    setPlayerAdjustedCells(
-                        convertCellsToAdjusted(playerCells, pos),
-                    );
-                    return pos;
-                });
+                // setPlayerPos((prev) => {
+                //     const pos = [prev[0] - 1, prev[1]] as [number, number];
+                //     setPlayerAdjustedCells(
+                //         convertCellsToAdjusted(playerCells, pos),
+                //     );
+                //     return pos;
+                // });
+                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [-1, 0]});
             }
         }
     }
@@ -408,15 +463,16 @@ export function GameLoop() {
 
             // Reset player.
             // This nested structure prevents desync between the given state variables.
-            setPlayerPos(() => {
-                const pos = [...spawnPos] as const;
-                setPlayerCells(() => {
-                    const cells = generateUserCells();
-                    setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
-                    return cells;
-                });
-                return pos;
-            });
+            // setPlayerPos(() => {
+            //     const pos = [...spawnPos] as const;
+            //     setPlayerCells(() => {
+            //         const cells = generateUserCells();
+            //         setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
+            //         return cells;
+            //     });
+            //     return pos;
+            // });
+            dispatch({type: "setPlayerPosAndCellsAndAdjustedCells", newPlayerPos: [...spawnPos] as const, newPlayerCells: generateUserCells()});
             setIsPlayerMovementEnabled(true);
             setPlayerVisibility(true);
 
@@ -444,26 +500,27 @@ export function GameLoop() {
             if (isPlayerMovementEnabled) {
                 const dr = doGradualFall(
                     boardCellMatrix,
-                    playerAdjustedCells,
+                    state.playerAdjustedCells,
                 );
-                setPlayerPos([
-                    playerPos[0] + dr,
-                    playerPos[1],
-                ]);
-                setPlayerAdjustedCells(
-                    convertCellsToAdjusted(playerCells, playerPos),
-                );
+                // setPlayerPos([
+                //     playerPos[0] + dr,
+                //     playerPos[1],
+                // ]);
+                // setPlayerAdjustedCells(
+                //     convertCellsToAdjusted(playerCells, playerPos),
+                // );
+                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [dr, 0]});
             }
 
             // Check if player is touching ground.
-            if (isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
+            if (isPlayerTouchingGround(state.playerAdjustedCells, boardCellMatrix)) {
                 timestamps.lockStart = performance.now();
                 stateHandler.send("TOUCHING_BLOCK");
             }
 
             if (didInstantDrop) {
                 setPlayerVisibility(false);
-                const closestPlayerCellToGround = playerAdjustedCells.reduce((prev, cur) =>
+                const closestPlayerCellToGround = state.playerAdjustedCells.reduce((prev, cur) =>
                     getGroundHeight(prev.c, prev.r, boardCellMatrix) - prev.r < getGroundHeight(cur.c, cur.r, boardCellMatrix) - cur.r ? prev : cur
                 );
                 const closestGround = getGroundHeight(closestPlayerCellToGround.c, closestPlayerCellToGround.r, boardCellMatrix);
@@ -471,7 +528,7 @@ export function GameLoop() {
                 timestamps.playerInstantDropAnimStart = performance.now();
                 timestamps.playerInstantDropAnimDurationMilliseconds = 25 * minDist;
                 setPlayerFallingLettersBeforeAndAfter(
-                    playerAdjustedCells.map(cell =>
+                    state.playerAdjustedCells.map(cell =>
                         [
                             {...cell},
                             {...cell, r: closestGround}
@@ -485,7 +542,7 @@ export function GameLoop() {
                 setPlayerVisibility(true);
                 setPlayerFallingLettersBeforeAndAfter([]);
                 let ground_row = BOARD_ROWS;
-                playerAdjustedCells.forEach((cell) =>
+                state.playerAdjustedCells.forEach((cell) =>
                     ground_row = Math.min(
                         ground_row,
                         getGroundHeight(cell.c, cell.r, boardCellMatrix),
@@ -494,20 +551,21 @@ export function GameLoop() {
                 const mid = Math.floor(layout.length / 2);
                 // Offset with the lowest cell, centered around layout's midpoint.
                 let dy = 0;
-                playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
-                setPlayerPos((prev) => {
-                    const pos = [ground_row - dy, prev[1]] as [number, number];
-                    setPlayerAdjustedCells(
-                        convertCellsToAdjusted(playerCells, pos),
-                    );
-                    return pos;
-                });
+                state.playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
+                dispatch({type: "setGroundedPlayerPosAndAdjustedCells", playerRowPos: ground_row - dy });
+                // setPlayerPos((prev) => {
+                //     const pos = [ground_row - dy, prev[1]] as [number, number];
+                //     setPlayerAdjustedCells(
+                //         convertCellsToAdjusted(playerCells, pos),
+                //     );
+                //     return pos;
+                // });
                 stateHandler.send("TOUCHING_BLOCK");
             }
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
                 groundExitPenalty;
-            if (!isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
+            if (!isPlayerTouchingGround(state.playerAdjustedCells, boardCellMatrix)) {
                 // Player has moved off of ground.
                 setGroundExitPenalty((prev) => prev + groundExitPenaltyRate);
                 stateHandler.send("UNLOCK");
@@ -515,7 +573,7 @@ export function GameLoop() {
                 // Lock in block.
                 const newBoard = boardCellMatrix.slice();
                 setPlacedCells((prev) => {
-                    playerAdjustedCells.forEach((cell) => {
+                    state.playerAdjustedCells.forEach((cell) => {
                         prev.add([cell.r, cell.c]);
                         // Give player cells to board.
                         newBoard[cell.r][cell.c].char = cell.char;
@@ -722,7 +780,7 @@ export function GameLoop() {
 
                 <PlayerBlock
                     isVisible={isPlayerVisible}
-                    adjustedCells={playerAdjustedCells}
+                    adjustedCells={state.playerAdjustedCells}
                 />
 
                 <FallingBlock

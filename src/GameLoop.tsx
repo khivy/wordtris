@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import styled from "styled-components";
 import "./App.css";
 import { createMachine, interpret } from "xstate";
 import { PlayerBlock } from "./components/PlayerBlock";
@@ -22,12 +21,13 @@ import {
     rotateCells,
     spawnPos,
 } from "./util/playerUtil";
-import { createBoard, getGroundHeight } from "./util/boardUtil";
+import { createBoard, getGroundHeight, getFallDurationMilliseconds } from "./util/boardUtil";
 import { BoardCell } from "./util/BoardCell";
 import { WordList } from "./components/WordList";
 import { useInterval } from "./util/useInterval";
 import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import { CountdownOverlay } from "./components/CountdownOverlay";
+import { FallingBlock } from "./components/FallingBlock";
 import {
     _ENABLE_UP_KEY,
     _IS_PRINTING_STATE,
@@ -48,14 +48,6 @@ import {
     MIN_WORD_LENGTH,
 } from "./setup";
 
-// Style of encompassing board.
-const BoardStyled = styled.div`
-  display: inline-grid;
-  grid-template-rows: repeat(${BOARD_ROWS}, 30px);
-  grid-template-columns: repeat(${BOARD_COLS}, 30px);
-  border: solid red 4px;
-  position: relative;
-`;
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -66,10 +58,11 @@ const stateMachine = createMachine({
         countdown: { on: { DONE: "spawningBlock" } },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: {
-            on: { TOUCHINGBLOCK: "lockDelay", BLOCKED: "gameOver" },
+            on: { TOUCHING_BLOCK: "lockDelay", BLOCKED: "gameOver" },
         },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
-        fallingLetters: { on: { GROUNDED: "checkingMatches" } },
+        fallingLetters: { on: { DO_ANIM: "fallingLettersAnim" } },
+        fallingLettersAnim: { on: { GROUNDED: "checkingMatches" } },
         checkingMatches: {
             on: {
                 PLAYING_ANIM: "playMatchAnimation",
@@ -77,7 +70,7 @@ const stateMachine = createMachine({
             },
         },
         playMatchAnimation: {
-            on: { CHECK_FOR_CHAIN: "checkingMatches" },
+            on: { CHECK_FOR_CHAIN: "fallingLetters", SKIP_ANIM: "postMatchAnimation"},
         },
         postMatchAnimation: {
             on: { DONE: "spawningBlock" },
@@ -100,6 +93,8 @@ const timestamps = {
     accumFrameTime: 0,
     prevFrameTime: performance.now(),
     countdownMillisecondsElapsed: 0,
+    fallingLettersAnimStartMilliseconds: 0,
+    fallingLettersAnimDurationMilliseconds: 0,
 };
 
 export function GameLoop() {
@@ -150,6 +145,8 @@ export function GameLoop() {
     const [groundExitPenalty, setGroundExitPenalty] = useState(0);
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
+
+    const [fallingLettersBeforeAndAfter, setFallingLettersBeforeAndAfter] = useState([] as [BoardCell, BoardCell][]);
 
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
@@ -396,6 +393,7 @@ export function GameLoop() {
 
             // Reset Word List.
             setMatchedWords([]);
+            setMatchedCells(new Set());
 
             setGameOverVisibility(false);
 
@@ -471,7 +469,7 @@ export function GameLoop() {
             // Check if player is touching ground.
             if (isPlayerTouchingGround(playerAdjustedCells, boardCellMatrix)) {
                 timestamps.lockStart = performance.now();
-                stateHandler.send("TOUCHINGBLOCK");
+                stateHandler.send("TOUCHING_BLOCK");
             }
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
@@ -502,15 +500,48 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [newBoardWithDrops, added, _removed] = dropFloatingCells(
+            const [newBoardWithDrops, added, removed] = dropFloatingCells(
                 boardCellMatrix,
             );
-            setBoardCellMatrix(newBoardWithDrops);
+
+            // Update falling letters & animation information.
+            setFallingLettersBeforeAndAfter(_ => {
+                const newFallingLettersBeforeAndAfter = removed.map((k, i) => [k, added[i]]);
+
+                // Handle animation duration.
+                let animDuration = 0;
+                if (added.length !== 0) {
+                    const [maxFallBeforeCell, maxFallAfterCell] = newFallingLettersBeforeAndAfter.reduce((prev, cur) =>
+                        prev[1].r - prev[0].r > cur[1].r - cur[0].r ? prev : cur
+                    );
+                    animDuration = getFallDurationMilliseconds(maxFallBeforeCell.r, maxFallAfterCell.r);
+                }
+                timestamps.fallingLettersAnimDurationMilliseconds = animDuration;
+                timestamps.fallingLettersAnimStartMilliseconds = performance.now();
+
+                return newFallingLettersBeforeAndAfter;
+            });
+
+                setBoardCellMatrix(newBoardWithDrops);
+
             setPlacedCells((prev) => {
-                added.forEach((coord) => prev.add(coord));
+                added.forEach((boardCell) => prev.add([boardCell.r, boardCell.c]));
                 return prev;
             });
-            stateHandler.send("GROUNDED");
+
+            stateHandler.send("DO_ANIM");
+        } else if ("fallingLettersAnim" === stateHandler.state.value) {
+            if (timestamps.fallingLettersAnimDurationMilliseconds < performance.now() - timestamps.fallingLettersAnimStartMilliseconds) {
+                // Add in fallen-block changes. TODO remove from board above.
+                let newBoard = boardCellMatrix.slice();
+                fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
+                    const [before, after] = beforeAndAfter;
+                    newBoard[before.r][before.c].char = EMPTY;
+                    newBoard[after.r][after.c].char = after.char;
+                })
+                setBoardCellMatrix(newBoard);
+                stateHandler.send("GROUNDED");
+            }
         } else if ("checkingMatches" === stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
             const newBoard = boardCellMatrix.slice();
@@ -593,14 +624,12 @@ export function GameLoop() {
                 return prev;
             });
 
-            timestamps.matchAnimStart = performance.now();
             setBoardCellMatrix(newBoard);
 
             if (hasRemovedWord) {
-                stateHandler.send("PLAYING_ANIM");
-            } else {
-                stateHandler.send("SKIP_ANIM");
+                timestamps.matchAnimStart = performance.now();
             }
+            stateHandler.send("PLAYING_ANIM");
         } else if ("playMatchAnimation" === stateHandler.state.value) {
             const animTime = performance.now() - timestamps.matchAnimStart;
             if (matchAnimLength <= animTime) {
@@ -615,23 +644,15 @@ export function GameLoop() {
                     });
                 });
 
-                // Drop all characters.
-                const [newBoardWithDrops, added, _removed] = dropFloatingCells(
-                    newBoard,
-                );
-                setBoardCellMatrix(newBoardWithDrops);
+                setBoardCellMatrix(newBoard);
                 setPlacedCells((prev) => {
-                    prev.clear();
-                    added.forEach((coord) => prev.add(coord));
-                    return prev;
+                    return structuredClone(prev);
                 });
-
-                // Go back to checkingMatches to see if dropped letters causes more matches.
-                setMatchedCells((prev) => {
-                    prev.clear();
-                    return prev;
-                });
-                stateHandler.send("CHECK_FOR_CHAIN");
+                if (matchedCells.size !== 0) {
+                    setMatchedCells(new Set());
+                    stateHandler.send("CHECK_FOR_CHAIN");
+                }
+                stateHandler.send("SKIP_ANIM");
             }
         } else if ("postMatchAnimation" === stateHandler.state.value) {
             setPlacedCells((prev) => {
@@ -649,9 +670,18 @@ export function GameLoop() {
         flexDirection: "row",
     } as const;
 
+    // Style of encompassing board.
+    const boardStyle = {
+        display: "inline-grid",
+        gridTemplateRows: `repeat(${BOARD_ROWS}, 30px)`,
+        gridTemplateColumns: `repeat(${BOARD_COLS}, 30px)`,
+        border: "solid red 4px",
+        position: "relative",
+    } as const;
+
     return (
         <div style={appStyle}>
-            <BoardStyled>
+            <div style={boardStyle}>
                 <CountdownOverlay
                     isVisible={isCountdownVisible}
                     countdownSec={countdownSec}
@@ -661,6 +691,11 @@ export function GameLoop() {
                     isVisible={isPlayerVisible}
                     adjustedCells={playerAdjustedCells}
                 />
+
+                <FallingBlock
+                    fallingLetters={fallingLettersBeforeAndAfter}
+                />
+
                 <BoardCells
                     boardCellMatrix={boardCellMatrix}
                 />
@@ -668,7 +703,7 @@ export function GameLoop() {
                     Game Over
                     <PlayAgainButton stateHandler={stateHandler} />
                 </GameOverOverlay>
-            </BoardStyled>
+            </div>
             <WordList displayedWords={matchedWords} />
         </div>
     );

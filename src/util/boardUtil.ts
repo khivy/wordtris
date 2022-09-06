@@ -27,3 +27,7 @@ export function getGroundHeight(
     }
     return board.length - 1;
 }
+
+export function getFallDurationMilliseconds(startRow: number, endRow: number) {
+    return 75 * Math.abs(startRow - endRow);
+}

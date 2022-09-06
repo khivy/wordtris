@@ -21,7 +21,7 @@ import {
     rotateCells,
     spawnPos,
 } from "./util/playerUtil";
-import { createBoard, getGroundHeight, getFallDurationMilliseconds } from "./util/boardUtil";
+import { createBoard, getGroundHeight } from "./util/boardUtil";
 import { BoardCell } from "./util/BoardCell";
 import { WordList } from "./components/WordList";
 import { useInterval } from "./util/useInterval";
@@ -46,8 +46,9 @@ import {
     lockMax,
     matchAnimLength,
     MIN_WORD_LENGTH,
+    boardCellFallDurationMillisecondsRate,
+    playerCellFallDurationMillisecondsRate
 } from "./setup";
-
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -58,7 +59,10 @@ const stateMachine = createMachine({
         countdown: { on: { DONE: "spawningBlock" } },
         spawningBlock: { on: { SPAWN: "placingBlock" } },
         placingBlock: {
-            on: { TOUCHING_BLOCK: "lockDelay", BLOCKED: "gameOver" },
+            on: { TOUCHING_BLOCK: "lockDelay", BLOCKED: "gameOver",  DO_INSTANT_DROP_ANIM: "playerInstantDropAnim"},
+        },
+        playerInstantDropAnim: {
+            on: { TOUCHING_BLOCK: "lockDelay"},
         },
         lockDelay: { on: { LOCK: "fallingLetters", UNLOCK: "placingBlock" } },
         fallingLetters: { on: { DO_ANIM: "fallingLettersAnim" } },
@@ -95,6 +99,8 @@ const timestamps = {
     countdownMillisecondsElapsed: 0,
     fallingLettersAnimStartMilliseconds: 0,
     fallingLettersAnimDurationMilliseconds: 0,
+    playerInstantDropAnimStart: 0,
+    playerInstantDropAnimDurationMilliseconds: 0,
 };
 
 export function GameLoop() {
@@ -146,7 +152,8 @@ export function GameLoop() {
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
 
-    const [fallingLettersBeforeAndAfter, setFallingLettersBeforeAndAfter] = useState([] as [BoardCell, BoardCell][]);
+    const [fallingLettersBeforeAndAfter, setFallingLetters] = useState([]);
+    const [playerFallingLettersBeforeAndAfter, setPlayerFallingLettersBeforeAndAfter] = useState([]);
 
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
@@ -307,24 +314,6 @@ export function GameLoop() {
         } else if ("Space" === code) {
             // Instant drop.
             if (ENABLE_INSTANT_DROP) {
-                let ground_row = BOARD_ROWS;
-                playerAdjustedCells.forEach((cell) =>
-                    ground_row = Math.min(
-                        ground_row,
-                        getGroundHeight(cell.c, cell.r, boardCellMatrix),
-                    )
-                );
-                const mid = Math.floor(layout.length / 2);
-                // Offset with the lowest cell, centered around layout's midpoint.
-                let dy = 0;
-                playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
-                setPlayerPos((prev) => {
-                    const pos = [ground_row - dy, prev[1]] as [number, number];
-                    setPlayerAdjustedCells(
-                        convertCellsToAdjusted(playerCells, pos),
-                    );
-                    return pos;
-                });
                 setDidInstantDrop(true);
             } else if (
                 _ENABLE_UP_KEY &&
@@ -471,6 +460,50 @@ export function GameLoop() {
                 timestamps.lockStart = performance.now();
                 stateHandler.send("TOUCHING_BLOCK");
             }
+
+            if (didInstantDrop) {
+                setPlayerVisibility(false);
+                const closestPlayerCellToGround = playerAdjustedCells.reduce((prev, cur) =>
+                    getGroundHeight(prev.c, prev.r, boardCellMatrix) - prev.r < getGroundHeight(cur.c, cur.r, boardCellMatrix) - cur.r ? prev : cur
+                );
+                const closestGround = getGroundHeight(closestPlayerCellToGround.c, closestPlayerCellToGround.r, boardCellMatrix);
+                const minDist = closestGround - closestPlayerCellToGround.r;
+                timestamps.playerInstantDropAnimStart = performance.now();
+                timestamps.playerInstantDropAnimDurationMilliseconds = 25 * minDist;
+                setPlayerFallingLettersBeforeAndAfter(
+                    playerAdjustedCells.map(cell =>
+                        [
+                            {...cell},
+                            {...cell, r: closestGround}
+                        ]
+                    )
+                );
+                stateHandler.send("DO_INSTANT_DROP_ANIM");
+            }
+        } else if ("playerInstantDropAnim" === stateHandler.state.value) {
+            if (timestamps.playerInstantDropAnimDurationMilliseconds < performance.now() - timestamps.playerInstantDropAnimStart) {
+                setPlayerVisibility(true);
+                setPlayerFallingLettersBeforeAndAfter([]);
+                let ground_row = BOARD_ROWS;
+                playerAdjustedCells.forEach((cell) =>
+                    ground_row = Math.min(
+                        ground_row,
+                        getGroundHeight(cell.c, cell.r, boardCellMatrix),
+                    )
+                );
+                const mid = Math.floor(layout.length / 2);
+                // Offset with the lowest cell, centered around layout's midpoint.
+                let dy = 0;
+                playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
+                setPlayerPos((prev) => {
+                    const pos = [ground_row - dy, prev[1]] as [number, number];
+                    setPlayerAdjustedCells(
+                        convertCellsToAdjusted(playerCells, pos),
+                    );
+                    return pos;
+                });
+                stateHandler.send("TOUCHING_BLOCK");
+            }
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
                 groundExitPenalty;
@@ -505,7 +538,7 @@ export function GameLoop() {
             );
 
             // Update falling letters & animation information.
-            setFallingLettersBeforeAndAfter(_ => {
+            setFallingLetters(_ => {
                 const newFallingLettersBeforeAndAfter = removed.map((k, i) => [k, added[i]]);
 
                 // Handle animation duration.
@@ -514,7 +547,7 @@ export function GameLoop() {
                     const [maxFallBeforeCell, maxFallAfterCell] = newFallingLettersBeforeAndAfter.reduce((prev, cur) =>
                         prev[1].r - prev[0].r > cur[1].r - cur[0].r ? prev : cur
                     );
-                    animDuration = getFallDurationMilliseconds(maxFallBeforeCell.r, maxFallAfterCell.r);
+                    animDuration = boardCellFallDurationMillisecondsRate * (maxFallAfterCell.r - maxFallBeforeCell.r);
                 }
                 timestamps.fallingLettersAnimDurationMilliseconds = animDuration;
                 timestamps.fallingLettersAnimStartMilliseconds = performance.now();
@@ -522,7 +555,7 @@ export function GameLoop() {
                 return newFallingLettersBeforeAndAfter;
             });
 
-                setBoardCellMatrix(newBoardWithDrops);
+            setBoardCellMatrix(newBoardWithDrops);
 
             setPlacedCells((prev) => {
                 added.forEach((boardCell) => prev.add([boardCell.r, boardCell.c]));
@@ -677,7 +710,7 @@ export function GameLoop() {
         gridTemplateColumns: `repeat(${BOARD_COLS}, 30px)`,
         border: "solid red 4px",
         position: "relative",
-    } as const;
+    };
 
     return (
         <div style={appStyle}>
@@ -693,7 +726,13 @@ export function GameLoop() {
                 />
 
                 <FallingBlock
+                    fallingLetters={playerFallingLettersBeforeAndAfter}
+                    durationRate={playerCellFallDurationMillisecondsRate}
+                />
+
+                <FallingBlock
                     fallingLetters={fallingLettersBeforeAndAfter}
+                    durationRate={boardCellFallDurationMillisecondsRate}
                 />
 
                 <BoardCells

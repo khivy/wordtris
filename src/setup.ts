@@ -26,3 +26,6 @@ export const lockMax = 1500;
 export const matchAnimLength = 750;
 export const groundExitPenaltyRate = 250;
 export const countdownTotalSecs = 3;
+
+export const boardCellFallDurationMillisecondsRate = 75;
+export const playerCellFallDurationMillisecondsRate = 10;

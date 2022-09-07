@@ -105,7 +105,6 @@ const timestamps = {
 
 const playerCellsInit = generateUserCells();
 const initialState = {
-    boardCellMatrix: createBoard(BOARD_ROWS, BOARD_COLS),
     playerPos:[...spawnPos] as const,
     playerCells: generateUserCells(),
     playerAdjustedCells: convertCellsToAdjusted(playerCellsInit, [...spawnPos] as const),
@@ -115,8 +114,6 @@ const initialState = {
 
 const reducer = (state, action) => {
     switch (action.type) {
-        case "setBoardCellMatrix":
-            return {...state, boardCellMatrix: action.newBoardCellMatrix};
         case "resetPlayer":
             return {...state, playerPos: action.newPlayerPos, playerCells: action.newPlayerCells, playerAdjustedCells: convertCellsToAdjusted(action.newPlayerCells, action.newPlayerPos)};
         case "setPlayerCells":
@@ -151,6 +148,8 @@ export function GameLoop() {
 
     // Player state.
     const [state, dispatch] = useReducer(reducer, initialState);
+
+    const [boardCellMatrix, setBoardCellMatrix] = useState(createBoard(BOARD_ROWS, BOARD_COLS));
 
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
     const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(
@@ -249,7 +248,7 @@ export function GameLoop() {
         if (!isPlayerMovementEnabled) {
             return;
         }
-        const board = state.boardCellMatrix;
+        const board = boardCellMatrix;
         const areTargetSpacesEmpty = (
             dr: -1 | 0 | 1 | number,
             dc: -1 | 0 | 1,
@@ -375,7 +374,7 @@ export function GameLoop() {
     function handleStates() {
         if ("startingGame" === stateHandler.state.value) {
             // Takes care of multiple enqueued state changes.
-            dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: createBoard(BOARD_ROWS, BOARD_COLS)});
+            setBoardCellMatrix(createBoard(BOARD_ROWS, BOARD_COLS));
 
             // Reset Word List.
             setMatchedWords([]);
@@ -421,7 +420,7 @@ export function GameLoop() {
             stateHandler.send("SPAWN");
         } else if ("placingBlock" === stateHandler.state.value) {
             // Reset if spawn point is blocked.
-            if (state.boardCellMatrix[spawnPos[0]][spawnPos[1]].char !== EMPTY) {
+            if (boardCellMatrix[spawnPos[0]][spawnPos[1]].char !== EMPTY) {
                 // Pause player movement.
                 setPlayerVisibility(false);
                 setIsPlayerMovementEnabled(false);
@@ -433,14 +432,14 @@ export function GameLoop() {
             // Handle gradual fall.
             if (isPlayerMovementEnabled) {
                 const dr = doGradualFall(
-                    state.boardCellMatrix,
+                    boardCellMatrix,
                     state.playerAdjustedCells,
                 );
                 dispatch({type: "movePlayer", playerPosUpdate: [dr, 0]});
             }
 
             // Check if player is touching ground.
-            if (isPlayerTouchingGround(state.playerAdjustedCells, state.boardCellMatrix)) {
+            if (isPlayerTouchingGround(state.playerAdjustedCells, boardCellMatrix)) {
                 timestamps.lockStart = performance.now();
                 stateHandler.send("TOUCHING_BLOCK");
             }
@@ -448,9 +447,9 @@ export function GameLoop() {
             if (didInstantDrop) {
                 setPlayerVisibility(false);
                 const closestPlayerCellToGround = state.playerAdjustedCells.reduce((prev, cur) =>
-                    getGroundHeight(prev.c, prev.r, state.boardCellMatrix) - prev.r < getGroundHeight(cur.c, cur.r, state.boardCellMatrix) - cur.r ? prev : cur
+                    getGroundHeight(prev.c, prev.r, boardCellMatrix) - prev.r < getGroundHeight(cur.c, cur.r, boardCellMatrix) - cur.r ? prev : cur
                 );
-                const closestGround = getGroundHeight(closestPlayerCellToGround.c, closestPlayerCellToGround.r, state.boardCellMatrix);
+                const closestGround = getGroundHeight(closestPlayerCellToGround.c, closestPlayerCellToGround.r, boardCellMatrix);
                 const minDist = closestGround - closestPlayerCellToGround.r;
                 timestamps.playerInstantDropAnimStart = performance.now();
                 timestamps.playerInstantDropAnimDurationMilliseconds = 25 * minDist;
@@ -471,7 +470,7 @@ export function GameLoop() {
                 state.playerAdjustedCells.forEach((cell) =>
                     ground_row = Math.min(
                         ground_row,
-                        getGroundHeight(cell.c, cell.r, state.boardCellMatrix),
+                        getGroundHeight(cell.c, cell.r, boardCellMatrix),
                     )
                 );
                 const mid = Math.floor(layout.length / 2);
@@ -484,14 +483,14 @@ export function GameLoop() {
         } else if ("lockDelay" === stateHandler.state.value) {
             const lockTime = performance.now() - timestamps.lockStart +
                 groundExitPenalty;
-            if (!isPlayerTouchingGround(state.playerAdjustedCells, state.boardCellMatrix)) {
+            if (!isPlayerTouchingGround(state.playerAdjustedCells, boardCellMatrix)) {
                 // Player has moved off of ground.
                 setGroundExitPenalty((prev) => prev + groundExitPenaltyRate);
                 stateHandler.send("UNLOCK");
             } else if (lockMax <= lockTime || didInstantDrop) {
                 // Lock in block.
                 dispatch({type: "setPlayerFallingLettersBeforeAndAfter", newPlayerFallingLettersBeforeAndAfter: []});
-                const newBoard = state.boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 setPlacedCells((prev) => {
                     state.playerAdjustedCells.forEach((cell) => {
                         prev.add([cell.r, cell.c]);
@@ -500,7 +499,7 @@ export function GameLoop() {
                     });
                     return prev;
                 });
-                dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+                setBoardCellMatrix(newBoard);
                 interp.val = 0;
                 setDidInstantDrop(false);
 
@@ -512,7 +511,7 @@ export function GameLoop() {
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
             const {boardWithoutFallCells, postFallCells, preFallCells} = dropFloatingCells(
-                state.boardCellMatrix,
+                boardCellMatrix,
             );
 
             // Update falling letters & animation information.
@@ -529,7 +528,7 @@ export function GameLoop() {
             timestamps.fallingLettersAnimDurationMilliseconds = animDuration;
             timestamps.fallingLettersAnimStartMilliseconds = performance.now();
 
-            dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: boardWithoutFallCells});
+            setBoardCellMatrix(boardWithoutFallCells);
 
             setPlacedCells((prev) => {
                 postFallCells.forEach((boardCell) => prev.add([boardCell.r, boardCell.c]));
@@ -540,25 +539,24 @@ export function GameLoop() {
         } else if ("fallingLettersAnim" === stateHandler.state.value) {
             if (timestamps.fallingLettersAnimDurationMilliseconds < performance.now() - timestamps.fallingLettersAnimStartMilliseconds) {
                 // Drops floating cells again in-case
-                const [newBoardWithDrops, added, removed] = dropFloatingCells(
-                    state.boardCellMatrix,
+                const {boardWithoutFallCells, _postFallCells, _preFallCells} = dropFloatingCells(
+                    boardCellMatrix,
                 );
-                dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoardWithDrops});
+                setBoardCellMatrix(boardWithoutFallCells);
 
-                const newBoard = state.boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 state.fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
                     const [before, after] = beforeAndAfter;
                     newBoard[before.r][before.c].char = EMPTY;
                     newBoard[after.r][after.c].char = after.char;
                 })
-                // setBoardCellMatrix(newBoard);
                 dispatch({type: "setFallingLettersBeforeAndAfter", newFallingLettersBeforeAndAfter: []});
-                dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+                setBoardCellMatrix(newBoard);
                 stateHandler.send("GROUNDED");
             }
         } else if ("checkingMatches" === stateHandler.state.value) {
             // Allocate a newBoard to avoid desync between render and board (React, pls).
-            const newBoard = state.boardCellMatrix.slice();
+            const newBoard = boardCellMatrix.slice();
             // TODO: Remove repeated checks when placedCells occupy same row or col.
             let hasRemovedWord = false;
             const affectedRows = new Set(
@@ -588,11 +586,11 @@ export function GameLoop() {
             affectedCols.forEach((c) => {
                 // Column words
                 let [col_top, col_bot] = findWords(
-                    state.boardCellMatrix.map((row) => row[c]),
+                    boardCellMatrix.map((row) => row[c]),
                     false,
                 );
                 const [col_topR, col_botR] = findWords(
-                    state.boardCellMatrix.map((row) => row[c]),
+                    boardCellMatrix.map((row) => row[c]),
                     true,
                 );
                 // Use reversed word if longer.
@@ -606,11 +604,11 @@ export function GameLoop() {
                 if (col_top !== -1) {
                     newMatchedWords.push(
                         isColReversed
-                            ? state.boardCellMatrix.map((row) => row[c])
+                            ? boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
                                 ).reverse().join("")
-                            : state.boardCellMatrix.map((row) => row[c])
+                            : boardCellMatrix.map((row) => row[c])
                                 .slice(col_top, col_bot + 1).map((cell) =>
                                     cell.char
                                 ).join(""),
@@ -638,7 +636,7 @@ export function GameLoop() {
                 return prev;
             });
 
-            dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+            setBoardCellMatrix(newBoard);
 
             if (hasRemovedWord) {
                 timestamps.matchAnimStart = performance.now();
@@ -648,7 +646,7 @@ export function GameLoop() {
             const animTime = performance.now() - timestamps.matchAnimStart;
             if (matchAnimLength <= animTime) {
                 // Also remove characters. (hasMatched)
-                const newBoard = state.boardCellMatrix.slice();
+                const newBoard = boardCellMatrix.slice();
                 newBoard.forEach((row, r) => {
                     row.forEach((cell, c) => {
                         if (matchedCells.has([r, c].toString())) {
@@ -657,7 +655,7 @@ export function GameLoop() {
                         }
                     });
                 });
-                dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+                setBoardCellMatrix(newBoard);
 
                 setPlacedCells((prev) => {
                     return structuredClone(prev);
@@ -671,7 +669,7 @@ export function GameLoop() {
             }
         } else if ("postMatchAnimation" === stateHandler.state.value) {
             // Remove matched characters again.
-            const newBoard = state.boardCellMatrix.slice();
+            const newBoard = boardCellMatrix.slice();
             newBoard.forEach((row, r) => {
                 row.forEach((cell, c) => {
                     if (matchedCells.has([r, c].toString())) {
@@ -680,7 +678,7 @@ export function GameLoop() {
                     }
                 });
             });
-            dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+            setBoardCellMatrix(newBoard);
 
             setPlacedCells((prev) => {
                 prev.clear();
@@ -730,7 +728,7 @@ export function GameLoop() {
                 />
 
                 <BoardCells
-                    boardCellMatrix={state.boardCellMatrix}
+                    boardCellMatrix={boardCellMatrix}
                 />
                 <GameOverOverlay isVisible={isGameOverVisible}>
                     Game Over

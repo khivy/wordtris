@@ -9,7 +9,7 @@ export const FallingBlock = React.memo( ({ fallingLetters, durationRate }: {fall
                 <FallingLetter
                     fallingLetterBeforeAndAfter={fallingLetterBeforeAndAfter}
                     durationRate={durationRate}
-                    key={`${Math.random()}${fallingLetterBeforeAndAfter[0].r}${fallingLetterBeforeAndAfter[0].c}`}
+                    key={`${fallingLetterBeforeAndAfter[0].r}${fallingLetterBeforeAndAfter[0].c}`}
                 />)
             );
         return <>{fallenLetters}</>;

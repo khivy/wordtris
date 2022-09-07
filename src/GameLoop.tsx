@@ -117,36 +117,16 @@ const reducer = (state, action) => {
     switch (action.type) {
         case "setBoardCellMatrix":
             return {...state, boardCellMatrix: action.newBoardCellMatrix};
-        case "setPlayerCells":
-            return {...state, playerCells: action.newPlayerCells}; 
-        case "setGroundedPlayerPosAndAdjustedCells":
-            const newPos = [action.playerRowPos, state.playerPos[1]] as [number, number];
-            return {...state, playerPos: newPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPos)};
-        // setPlayerPos((prev) => {
-        //     const pos = [ground_row - dy, prev[1]] as [number, number];
-        //     setPlayerAdjustedCells(
-        //         convertCellsToAdjusted(playerCells, pos),
-        //     );
-        //     return pos;
-        // });
-        case "setPlayerCellsAndAdjustedCells":
-            return {...state, playerCells: action.newPlayerCells, playerAdjustedCells: action.newPlayerAdjustedCells};
-        case "setPlayerPosAndCellsAndAdjustedCells":
+        case "resetPlayer":
             return {...state, playerPos: action.newPlayerPos, playerCells: action.newPlayerCells, playerAdjustedCells: convertCellsToAdjusted(action.newPlayerCells, action.newPlayerPos)};
-        // setPlayerPos(() => {
-        //     const pos = [...spawnPos] as const;
-        //     setPlayerCells(() => {
-        //         const cells = generateUserCells();
-        //         setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
-        //         return cells;
-        //     });
-        //     return pos;
-        // });
-        case "setPlayerPos":
-            return {...state, playerPos: action.playerPos};
-        case "updatePlayerPosAndAdjustedCells":
+        case "setPlayerCells":
+            return {...state, playerCells: action.newPlayerCells, playerAdjustedCells: action.newPlayerAdjustedCells};
+        case "movePlayer":
             const newPlayerPos = [state.playerPos[0] + action.playerPosUpdate[0], state.playerPos[1] + action.playerPosUpdate[1]] as [number, number];
             return {...state, playerPos: newPlayerPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPlayerPos)};
+        case "groundPlayer":
+            const newPos = [action.playerRowPos, state.playerPos[1]] as [number, number];
+            return {...state, playerPos: newPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPos)};
         case "setFallingLettersBeforeAndAfter":
             return {...state, fallingLettersBeforeAndAfter: action.newFallingLettersBeforeAndAfter};
         case "setPlayerFallingLettersBeforeAndAfter":
@@ -169,18 +149,9 @@ export function GameLoop() {
             .then((data) => setValidWords(new Set(data)));
     }, []);
 
-    // const [boardCellMatrix, setBoardCellMatrix] = useState(
-    //     createBoard(BOARD_ROWS, BOARD_COLS),
-    // );
-
     // Player state.
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    // const [playerPos, setPlayerPos] = useState([...spawnPos] as const);
-    // const [playerCells, setPlayerCells] = useState(generateUserCells());
-    // const [playerAdjustedCells, setPlayerAdjustedCells] = useState(
-    //     convertCellsToAdjusted(playerCells, playerPos),
-    // );
     const [isPlayerVisible, setPlayerVisibility] = useState(false);
     const [isPlayerMovementEnabled, setIsPlayerMovementEnabled] = useState(
         false,
@@ -206,9 +177,6 @@ export function GameLoop() {
     const [groundExitPenalty, setGroundExitPenalty] = useState(0);
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
-
-    // const [fallingLettersBeforeAndAfter, setFallingLetters] = useState([]);
-    // const [playerFallingLettersBeforeAndAfter, setPlayerFallingLettersBeforeAndAfter] = useState([]);
 
     useEffect(() => {
         globalThis.addEventListener("keydown", updatePlayerPos);
@@ -247,9 +215,7 @@ export function GameLoop() {
             if (isAdjacentToGround) {
                 interp.val = 0;
             }
-            // setPlayerCells(rotatedCells);
-            // setPlayerAdjustedCells(rotatedCellsAdjusted);
-            dispatch({type: "setPlayerCellsAndAdjustedCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
+            dispatch({type: "setPlayerCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
         } else {
             console.assert(state.playerAdjustedCells.length === 2);
             // Get direction of overlapping cell.
@@ -272,9 +238,7 @@ export function GameLoop() {
                 board[cell.r][cell.c].char !== EMPTY
             );
             if (!isOverlapping) {
-                dispatch({type: "setPlayerCellsAndAdjustedCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
-                // setPlayerCells(rotatedCells);
-                // setPlayerAdjustedCells(rotatedCellsAdjusted);
+                dispatch({type: "setPlayerCells", newPlayerCells: rotatedCells, newPlayerAdjustedCells: rotatedCellsAdjusted });
             }
         }
     }
@@ -309,16 +273,7 @@ export function GameLoop() {
                     -1,
                 )
             ) {
-                // const pos = [prev[0], prev[1] - 1] as [number, number];
-                // setPlayerAdjustedCells(convertCellsToAdjusted(playerCells, pos));
-                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [0, -1]});
-                // setPlayerPos((prev) => {
-                //     const pos = [prev[0], prev[1] - 1] as [number, number];
-                //     setPlayerAdjustedCells(
-                //         convertCellsToAdjusted(playerCells, pos),
-                //     );
-                //     return pos;
-                // });
+                dispatch({type: "movePlayer", playerPosUpdate: [0, -1]});
             }
         } else if ("ArrowRight" === code) {
             // Move right.
@@ -337,14 +292,7 @@ export function GameLoop() {
                     1,
                 )
             ) {
-                // setPlayerPos((prev) => {
-                //     const pos = [prev[0], prev[1] + 1] as [number, number];
-                //     setPlayerAdjustedCells(
-                //         convertCellsToAdjusted(playerCells, pos),
-                //     );
-                //     return pos;
-                // });
-                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [0, 1]});
+                dispatch({type: "movePlayer", playerPosUpdate: [0, 1]});
             }
         } else if ("ArrowDown" === code) {
             // Move down faster.
@@ -355,14 +303,7 @@ export function GameLoop() {
                 if (ENABLE_SMOOTH_FALL) {
                     interp.val += interpRate * interpKeydownMult;
                 } else {
-                    // setPlayerPos((prev) => {
-                    //     const pos = [prev[0] + 1, prev[1]] as [number, number];
-                    //     setPlayerAdjustedCells(
-                    //         convertCellsToAdjusted(playerCells, pos),
-                    //     );
-                    //     return pos;
-                    // });
-                    dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [1, 0]});
+                    dispatch({type: "movePlayer", playerPosUpdate: [1, 0]});
                     // Reset interp.
                     interp.val = 0;
                 }
@@ -382,14 +323,7 @@ export function GameLoop() {
                 0 <= getAdjustedTopR(state.playerAdjustedCells) - 1 &&
                 areTargetSpacesEmpty(-1, 0)
             ) {
-                // setPlayerPos((prev) => {
-                //     const pos = [prev[0] - 1, prev[1]] as [number, number];
-                //     setPlayerAdjustedCells(
-                //         convertCellsToAdjusted(playerCells, pos),
-                //     );
-                //     return pos;
-                // });
-                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [-1, 0]});
+                dispatch({type: "movePlayer", playerPosUpdate: [-1, 0]});
             }
         }
     }
@@ -442,7 +376,6 @@ export function GameLoop() {
         if ("startingGame" === stateHandler.state.value) {
             // Takes care of multiple enqueued state changes.
             dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: createBoard(BOARD_ROWS, BOARD_COLS)});
-            // setBoardCellMatrix(createBoard(BOARD_ROWS, BOARD_COLS));
 
             // Reset Word List.
             setMatchedWords([]);
@@ -464,6 +397,7 @@ export function GameLoop() {
                 stateHandler.send("DONE");
             }
         } else if ("spawningBlock" === stateHandler.state.value) {
+            // Wait while validWords fetches data.
             if (validWords.size === 0) {
                 return;
             }
@@ -471,19 +405,10 @@ export function GameLoop() {
             setCountdownVisibility(false);
 
             // Reset player.
-            // This nested structure prevents desync between the given state variables.
-            // setPlayerPos(() => {
-            //     const pos = [...spawnPos] as const;
-            //     setPlayerCells(() => {
-            //         const cells = generateUserCells();
-            //         setPlayerAdjustedCells(convertCellsToAdjusted(cells, pos));
-            //         return cells;
-            //     });
-            //     return pos;
-            // });
-            dispatch({type: "setPlayerPosAndCellsAndAdjustedCells", newPlayerPos: [...spawnPos] as const, newPlayerCells: generateUserCells()});
+            dispatch({type: "resetPlayer", newPlayerPos: [...spawnPos] as const, newPlayerCells: generateUserCells()});
             setIsPlayerMovementEnabled(true);
             setPlayerVisibility(true);
+            setMatchedCells(new Set());
 
             // Reset penalty.
             setGroundExitPenalty(0);
@@ -511,14 +436,7 @@ export function GameLoop() {
                     state.boardCellMatrix,
                     state.playerAdjustedCells,
                 );
-                // setPlayerPos([
-                //     playerPos[0] + dr,
-                //     playerPos[1],
-                // ]);
-                // setPlayerAdjustedCells(
-                //     convertCellsToAdjusted(playerCells, playerPos),
-                // );
-                dispatch({type: "updatePlayerPosAndAdjustedCells", playerPosUpdate: [dr, 0]});
+                dispatch({type: "movePlayer", playerPosUpdate: [dr, 0]});
             }
 
             // Check if player is touching ground.
@@ -560,14 +478,7 @@ export function GameLoop() {
                 // Offset with the lowest cell, centered around layout's midpoint.
                 let dy = 0;
                 state.playerCells.forEach((cell) => dy = Math.max(dy, cell.r - mid));
-                dispatch({type: "setGroundedPlayerPosAndAdjustedCells", playerRowPos: ground_row - dy });
-                // setPlayerPos((prev) => {
-                //     const pos = [ground_row - dy, prev[1]] as [number, number];
-                //     setPlayerAdjustedCells(
-                //         convertCellsToAdjusted(playerCells, pos),
-                //     );
-                //     return pos;
-                // });
+                dispatch({type: "groundPlayer", playerRowPos: ground_row - dy });
                 stateHandler.send("TOUCHING_BLOCK");
             }
         } else if ("lockDelay" === stateHandler.state.value) {
@@ -727,7 +638,6 @@ export function GameLoop() {
                 return prev;
             });
 
-            // setBoardCellMatrix(newBoard);
             dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
 
             if (hasRemovedWord) {
@@ -747,12 +657,12 @@ export function GameLoop() {
                         }
                     });
                 });
-
-                // setBoardCellMatrix(newBoard);
                 dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+
                 setPlacedCells((prev) => {
                     return structuredClone(prev);
                 });
+
                 if (matchedCells.size !== 0) {
                     setMatchedCells(new Set());
                     stateHandler.send("CHECK_FOR_CHAIN");
@@ -760,6 +670,18 @@ export function GameLoop() {
                 stateHandler.send("SKIP_ANIM");
             }
         } else if ("postMatchAnimation" === stateHandler.state.value) {
+            // Remove matched characters again.
+            const newBoard = state.boardCellMatrix.slice();
+            newBoard.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    if (matchedCells.has([r, c].toString())) {
+                        cell.char = EMPTY;
+                        cell.hasMatched = false;
+                    }
+                });
+            });
+            dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoard});
+
             setPlacedCells((prev) => {
                 prev.clear();
                 return prev;

@@ -110,23 +110,6 @@ const initialState = {
     playerAdjustedCells: convertCellsToAdjusted(playerCellsInit, [...spawnPos] as const),
 };
 
-const reducer = (state, action) => {
-    switch (action.type) {
-        case "resetPlayer":
-            return {...state, playerPos: action.newPlayerPos, playerCells: action.newPlayerCells, playerAdjustedCells: convertCellsToAdjusted(action.newPlayerCells, action.newPlayerPos)};
-        case "setPlayerCells":
-            return {...state, playerCells: action.newPlayerCells, playerAdjustedCells: action.newPlayerAdjustedCells};
-        case "movePlayer":
-            const newPlayerPos = [state.playerPos[0] + action.playerPosUpdate[0], state.playerPos[1] + action.playerPosUpdate[1]] as [number, number];
-            return {...state, playerPos: newPlayerPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPlayerPos)};
-        case "groundPlayer":
-            const newPos = [action.playerRowPos, state.playerPos[1]] as [number, number];
-            return {...state, playerPos: newPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPos)};
-        default:
-                throw new Error();
-    }
-};
-
 export function GameLoop() {
     const [validWords, setValidWords] = useState(new Set());
 
@@ -141,7 +124,22 @@ export function GameLoop() {
     }, []);
 
     // Player state.
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const [state, dispatch] = useReducer((state, action) => {
+        switch (action.type) {
+            case "resetPlayer":
+                return {...state, playerPos: action.newPlayerPos, playerCells: action.newPlayerCells, playerAdjustedCells: convertCellsToAdjusted(action.newPlayerCells, action.newPlayerPos)};
+            case "setPlayerCells":
+                return {...state, playerCells: action.newPlayerCells, playerAdjustedCells: action.newPlayerAdjustedCells};
+            case "movePlayer":
+                const newPlayerPos = [state.playerPos[0] + action.playerPosUpdate[0], state.playerPos[1] + action.playerPosUpdate[1]] as [number, number];
+                return {...state, playerPos: newPlayerPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPlayerPos)};
+            case "groundPlayer":
+                const newPos = [action.playerRowPos, state.playerPos[1]] as [number, number];
+                return {...state, playerPos: newPos, playerAdjustedCells: convertCellsToAdjusted(state.playerCells, newPos)};
+            default:
+                throw new Error();
+        }
+    }, initialState);
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(createBoard(BOARD_ROWS, BOARD_COLS));
 

@@ -628,7 +628,12 @@ export function GameLoop() {
             stateHandler.send("DO_ANIM");
         } else if ("fallingLettersAnim" === stateHandler.state.value) {
             if (timestamps.fallingLettersAnimDurationMilliseconds < performance.now() - timestamps.fallingLettersAnimStartMilliseconds) {
-                // Add in fallen-block changes. TODO remove from board above.
+                // Drops floating cells again in-case
+                const [newBoardWithDrops, added, removed] = dropFloatingCells(
+                    state.boardCellMatrix,
+                );
+                dispatch({type: "setBoardCellMatrix", newBoardCellMatrix: newBoardWithDrops});
+
                 const newBoard = state.boardCellMatrix.slice();
                 state.fallingLettersBeforeAndAfter.forEach(beforeAndAfter => {
                     const [before, after] = beforeAndAfter;

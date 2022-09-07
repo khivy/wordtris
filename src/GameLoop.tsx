@@ -469,6 +469,7 @@ export function GameLoop() {
                         ]
                     )
                 );
+                setIsPlayerMovementEnabled(false);
                 stateHandler.send("DO_INSTANT_DROP_ANIM");
             }
         } else if ("playerInstantDropAnim" === stateHandler.state.value) {

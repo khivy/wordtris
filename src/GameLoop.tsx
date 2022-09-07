@@ -533,17 +533,17 @@ export function GameLoop() {
             }
         } else if ("fallingLetters" === stateHandler.state.value) {
             // For each floating block, move it 1 + the ground.
-            const [newBoardWithDrops, added, removed] = dropFloatingCells(
+            const {boardWithoutFallCells, postFallCells, preFallCells} = dropFloatingCells(
                 boardCellMatrix,
             );
 
             // Update falling letters & animation information.
             setFallingLetters(_ => {
-                const newFallingLettersBeforeAndAfter = removed.map((k, i) => [k, added[i]]);
+                const newFallingLettersBeforeAndAfter = preFallCells.map((k, i) => [k, postFallCells[i]]);
 
                 // Handle animation duration.
                 let animDuration = 0;
-                if (added.length !== 0) {
+                if (postFallCells.length !== 0) {
                     const [maxFallBeforeCell, maxFallAfterCell] = newFallingLettersBeforeAndAfter.reduce((prev, cur) =>
                         prev[1].r - prev[0].r > cur[1].r - cur[0].r ? prev : cur
                     );
@@ -555,10 +555,10 @@ export function GameLoop() {
                 return newFallingLettersBeforeAndAfter;
             });
 
-            setBoardCellMatrix(newBoardWithDrops);
+            setBoardCellMatrix(boardWithoutFallCells);
 
             setPlacedCells((prev) => {
-                added.forEach((boardCell) => prev.add([boardCell.r, boardCell.c]));
+                postFallCells.forEach((boardCell) => prev.add([boardCell.r, boardCell.c]));
                 return prev;
             });
 

@@ -120,20 +120,27 @@ export function GameLoop() {
     const [player, dispatchPlayer] = useReducer((state: PlayerState, action: PlayerAction ): PlayerState => {
         let newPos;
         switch (action.type) {
-            case "resetPlayer":
+            case "resetPlayer": {
                 newPos = [...spawnPos] as const;
                 const initCells = generateUserCells();
-                return {...state, pos: newPos.slice() as [number, number], cells: initCells, adjustedCells: convertCellsToAdjusted(initCells, newPos)};
-            case "setCells":
+                return {
+                    ...state,
+                    pos: newPos.slice() as [number, number],
+                    cells: initCells,
+                    adjustedCells: convertCellsToAdjusted(initCells, newPos)
+                };
+            }
+            case "setCells": {
                 return {...state, cells: action.newCells, adjustedCells: action.newAdjustedCells};
-            case "movePlayer":
+            }
+            case "movePlayer": {
                 newPos = [state.pos[0] + action.posUpdate[0], state.pos[1] + action.posUpdate[1]] as [number, number];
-                return {...state, pos: newPos, adjustedCells: convertCellsToAdjusted(state.cells, newPos)};
-            case "groundPlayer":
+                return { ...state, pos: newPos, adjustedCells: convertCellsToAdjusted(state.cells, newPos) };
+            }
+            case "groundPlayer": {
                 newPos = [action.playerRowPos, state.pos[1]] as [number, number];
-                return {...state, pos: newPos, adjustedCells: convertCellsToAdjusted(state.cells, newPos)};
-            default:
-                return state;
+                return { ...state, pos: newPos, adjustedCells: convertCellsToAdjusted(state.cells, newPos) };
+            }
         }
     }, {
         pos: [...spawnPos],

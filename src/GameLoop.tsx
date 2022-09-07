@@ -49,6 +49,7 @@ import {
     boardCellFallDurationMillisecondsRate,
     playerCellFallDurationMillisecondsRate
 } from "./setup";
+import { UserCell } from "./UserCell";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -103,31 +104,13 @@ const timestamps = {
     playerInstantDropAnimDurationMilliseconds: 0,
 };
 
-const cellsInit = generateUserCells();
-const initialState = {
-    pos:[...spawnPos] as const,
-    cells: generateUserCells(),
-    adjustedCells: convertCellsToAdjusted(cellsInit, [...spawnPos] as const),
-};
-
 export function GameLoop() {
-    const [validWords, setValidWords] = useState(new Set());
-
-    useEffect(() => {
-        // Fetch validWords during countdown.
-        fetch(
-            "https://raw.githubusercontent.com/khivy/wordtris/main/lexicons/Scrabble80K.txt",
-        )
-            .then((res) => res.text())
-            .then((res) => res.split("\n"))
-            .then((data) => setValidWords(new Set(data)));
-    }, []);
-
     const [player, dispatchPlayer] = useReducer((state, action) => {
         let newPos;
         switch (action.type) {
             case "resetPlayer":
-                return {...state, pos: action.newPos, cells: action.newCells, adjustedCells: convertCellsToAdjusted(action.newCells, action.newPos)};
+                const initCells = generateUserCells();
+                return {...state, pos: [...spawnPos] as const, cells: initCells, adjustedCells: convertCellsToAdjusted(initCells, action.newPos)};
             case "setCells":
                 return {...state, cells: action.newCells, adjustedCells: action.newAdjustedCells};
             case "movePlayer":
@@ -139,7 +122,24 @@ export function GameLoop() {
             default:
                 throw new Error();
         }
-    }, initialState);
+    }, {
+        pos: [] as number[],
+        cells: [] as UserCell[],
+        adjustedCells: [] as UserCell[],
+    });
+
+    const [validWords, setValidWords] = useState(new Set());
+
+    useEffect(() => {
+        dispatchPlayer({type: "resetPlayer"});
+        // Fetch validWords during countdown.
+        fetch(
+            "https://raw.githubusercontent.com/khivy/wordtris/main/lexicons/Scrabble80K.txt",
+        )
+            .then((res) => res.text())
+            .then((res) => res.split("\n"))
+            .then((data) => setValidWords(new Set(data)));
+    }, []);
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(createBoard(BOARD_ROWS, BOARD_COLS));
 
@@ -399,7 +399,7 @@ export function GameLoop() {
             setCountdownVisibility(false);
 
             // Reset player.
-            dispatchPlayer({type: "resetPlayer", newPos: [...spawnPos] as const, newCells: generateUserCells()});
+            dispatchPlayer({type: "resetPlayer"});
             setIsPlayerMovementEnabled(true);
             setPlayerVisibility(true);
             setMatchedCells(new Set());

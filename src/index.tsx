@@ -1,3 +1,5 @@
+import 'react-app-polyfill/ie9';
+import 'react-app-polyfill/stable';
 import * as React from "react";
 import { Suspense } from "react";
 import * as ReactDOM from "react-dom/client";

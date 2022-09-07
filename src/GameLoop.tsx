@@ -104,13 +104,26 @@ const timestamps = {
     playerInstantDropAnimDurationMilliseconds: 0,
 };
 
+type PlayerState = {
+    pos: [number, number],
+    cells: UserCell[],
+    adjustedCells: UserCell[],
+};
+
+type PlayerAction =
+    | { type: "resetPlayer" }
+    | { type: "setCells"; newCells: UserCell[]; newAdjustedCells: UserCell[] }
+    | { type: "movePlayer"; posUpdate: [number, number]}
+    | { type: "groundPlayer"; playerRowPos: number};
+
 export function GameLoop() {
-    const [player, dispatchPlayer] = useReducer((state, action) => {
+    const [player, dispatchPlayer] = useReducer((state: PlayerState, action: PlayerAction ): PlayerState => {
         let newPos;
         switch (action.type) {
             case "resetPlayer":
+                newPos = [...spawnPos] as const;
                 const initCells = generateUserCells();
-                return {...state, pos: [...spawnPos] as const, cells: initCells, adjustedCells: convertCellsToAdjusted(initCells, action.newPos)};
+                return {...state, pos: newPos.slice() as [number, number], cells: initCells, adjustedCells: convertCellsToAdjusted(initCells, newPos)};
             case "setCells":
                 return {...state, cells: action.newCells, adjustedCells: action.newAdjustedCells};
             case "movePlayer":
@@ -120,12 +133,12 @@ export function GameLoop() {
                 newPos = [action.playerRowPos, state.pos[1]] as [number, number];
                 return {...state, pos: newPos, adjustedCells: convertCellsToAdjusted(state.cells, newPos)};
             default:
-                throw new Error();
+                return state;
         }
     }, {
-        pos: [] as number[],
-        cells: [] as UserCell[],
-        adjustedCells: [] as UserCell[],
+        pos: [...spawnPos],
+        cells: [],
+        adjustedCells: [],
     });
 
     const [validWords, setValidWords] = useState(new Set());

@@ -463,7 +463,7 @@ export function GameLoop() {
                 const closestGround = getGroundHeight(closestPlayerCellToGround.c, closestPlayerCellToGround.r, boardCellMatrix);
                 const minDist = closestGround - closestPlayerCellToGround.r;
                 timestamps.playerInstantDropAnimStart = performance.now();
-                timestamps.playerInstantDropAnimDurationMilliseconds = 25 * minDist;
+                timestamps.playerInstantDropAnimDurationMilliseconds = playerCellFallDurationMillisecondsRate * minDist;
                 setFallingPlayerLettersBeforeAndAfter(
                     player.adjustedCells.map(cell =>
                         [

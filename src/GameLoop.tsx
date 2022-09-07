@@ -387,6 +387,9 @@ export function GameLoop() {
             // Reset Word List.
             setMatchedWords([]);
             setMatchedCells(new Set());
+            
+            setFallingBoardLettersBeforeAndAfter([]);
+            setFallingPlayerLettersBeforeAndAfter([]);
 
             setGameOverVisibility(false);
 

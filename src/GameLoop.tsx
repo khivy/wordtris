@@ -407,6 +407,12 @@ export function GameLoop() {
 
             setGameOverVisibility(false);
 
+            // Temporary fix for lingering hasMatched cells. See Github issue #55.
+            setBoardCellMatrix(boardCellMatrix.map(row => { return row.map(cell => {
+                cell.hasMatched = false;
+                return cell;
+            })}));
+
             setCountdownVisibility(true);
             timestamps.countdownStartTime = performance.now();
             stateHandler.send("START");

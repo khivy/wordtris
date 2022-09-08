@@ -31,6 +31,13 @@ import { FallingBlock } from "./components/FallingBlock";
 import {
     _ENABLE_UP_KEY,
     _IS_PRINTING_STATE,
+    BOARD_CELL_COLOR,
+    EMPTY_CELL_COLOR,
+    LARGE_TEXT_SIZE,
+    CELL_SIZE,
+    UNIVERSAL_BORDER_RADIUS,
+    PLAYER_COLOR,
+    BOARD_COLOR,
     BOARD_COLS,
     BOARD_ROWS,
     countdownTotalSecs,
@@ -707,54 +714,79 @@ export function GameLoop() {
         }
     }
 
+    const containerStyle = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: BOARD_COLOR,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        height: "100%",
+        width: "100%",
+    } as const;
+
     const appStyle = {
         display: "flex",
-        border: "solid green 4px",
         flexWrap: "wrap",
         flexDirection: "row",
+        border: `1vmin solid ${EMPTY_CELL_COLOR}`,
+        padding: "0.4vmin",
+        borderRadius: UNIVERSAL_BORDER_RADIUS,
     } as const;
 
     // Style of encompassing board.
     const boardStyle = {
         display: "inline-grid",
-        gridTemplateRows: `repeat(${BOARD_ROWS}, 30px)`,
-        gridTemplateColumns: `repeat(${BOARD_COLS}, 30px)`,
-        border: "solid red 4px",
+        gridTemplateColumns: `repeat(${BOARD_COLS}, ${CELL_SIZE})`,
+        gridTemplateRows: `repeat(${BOARD_ROWS}, ${CELL_SIZE})`,
         position: "relative",
-    };
+        background: BOARD_COLOR,
+    } as const;
+
+    const gameOverTextStyle = {
+        color: "white",
+        fontSize: LARGE_TEXT_SIZE,
+        webkitTextStroke: "0.2vmin",
+        webkitTextStrokeColor: BOARD_CELL_COLOR,
+    } as const;
 
     return (
-        <div style={appStyle}>
-            <div style={boardStyle}>
-                <CountdownOverlay
-                    isVisible={isCountdownVisible}
-                    countdownSec={countdownSec}
-                />
+        <div style={containerStyle}>
+            <div style={appStyle}>
+                <div style={boardStyle}>
+                    <CountdownOverlay
+                        isVisible={isCountdownVisible}
+                        countdownSec={countdownSec}
+                    />
 
-                <PlayerBlock
-                    isVisible={isPlayerVisible}
-                    adjustedCells={player.adjustedCells}
-                />
+                    <PlayerBlock
+                        isVisible={isPlayerVisible}
+                        adjustedCells={player.adjustedCells}
+                    />
 
-                <FallingBlock
-                    fallingLetters={fallingPlayerLettersBeforeAndAfter}
-                    durationRate={playerCellFallDurationMillisecondsRate}
-                />
+                    <FallingBlock
+                        fallingLetters={fallingPlayerLettersBeforeAndAfter}
+                        durationRate={playerCellFallDurationMillisecondsRate}
+                        color={PLAYER_COLOR}
+                    />
 
-                <FallingBlock
-                    fallingLetters={fallingBoardLettersBeforeAndAfter}
-                    durationRate={boardCellFallDurationMillisecondsRate}
-                />
+                    <FallingBlock
+                        fallingLetters={fallingBoardLettersBeforeAndAfter}
+                        durationRate={boardCellFallDurationMillisecondsRate}
+                        color={BOARD_CELL_COLOR}
+                    />
 
-                <BoardCells
-                    boardCellMatrix={boardCellMatrix}
-                />
-                <GameOverOverlay isVisible={isGameOverVisible}>
-                    Game Over
-                    <PlayAgainButton stateHandler={stateHandler} />
-                </GameOverOverlay>
+                    <BoardCells
+                        boardCellMatrix={boardCellMatrix}
+                    />
+                    <GameOverOverlay isVisible={isGameOverVisible}>
+                        <>{[<div style={gameOverTextStyle}>Game Over</div>, <PlayAgainButton stateHandler={stateHandler} />]}
+                        </>
+                    </GameOverOverlay>
+                </div>
+                <WordList displayedWords={matchedWords} />
             </div>
-            <WordList displayedWords={matchedWords} />
         </div>
     );
 }

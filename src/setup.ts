@@ -29,3 +29,19 @@ export const countdownTotalSecs = 3;
 
 export const boardCellFallDurationMillisecondsRate = 75;
 export const playerCellFallDurationMillisecondsRate = 10;
+
+export const FONT_COLOR = "#FFFFFF";
+export const BOARD_COLOR = "#FDEDD8";
+export const EMPTY_CELL_COLOR = "#F4A261";
+export const BOARD_CELL_COLOR = "#2B5F8C";
+export const PLAYER_COLOR = "#499F68";
+export const MATCH_COLOR = "#FFEA00";
+export const MATCH_TEXT_COLOR = BOARD_CELL_COLOR;
+export const MENU_TEXT_COLOR = "#FFFFFF";
+export const BOARD_CELL_TEXT_COLOR = "#EBF5EE";
+
+export const UNIVERSAL_BORDER_RADIUS = "1vmin";
+export const CELL_SIZE = "7vmin";
+export const LARGE_TEXT_SIZE = "7vmin";
+export const NORMAL_TEXT_SIZE = "3.5vmin";
+export const SMALL_TEXT_SIZE = "3.0vmin";

@@ -139,7 +139,11 @@ export function isPlayerTouchingGround(
 
 export function dropFloatingCells(
     board: BoardCell[][],
-): {boardWithoutFallCells: BoardCell[][], postFallCells: BoardCell[], preFallCells: BoardCell[]} {
+): {
+    boardWithoutFallCells: BoardCell[][];
+    postFallCells: BoardCell[];
+    preFallCells: BoardCell[];
+} {
     const newBoard = board.slice();
     const postFallCells: BoardCell[] = [];
     const preFallCells: BoardCell[] = [];
@@ -154,13 +158,15 @@ export function dropFloatingCells(
                 newBoard[g][c].char = char;
                 newBoard[r][c].char = EMPTY;
                 // Update cell in placedCells.
-                postFallCells.push({r:g, c, char, hasMatched:false});
-                preFallCells.push({r, c, char, hasMatched:false});
+                postFallCells.push({ r: g, c, char, hasMatched: false });
+                preFallCells.push({ r, c, char, hasMatched: false });
             }
         }
     }
     // Remove chars here, since the iteration logic above depends on changes.
     const boardWithoutFallCells = newBoard;
-    postFallCells.forEach(cell => boardWithoutFallCells[cell.r][cell.c].char = EMPTY);
-    return {boardWithoutFallCells, postFallCells, preFallCells};
+    postFallCells.forEach((cell) =>
+        boardWithoutFallCells[cell.r][cell.c].char = EMPTY
+    );
+    return { boardWithoutFallCells, postFallCells, preFallCells };
 }

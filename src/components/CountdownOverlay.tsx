@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LARGE_TEXT_SIZE, BOARD_CELL_COLOR, MENU_TEXT_COLOR } from "../setup";
+import { BOARD_CELL_COLOR, LARGE_TEXT_SIZE, MENU_TEXT_COLOR } from "../setup";
 
 export const CountdownOverlay = React.memo(
     (

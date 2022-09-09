@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import { BOARD_CELL_COLOR, SMALL_TEXT_SIZE } from "../setup";
 
 export const Prompt = React.memo(({ children }: { children: ReactNode }) => {
-
     // To align `<Prompt/>` above the game.
     const promptContainerStyle = {
         flexDirection: "column",
@@ -30,7 +29,7 @@ export const Prompt = React.memo(({ children }: { children: ReactNode }) => {
         <div style={promptContainerStyle}>
             <span style={promptStyle}>Create words of 3+ letters</span>
             {children}
-            <div style={counterBalanceStyle}/>
+            <div style={counterBalanceStyle} />
         </div>
     );
 });

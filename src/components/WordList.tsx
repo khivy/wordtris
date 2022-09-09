@@ -1,9 +1,15 @@
 import * as React from "react";
-import { PLAYER_COLOR, MENU_TEXT_COLOR, BOARD_CELL_COLOR, UNIVERSAL_BORDER_RADIUS, NORMAL_TEXT_SIZE, SMALL_TEXT_SIZE } from "../setup";
+import {
+    BOARD_CELL_COLOR,
+    MENU_TEXT_COLOR,
+    NORMAL_TEXT_SIZE,
+    PLAYER_COLOR,
+    SMALL_TEXT_SIZE,
+    UNIVERSAL_BORDER_RADIUS,
+} from "../setup";
 
 export const WordList = React.memo(
     ({ displayedWords }: { displayedWords: string[] }) => {
-
         const wordStyle = {
             background: BOARD_CELL_COLOR,
             padding: UNIVERSAL_BORDER_RADIUS,
@@ -40,16 +46,20 @@ export const WordList = React.memo(
 
         return (
             <div style={outerStyle}>
-                <div className={"with-text-style"} style={titleStyle}>MATCHES [
-                    <span className={"with-text-style"} style={pointsStyle}>{displayedWords.length}</span>
-                ]</div>
+                <div className={"with-text-style"} style={titleStyle}>
+                    MATCHES [
+                    <span className={"with-text-style"} style={pointsStyle}>
+                        {displayedWords.length}
+                    </span>
+                    ]
+                </div>
                 <article style={scrollBoxStyle}>
                     <>
                         {displayedWords.map((word, i) => (
                             // Invert the key to keep scroll bar at bottom if set to bottom.
                             <div
                                 key={displayedWords.length - i}
-                                    className={"with-text-style"}
+                                className={"with-text-style"}
                                 style={wordStyle}
                             >
                                 {word}

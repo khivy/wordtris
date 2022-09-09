@@ -1,14 +1,16 @@
 import * as React from "react";
-import { BOARD_CELL_COLOR } from "../setup"
+import { BOARD_CELL_COLOR } from "../setup";
 
 export const Header = React.memo(() => {
     const style = {
         zIndex: 20,
     } as const;
 
-    return <div style={style}>
-        <Title/>
-    </div>
+    return (
+        <div style={style}>
+            <Title />
+        </div>
+    );
 });
 
 export const Title = React.memo(() => {
@@ -27,9 +29,14 @@ export const Title = React.memo(() => {
         fontFamily: `"Press Start 2P"`,
     } as const;
 
-    return <div style={containerStyle}>
-        <a href={"https://github.com/khivy/wordtris"} style={{textDecoration: "none",} as const}>
-            <span style={textStyle}>Wordtris</span>
-        </a>
-    </div>
+    return (
+        <div style={containerStyle}>
+            <a
+                href={"https://github.com/khivy/wordtris"}
+                style={{ textDecoration: "none" } as const}
+            >
+                <span style={textStyle}>Wordtris</span>
+            </a>
+        </div>
+    );
 });

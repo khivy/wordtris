@@ -28,6 +28,8 @@ export const Title = React.memo(({}) => {
     } as const;
 
     return <div style={containerStyle}>
-        <span style={textStyle}>Wordtris</span>
+        <a href={"https://github.com/khivy/wordtris"} style={{textDecoration: "none",} as const}>
+            <span style={textStyle}>Wordtris</span>
+        </a>
     </div>
 });

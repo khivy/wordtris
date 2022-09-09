@@ -753,8 +753,8 @@ export function GameLoop() {
     const gameOverTextStyle = {
         color: "white",
         fontSize: LARGE_TEXT_SIZE,
-        webkitTextStroke: "0.2vmin",
-        webkitTextStrokeColor: BOARD_CELL_COLOR,
+        WebkitTextStroke: "0.2vmin",
+        WebkitTextStrokeColor: BOARD_CELL_COLOR,
     } as const;
 
     return (

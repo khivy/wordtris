@@ -17,8 +17,8 @@ export const CountdownOverlay = React.memo(
             zIndex: 2,
             color: MENU_TEXT_COLOR,
             fontSize: LARGE_TEXT_SIZE,
-            webkitTextStroke: "0.2vmin",
-            webkitTextStrokeColor: BOARD_CELL_COLOR,
+            WebkitTextStroke: "0.2vmin",
+            WebkitTextStrokeColor: BOARD_CELL_COLOR,
         } as const;
         return (
             <div style={divStyle}>

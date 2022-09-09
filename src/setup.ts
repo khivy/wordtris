@@ -4,7 +4,7 @@ export const MIN_WORD_LENGTH = 3;
 export const ENABLE_INSTANT_DROP = true;
 // Debug features:
 export const _ENABLE_UP_KEY = true;
-export const _IS_PRINTING_STATE = true;
+export const _IS_PRINTING_STATE = false;
 
 export const TBD = "@";
 export const EMPTY = "";

@@ -1,6 +1,6 @@
 {
-    "short_name": "React App",
-    "name": "Create React App Sample",
+    "short_name": "Wordtris",
+    "name": "Wordtris",
     "icons": [
         {
             "src": "favicon.ico",

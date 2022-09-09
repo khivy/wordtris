@@ -780,7 +780,7 @@ export function GameLoop() {
                 setBoardCellMatrix(newBoard);
 
                 setPlacedCells((prev) => {
-                    return structuredClone(prev);
+                    return new Set(prev);
                 });
 
                 if (matchedCells.size !== 0) {

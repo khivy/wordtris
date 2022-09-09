@@ -5,3 +5,4 @@
 - Fix non-determinism bugs
 - Use a better dictionary / explore more mechanics to make it more fun
 - Add leaderboard
+- Add mobile controls

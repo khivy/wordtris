@@ -18,3 +18,8 @@
   font-weight: bold;
   text-transform: uppercase;
 }
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: local('Press Start 2P'), url(./fonts/PressStart2P-Regular.ttf) format('truetype');
+}

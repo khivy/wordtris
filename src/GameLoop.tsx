@@ -57,6 +57,7 @@ import {
     playerCellFallDurationMillisecondsRate
 } from "./setup";
 import { UserCell } from "./UserCell";
+import { Header } from "./components/Header";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -719,17 +720,23 @@ export function GameLoop() {
             stateHandler.send("DONE");
         }
     }
+    const pageStyle = {
+        background: BOARD_COLOR,
+        height: "100%",
+        width: "100%",
+        position: "absolute",
+    } as const;
 
     const containerStyle = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: BOARD_COLOR,
-        position: "absolute",
         top: 0,
         left: 0,
         height: "100%",
         width: "100%",
+        // Prevents `<Header/>` from breaking this element's centering.
+        position: "absolute",
     } as const;
 
     const appStyle = {
@@ -758,40 +765,43 @@ export function GameLoop() {
     } as const;
 
     return (
-        <div style={containerStyle}>
-            <div style={appStyle}>
-                <div style={boardStyle}>
-                    <CountdownOverlay
-                        isVisible={isCountdownVisible}
-                        countdownSec={countdownSec}
-                    />
+        <div style={pageStyle}>
+            <Header/>
+            <div style={containerStyle}>
+                <div style={appStyle}>
+                    <div style={boardStyle}>
+                        <CountdownOverlay
+                            isVisible={isCountdownVisible}
+                            countdownSec={countdownSec}
+                        />
 
-                    <PlayerBlock
-                        isVisible={isPlayerVisible}
-                        adjustedCells={player.adjustedCells}
-                    />
+                        <PlayerBlock
+                            isVisible={isPlayerVisible}
+                            adjustedCells={player.adjustedCells}
+                        />
 
-                    <FallingBlock
-                        fallingLetters={fallingPlayerLettersBeforeAndAfter}
-                        durationRate={playerCellFallDurationMillisecondsRate}
-                        color={PLAYER_COLOR}
-                    />
+                        <FallingBlock
+                            fallingLetters={fallingPlayerLettersBeforeAndAfter}
+                            durationRate={playerCellFallDurationMillisecondsRate}
+                            color={PLAYER_COLOR}
+                        />
 
-                    <FallingBlock
-                        fallingLetters={fallingBoardLettersBeforeAndAfter}
-                        durationRate={boardCellFallDurationMillisecondsRate}
-                        color={BOARD_CELL_COLOR}
-                    />
+                        <FallingBlock
+                            fallingLetters={fallingBoardLettersBeforeAndAfter}
+                            durationRate={boardCellFallDurationMillisecondsRate}
+                            color={BOARD_CELL_COLOR}
+                        />
 
-                    <BoardCells
-                        boardCellMatrix={boardCellMatrix}
-                    />
-                    <GameOverOverlay isVisible={isGameOverVisible}>
-                        <div style={gameOverTextStyle}>Game Over</div>
-                        <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
-                    </GameOverOverlay>
+                        <BoardCells
+                            boardCellMatrix={boardCellMatrix}
+                        />
+                        <GameOverOverlay isVisible={isGameOverVisible}>
+                            <div style={gameOverTextStyle}>Game Over</div>
+                            <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
+                        </GameOverOverlay>
+                    </div>
+                    <WordList displayedWords={matchedWords} />
                 </div>
-                <WordList displayedWords={matchedWords} />
             </div>
         </div>
     );

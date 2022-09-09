@@ -1,9 +1,7 @@
-# WordTris
+# Tetris + words!  
+(✿◠‿◠) [Play here!](https://khivy.github.io/wordtris/) ✧♡(◕‿◕✿)  
 
-Tetris but with words.
-
-## Development
-
-```sh
-bun dev
-```
+# Roadmap
+- Fix non-determinism bugs
+- Use a better dictionary / explore more mechanics to make it more fun
+- Add leaderboard

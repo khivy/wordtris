@@ -1,6 +1,6 @@
 import * as React from "react";
 import { BoardCell } from "../util/BoardCell";
-import { EMPTY } from "../setup";
+import { EMPTY_CELL_COLOR, BOARD_CELL_COLOR, BOARD_CELL_TEXT_COLOR, NORMAL_TEXT_SIZE, MATCH_COLOR, MATCH_TEXT_COLOR, EMPTY } from "../setup";
 
 export const BoardCells = React.memo(
     ({ boardCellMatrix }: { boardCellMatrix: BoardCell[][] }) => {
@@ -8,26 +8,32 @@ export const BoardCells = React.memo(
             row.map((cell, c) => {
                 const bg = () => {
                     if (cell.char === EMPTY) {
-                        return "none";
+                        return EMPTY_CELL_COLOR;
                     } else if (cell.hasMatched) {
-                        return "lightgreen";
+                        return MATCH_COLOR;
                     } else {
-                        return "red";
+                        return BOARD_CELL_COLOR;
                     }
                 };
+                const textColor = () => {
+                    if (cell.hasMatched) {
+                        return MATCH_TEXT_COLOR;
+                    } else {
+                        return BOARD_CELL_TEXT_COLOR;
+                    }
+                }
                 const divStyle = {
-                    width: "auto",
-                    text: cell.char === EMPTY ? "none" : "red",
-                    border: "2px solid",
                     gridRow: r + 1,
                     gridColumn: c + 1,
-                    textAlign: "center",
                     background: bg(),
+                    color: textColor(),
+                    fontSize: NORMAL_TEXT_SIZE,
                 } as const;
 
                 return (
                     <div
                         key={`cell(${r.toString()},${c.toString()})`}
+                        className={"cell with-margin with-text-style"}
                         style={divStyle}
                     >
                         {cell.char}

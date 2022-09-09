@@ -13,7 +13,7 @@ import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
 import { getGroundHeight } from "./boardUtil";
 
-export const spawnPos: readonly [number, number] = [1, 3];
+export const spawnPos: readonly [number, number] = [1, 4];
 export const layout = [
     [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
     [EMPTY, EMPTY, TBD, EMPTY, EMPTY],

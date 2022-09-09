@@ -1,5 +1,6 @@
 import * as React from "react";
 import { ReactNode } from "react";
+import { PLAYER_COLOR, MENU_TEXT_COLOR, NORMAL_TEXT_SIZE, UNIVERSAL_BORDER_RADIUS } from "../setup";
 
 export const GameOverOverlay = React.memo(
     (
@@ -8,14 +9,16 @@ export const GameOverOverlay = React.memo(
             isVisible: boolean;
         },
     ) => {
+
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: "absolute",
-            top: "35%",
+            top: "50%",
             left: "50%",
-            transform: "translate(-25%, -25%)",
+            whiteSpace: "nowrap",
+            transform: "translate(-50%, -50%)",
             zIndex: 2,
-            color: "red",
+            color: MENU_TEXT_COLOR,
             fontSize: "200%",
         } as const;
         return (
@@ -33,17 +36,24 @@ export const PlayAgainButton = React.memo(
         const buttonStyle = {
             cursor: "pointer",
             border: "none",
-            display: "inline-block",
+            background: PLAYER_COLOR,
+            color: MENU_TEXT_COLOR,
+            borderRadius: UNIVERSAL_BORDER_RADIUS,
+            padding: "0.4vmin",
+            textAlign: "center",
+            marginTop: "0.4vmin",
+            fontSize: NORMAL_TEXT_SIZE,
         };
         return (
-            <button
+            <div
+                className={"with-text-style"}
                 style={buttonStyle}
                 onClick={() => {
                     stateHandler.send("RESTART");
                 }}
             >
                 Play Again
-            </button>
+            </div>
         );
     },
 );

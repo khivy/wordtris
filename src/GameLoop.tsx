@@ -31,6 +31,13 @@ import { FallingBlock } from "./components/FallingBlock";
 import {
     _ENABLE_UP_KEY,
     _IS_PRINTING_STATE,
+    BOARD_CELL_COLOR,
+    EMPTY_CELL_COLOR,
+    LARGE_TEXT_SIZE,
+    CELL_SIZE,
+    UNIVERSAL_BORDER_RADIUS,
+    PLAYER_COLOR,
+    BOARD_COLOR,
     BOARD_COLS,
     BOARD_ROWS,
     countdownTotalSecs,
@@ -50,6 +57,8 @@ import {
     playerCellFallDurationMillisecondsRate
 } from "./setup";
 import { UserCell } from "./UserCell";
+import { Header } from "./components/Header";
+import { Prompt } from "./components/Prompt";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -400,6 +409,12 @@ export function GameLoop() {
 
             setGameOverVisibility(false);
 
+            // Temporary fix for lingering hasMatched cells. See Github issue #55.
+            setBoardCellMatrix(matrix => matrix.map(row => { return row.map(cell => {
+                cell.hasMatched = false;
+                return cell;
+            })}));
+
             setCountdownVisibility(true);
             timestamps.countdownStartTime = performance.now();
             stateHandler.send("START");
@@ -706,55 +721,93 @@ export function GameLoop() {
             stateHandler.send("DONE");
         }
     }
+    const pageStyle = {
+        background: BOARD_COLOR,
+        height: "100%",
+        width: "100%",
+        position: "absolute",
+        // Allow `containerStyle` div to grow downwards, filling the page.
+        display: "flex",
+        flexDirection: "column",
+    } as const;
+
+    const containerStyle = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        width: "100%",
+        // Prevents `<Header/>` from pushing game downwards.
+        position: "absolute",
+    } as const;
 
     const appStyle = {
         display: "flex",
-        border: "solid green 4px",
         flexWrap: "wrap",
         flexDirection: "row",
+        border: `1vmin solid ${EMPTY_CELL_COLOR}`,
+        padding: "0.4vmin",
+        top: 0,
+        borderRadius: UNIVERSAL_BORDER_RADIUS,
     } as const;
 
     // Style of encompassing board.
     const boardStyle = {
         display: "inline-grid",
-        gridTemplateRows: `repeat(${BOARD_ROWS}, 30px)`,
-        gridTemplateColumns: `repeat(${BOARD_COLS}, 30px)`,
-        border: "solid red 4px",
+        gridTemplateColumns: `repeat(${BOARD_COLS}, ${CELL_SIZE})`,
+        gridTemplateRows: `repeat(${BOARD_ROWS}, ${CELL_SIZE})`,
         position: "relative",
-    };
+        background: BOARD_COLOR,
+    } as const;
+
+    const gameOverTextStyle = {
+        color: "white",
+        fontSize: LARGE_TEXT_SIZE,
+        WebkitTextStroke: "0.2vmin",
+        WebkitTextStrokeColor: BOARD_CELL_COLOR,
+    } as const;
+
 
     return (
-        <div style={appStyle}>
-            <div style={boardStyle}>
-                <CountdownOverlay
-                    isVisible={isCountdownVisible}
-                    countdownSec={countdownSec}
-                />
+        <div style={pageStyle}>
+            <Header/>
+            <div style={containerStyle}>
+                <Prompt>
+                    <div style={appStyle}>
+                        <div style={boardStyle}>
+                            <CountdownOverlay
+                                isVisible={isCountdownVisible}
+                                countdownSec={countdownSec}
+                            />
+                            <PlayerBlock
+                                isVisible={isPlayerVisible}
+                                adjustedCells={player.adjustedCells}
+                            />
 
-                <PlayerBlock
-                    isVisible={isPlayerVisible}
-                    adjustedCells={player.adjustedCells}
-                />
+                            <FallingBlock
+                                fallingLetters={fallingPlayerLettersBeforeAndAfter}
+                                durationRate={playerCellFallDurationMillisecondsRate}
+                                color={PLAYER_COLOR}
+                            />
 
-                <FallingBlock
-                    fallingLetters={fallingPlayerLettersBeforeAndAfter}
-                    durationRate={playerCellFallDurationMillisecondsRate}
-                />
+                            <FallingBlock
+                                fallingLetters={fallingBoardLettersBeforeAndAfter}
+                                durationRate={boardCellFallDurationMillisecondsRate}
+                                color={BOARD_CELL_COLOR}
+                            />
 
-                <FallingBlock
-                    fallingLetters={fallingBoardLettersBeforeAndAfter}
-                    durationRate={boardCellFallDurationMillisecondsRate}
-                />
-
-                <BoardCells
-                    boardCellMatrix={boardCellMatrix}
-                />
-                <GameOverOverlay isVisible={isGameOverVisible}>
-                    Game Over
-                    <PlayAgainButton stateHandler={stateHandler} />
-                </GameOverOverlay>
+                            <BoardCells
+                                boardCellMatrix={boardCellMatrix}
+                            />
+                            <GameOverOverlay isVisible={isGameOverVisible}>
+                                <div style={gameOverTextStyle}>Game Over</div>
+                                <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
+                            </GameOverOverlay>
+                        </div>
+                        <WordList displayedWords={matchedWords} />
+                    </div>
+                </Prompt>
             </div>
-            <WordList displayedWords={matchedWords} />
         </div>
     );
 }

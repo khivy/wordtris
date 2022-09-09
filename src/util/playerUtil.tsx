@@ -13,7 +13,7 @@ import { UserCell } from "./UserCell";
 import { BoardCell } from "./BoardCell";
 import { getGroundHeight } from "./boardUtil";
 
-export const spawnPos: readonly [number, number] = [1, 3];
+export const spawnPos: readonly [number, number] = [1, 4];
 export const layout = [
     [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
     [EMPTY, EMPTY, TBD, EMPTY, EMPTY],
@@ -139,14 +139,14 @@ export function isPlayerTouchingGround(
 
 export function dropFloatingCells(
     board: BoardCell[][],
-): [BoardCell[][], [number, number][], [number, number][]] {
-    // Returns an array of 3 arrays:
-    // Array 1: The resulting board with drops.
-    // Array 2: The array for the coords of the floating cells, post-drop.
-    // Array 3: Array for the old coords of the floating cells.
+): {
+    boardWithoutFallCells: BoardCell[][];
+    postFallCells: BoardCell[];
+    preFallCells: BoardCell[];
+} {
     const newBoard = board.slice();
-    const added: [number, number][] = [];
-    const removed: [number, number][] = [];
+    const postFallCells: BoardCell[] = [];
+    const preFallCells: BoardCell[] = [];
     for (let r = BOARD_ROWS - 2; r >= 0; --r) {
         for (let c = BOARD_COLS - 1; c >= 0; --c) {
             if (
@@ -154,13 +154,19 @@ export function dropFloatingCells(
                 newBoard[r + 1][c].char === EMPTY
             ) {
                 const g = getGroundHeight(c, r, newBoard);
-                newBoard[g][c].char = newBoard[r][c].char;
+                const char = newBoard[r][c].char;
+                newBoard[g][c].char = char;
                 newBoard[r][c].char = EMPTY;
                 // Update cell in placedCells.
-                added.push([g, c]);
-                removed.push([r, c]);
+                postFallCells.push({ r: g, c, char, hasMatched: false });
+                preFallCells.push({ r, c, char, hasMatched: false });
             }
         }
     }
-    return [newBoard, added, removed];
+    // Remove chars here, since the iteration logic above depends on changes.
+    const boardWithoutFallCells = newBoard;
+    postFallCells.forEach((cell) =>
+        boardWithoutFallCells[cell.r][cell.c].char = EMPTY
+    );
+    return { boardWithoutFallCells, postFallCells, preFallCells };
 }

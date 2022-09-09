@@ -1,4 +1,5 @@
 import * as React from "react";
+import { BOARD_CELL_COLOR, LARGE_TEXT_SIZE, MENU_TEXT_COLOR } from "../setup";
 
 export const CountdownOverlay = React.memo(
     (
@@ -14,8 +15,10 @@ export const CountdownOverlay = React.memo(
             left: "50%",
             transform: "translate(-50%, -50%)",
             zIndex: 2,
-            color: "red",
-            fontSize: "200%",
+            color: MENU_TEXT_COLOR,
+            fontSize: "13vmin",
+            WebkitTextStroke: "0.2vmin",
+            WebkitTextStrokeColor: BOARD_CELL_COLOR,
         } as const;
         return (
             <div style={divStyle}>

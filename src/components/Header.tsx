@@ -7,11 +7,11 @@ export const Header = React.memo(() => {
     } as const;
 
     return <div style={style}>
-        <Title>Wordtris</Title>
+        <Title/>
     </div>
 });
 
-export const Title = React.memo(({}) => {
+export const Title = React.memo(() => {
     const containerStyle = {
         marginTop: "3vmin",
         marginLeft: "2vmin",

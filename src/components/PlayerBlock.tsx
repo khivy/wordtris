@@ -10,7 +10,7 @@ export const PlayerBlock = React.memo(
         },
     ) => {
         const adjustedCellsStyled = adjustedCells.map((cell) => {
-            ;
+            
             const divStyle = {
                 background: PLAYER_COLOR,
                 color: BOARD_CELL_TEXT_COLOR,

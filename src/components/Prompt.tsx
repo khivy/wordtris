@@ -9,27 +9,83 @@ export const Prompt = React.memo(({ children }: { children: ReactNode }) => {
         display: "flex",
     } as const;
 
-    const promptSize = SMALL_TEXT_SIZE;
-    const paddingSize = SMALL_TEXT_SIZE;
+    const promptSize = 3;
+    const paddingSize = 3;
 
     const promptStyle = {
         textAlign: "center",
-        fontSize: promptSize,
-        paddingBottom: paddingSize,
+        fontSize: `${promptSize}vmin`,
+        paddingBottom: `${paddingSize}vmin`,
         color: BOARD_CELL_COLOR,
-    } as const;
-
-    // This div allows the children to stay centered in `<Prompt/>`'s parent.
-    const counterBalanceStyle = {
-        height: promptSize,
-        paddingBottom: paddingSize,
     } as const;
 
     return (
         <div style={promptContainerStyle}>
             <span style={promptStyle}>Create words of 3+ letters</span>
             {children}
-            <div style={counterBalanceStyle} />
+            <Keys totalSize={promptSize + paddingSize} />
         </div>
     );
 });
+
+export const Keys = React.memo(({ totalSize }: { totalSize: number }) => {
+    const keyHeight = 4;
+
+    const containerStyle = {
+        marginTop: `${totalSize - keyHeight}vmin`,
+        display: "flex",
+        justifyContent: "center",
+        gap: "6vmin",
+        fontSize: "2.5vmin",
+        whiteSpace: "break-spaces",
+        color: BOARD_CELL_COLOR,
+    } as const;
+
+    return (
+        <div style={containerStyle}>
+            <div style={{ display: "flex" }}>
+                <Key char={"←"} keyHeight={keyHeight} />
+                <Key char={"↓"} keyHeight={keyHeight} />
+                <Key char={"→"} keyHeight={keyHeight} /> Move
+            </div>
+            <div style={{ display: "flex" }}>
+                <Key char={"z"} keyHeight={keyHeight} /> Rotate ↺
+            </div>
+            <div style={{ display: "flex" }}>
+                <Key char={"x"} keyHeight={keyHeight} />
+                <Key char={"↑"} keyHeight={keyHeight} /> Rotate ↻
+            </div>
+            <div style={{ display: "flex" }}>
+                <Key char={"space"} keyHeight={keyHeight} /> Drop
+            </div>
+        </div>
+    );
+});
+
+export const Key = React.memo(
+    ({ char, keyHeight }: { char: string; keyHeight: number }) => {
+        const keyStyle = {
+            display: "block",
+            height: `${keyHeight}vmin`,
+            width: char === "space" ? "10vmin" : "4vmin",
+            background: "white",
+            border: `0.4vmin solid ${"grey"}`,
+            borderRadius: "0.5vmin",
+            fontSize: SMALL_TEXT_SIZE,
+        } as const;
+
+        const keyTextStyle = {
+            textAlign: "center",
+            alignItems: "center",
+            alignContent: "center",
+            justifyItems: "center",
+            justifyContent: "center",
+        } as const;
+
+        return (
+            <div style={keyStyle}>
+                <div style={keyTextStyle}>{char}</div>
+            </div>
+        );
+    },
+);

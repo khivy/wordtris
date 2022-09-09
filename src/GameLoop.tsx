@@ -787,8 +787,8 @@ export function GameLoop() {
                         boardCellMatrix={boardCellMatrix}
                     />
                     <GameOverOverlay isVisible={isGameOverVisible}>
-                        <>{[<div style={gameOverTextStyle}>Game Over</div>, <PlayAgainButton stateHandler={stateHandler} />]}
-                        </>
+                        <div style={gameOverTextStyle}>Game Over</div>
+                        <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
                     </GameOverOverlay>
                 </div>
                 <WordList displayedWords={matchedWords} />

@@ -32,6 +32,9 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.4.1
 
+      - name: Install react-scripts
+        run: npm add react-scripts
+
       - name: Install packages with NPM
         run: npm install
 

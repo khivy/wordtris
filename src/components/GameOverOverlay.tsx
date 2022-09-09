@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ReactNode } from "react";
-import { PLAYER_COLOR, MENU_TEXT_COLOR, NORMAL_TEXT_SIZE, UNIVERSAL_BORDER_RADIUS } from "../setup"
+import { PLAYER_COLOR, MENU_TEXT_COLOR, NORMAL_TEXT_SIZE, UNIVERSAL_BORDER_RADIUS } from "../setup";
 
 export const GameOverOverlay = React.memo(
     (

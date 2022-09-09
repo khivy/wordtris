@@ -4,9 +4,6 @@ import { BOARD_CELL_COLOR } from "../setup"
 export const Header = React.memo(() => {
     const style = {
         zIndex: 20,
-        // border: "2px red solid",
-        paddingBottom: "3vmin",
-
     } as const;
 
     return <div style={style}>

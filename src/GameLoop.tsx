@@ -58,6 +58,7 @@ import {
 } from "./setup";
 import { UserCell } from "./UserCell";
 import { Header } from "./components/Header";
+import { Prompt } from "./components/Prompt";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -725,17 +726,18 @@ export function GameLoop() {
         height: "100%",
         width: "100%",
         position: "absolute",
+        // Allow `containerStyle` div to grow downwards, filling the page.
+        display: "flex",
+        flexDirection: "column",
     } as const;
 
     const containerStyle = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        top: 0,
-        left: 0,
         height: "100%",
         width: "100%",
-        // Prevents `<Header/>` from breaking this element's centering.
+        // Prevents `<Header/>` from pushing game downwards.
         position: "absolute",
     } as const;
 
@@ -745,6 +747,7 @@ export function GameLoop() {
         flexDirection: "row",
         border: `1vmin solid ${EMPTY_CELL_COLOR}`,
         padding: "0.4vmin",
+        top: 0,
         borderRadius: UNIVERSAL_BORDER_RADIUS,
     } as const;
 
@@ -764,44 +767,46 @@ export function GameLoop() {
         WebkitTextStrokeColor: BOARD_CELL_COLOR,
     } as const;
 
+
     return (
         <div style={pageStyle}>
             <Header/>
             <div style={containerStyle}>
-                <div style={appStyle}>
-                    <div style={boardStyle}>
-                        <CountdownOverlay
-                            isVisible={isCountdownVisible}
-                            countdownSec={countdownSec}
-                        />
+                <Prompt>
+                    <div style={appStyle}>
+                        <div style={boardStyle}>
+                            <CountdownOverlay
+                                isVisible={isCountdownVisible}
+                                countdownSec={countdownSec}
+                            />
+                            <PlayerBlock
+                                isVisible={isPlayerVisible}
+                                adjustedCells={player.adjustedCells}
+                            />
 
-                        <PlayerBlock
-                            isVisible={isPlayerVisible}
-                            adjustedCells={player.adjustedCells}
-                        />
+                            <FallingBlock
+                                fallingLetters={fallingPlayerLettersBeforeAndAfter}
+                                durationRate={playerCellFallDurationMillisecondsRate}
+                                color={PLAYER_COLOR}
+                            />
 
-                        <FallingBlock
-                            fallingLetters={fallingPlayerLettersBeforeAndAfter}
-                            durationRate={playerCellFallDurationMillisecondsRate}
-                            color={PLAYER_COLOR}
-                        />
+                            <FallingBlock
+                                fallingLetters={fallingBoardLettersBeforeAndAfter}
+                                durationRate={boardCellFallDurationMillisecondsRate}
+                                color={BOARD_CELL_COLOR}
+                            />
 
-                        <FallingBlock
-                            fallingLetters={fallingBoardLettersBeforeAndAfter}
-                            durationRate={boardCellFallDurationMillisecondsRate}
-                            color={BOARD_CELL_COLOR}
-                        />
-
-                        <BoardCells
-                            boardCellMatrix={boardCellMatrix}
-                        />
-                        <GameOverOverlay isVisible={isGameOverVisible}>
-                            <div style={gameOverTextStyle}>Game Over</div>
-                            <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
-                        </GameOverOverlay>
+                            <BoardCells
+                                boardCellMatrix={boardCellMatrix}
+                            />
+                            <GameOverOverlay isVisible={isGameOverVisible}>
+                                <div style={gameOverTextStyle}>Game Over</div>
+                                <PlayAgainButton stateHandler={stateHandler}></PlayAgainButton>
+                            </GameOverOverlay>
+                        </div>
+                        <WordList displayedWords={matchedWords} />
                     </div>
-                    <WordList displayedWords={matchedWords} />
-                </div>
+                </Prompt>
             </div>
         </div>
     );

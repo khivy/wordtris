@@ -408,7 +408,7 @@ export function GameLoop() {
             setGameOverVisibility(false);
 
             // Temporary fix for lingering hasMatched cells. See Github issue #55.
-            setBoardCellMatrix(boardCellMatrix.map(row => { return row.map(cell => {
+            setBoardCellMatrix(matrix => matrix.map(row => { return row.map(cell => {
                 cell.hasMatched = false;
                 return cell;
             })}));

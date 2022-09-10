@@ -91,6 +91,8 @@ export const Key = React.memo(
             border: `0.4vmin solid ${"grey"}`,
             borderRadius: "0.5vmin",
             fontSize: SMALL_TEXT_SIZE,
+            userSelect: "none",
+            cursor: "pointer",
         } as const;
 
         const keyTextStyle = {

@@ -61,20 +61,19 @@ export const Keys = React.memo(({ totalSize, keydownCallback }: { totalSize: num
                 <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowLeft"})}><Key char={"←"} keyHeight={keyHeight} /> </div>
                 <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowDown"})}><Key char={"↓"} keyHeight={keyHeight} /></div>
                 <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowRight"})}><Key char={"→"} keyHeight={keyHeight} /> </div> 
-                <br />
                 <div style={guideTextStyle}>Move</div>
             </div>
             <div style={guideBlockStyle} onClick={() => keydownCallback({code: "KeyZ"})} >
-                <Key char={"z"} keyHeight={keyHeight} /> <br />
+                <Key char={"z"} keyHeight={keyHeight} />
                 <div style={guideTextStyle}>Rotate ↺</div>
             </div>
             <div style={guideBlockStyle} onClick={() => keydownCallback({code: "KeyX"})}>
                 <Key char={"x"} keyHeight={keyHeight} />
-                <Key char={"↑"} keyHeight={keyHeight} /> <br />
+                <Key char={"↑"} keyHeight={keyHeight} />
                 <div style={guideTextStyle}>Rotate ↻</div>
             </div>
             <div style={guideBlockStyle} onClick={() => keydownCallback({code: "Space"})}>
-                <Key char={"space"} keyHeight={keyHeight} /> <br />
+                <Key char={"space"} keyHeight={keyHeight} />
                 <div style={guideTextStyle}>Drop</div>
             </div>
         </div>

@@ -247,9 +247,9 @@ export function GameLoop() {
     ] = useState([]);
 
     useEffect(() => {
-        globalThis.addEventListener("keydown", updatepos);
+        globalThis.addEventListener("keydown", handleKeydown);
         return () => {
-            globalThis.removeEventListener("keydown", updatepos);
+            globalThis.removeEventListener("keydown", handleKeydown);
         };
     });
 
@@ -319,7 +319,7 @@ export function GameLoop() {
         }
     }
 
-    function updatepos(
+    function handleKeydown(
         { code }: { code: string },
     ): void {
         if (!isPlayerMovementEnabled) {
@@ -859,7 +859,7 @@ export function GameLoop() {
         <div style={pageStyle}>
             <Header />
             <div style={containerStyle}>
-                <Prompt>
+                <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>
                         <div style={boardStyle}>
                             <CountdownOverlay

@@ -22,7 +22,6 @@
     "browser": "src/index.tsx",
     "repository": "github:khivy/wordtris",
     "dependencies": {
-        "a-set-of-english-words": "^1.0.0",
         "react": "^18.2.0",
         "react-app-polyfill": "^3.0.0",
         "react-dom": "^18.2.0",

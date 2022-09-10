@@ -24,9 +24,7 @@ export const PlayerBlock = React.memo(
                 fontSize: NORMAL_TEXT_SIZE,
                 gridRow: cell.r + 1,
                 gridColumn: cell.c + 1,
-                marginTop: ENABLE_SMOOTH_FALL
-                    ? `${interp.val}%`
-                    : "0.4vmin",
+                marginTop: ENABLE_SMOOTH_FALL ? `${interp.val}%` : "0.4vmin",
                 marginBottom: ENABLE_SMOOTH_FALL
                     ? `${-interp.val}%`
                     : "0.4vmin",

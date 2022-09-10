@@ -52,19 +52,23 @@ export const Keys = React.memo(({ totalSize }: { totalSize: number }) => {
                 <Key char={"←"} keyHeight={keyHeight} />
                 <Key char={"↓"} keyHeight={keyHeight} />
                 <Key char={"→"} keyHeight={keyHeight} />{" "}
+                <br/>
                 <div style={guideTextStyle}>Move</div>
             </div>
             <div style={{ display: "flex" }}>
                 <Key char={"z"} keyHeight={keyHeight} />{" "}
+                <br/>
                 <div style={guideTextStyle}>Rotate ↺</div>
             </div>
             <div style={{ display: "flex" }}>
                 <Key char={"x"} keyHeight={keyHeight} />
                 <Key char={"↑"} keyHeight={keyHeight} />{" "}
+                <br/>
                 <div style={guideTextStyle}>Rotate ↻</div>
             </div>
             <div style={{ display: "flex" }}>
                 <Key char={"space"} keyHeight={keyHeight} />{" "}
+                <br/>
                 <div style={guideTextStyle}>Drop</div>
             </div>
         </div>

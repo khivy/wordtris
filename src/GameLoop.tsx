@@ -859,7 +859,7 @@ export function GameLoop() {
         <div style={pageStyle}>
             <Header />
             <div style={containerStyle}>
-                <Prompt>
+                <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>
                         <div style={boardStyle}>
                             <CountdownOverlay

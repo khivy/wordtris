@@ -2,7 +2,7 @@ import * as React from "react";
 import { ReactNode } from "react";
 import { BOARD_CELL_COLOR, SMALL_TEXT_SIZE } from "../setup";
 
-export const Prompt = React.memo(({ children }: { children: ReactNode }) => {
+export const Prompt = React.memo(({ children, keydownCallback }: { children: ReactNode, keydownCallback: ({code}: {code: string}) => void}) => {
     // To align `<Prompt/>` above the game.
     const promptContainerStyle = {
         flexDirection: "column",
@@ -23,12 +23,12 @@ export const Prompt = React.memo(({ children }: { children: ReactNode }) => {
         <div style={promptContainerStyle}>
             <span style={promptStyle}>Create words of 3+ letters</span>
             {children}
-            <Keys totalSize={promptSize + paddingSize} />
+            <Keys totalSize={promptSize + paddingSize} keydownCallback={keydownCallback} />
         </div>
     );
 });
 
-export const Keys = React.memo(({ totalSize }: { totalSize: number }) => {
+export const Keys = React.memo(({ totalSize, keydownCallback }: { totalSize: number, keydownCallback: ({code}: {code: string}) => void }) => {
     const keyHeight = 4;
 
     const containerStyle = {
@@ -51,24 +51,29 @@ export const Keys = React.memo(({ totalSize }: { totalSize: number }) => {
         alignItems: "center",
     } as const;
 
+    const keyDivWrapper = {
+        height: `${keyHeight}vmin`,
+    } as const;
+
     return (
         <div style={containerStyle}>
-            <div style={guideBlockStyle}>
-                <Key char={"←"} keyHeight={keyHeight} />
-                <Key char={"↓"} keyHeight={keyHeight} />
-                <Key char={"→"} keyHeight={keyHeight} /> <br />
+            <div style={guideBlockStyle}  >
+                <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowLeft"})}><Key char={"←"} keyHeight={keyHeight} /> </div>
+                <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowDown"})}><Key char={"↓"} keyHeight={keyHeight} /></div>
+                <div style={keyDivWrapper} onClick={() => keydownCallback({code: "ArrowRight"})}><Key char={"→"} keyHeight={keyHeight} /> </div> 
+                <br />
                 <div style={guideTextStyle}>Move</div>
             </div>
-            <div style={guideBlockStyle}>
+            <div style={guideBlockStyle} onClick={() => keydownCallback({code: "KeyZ"})} >
                 <Key char={"z"} keyHeight={keyHeight} /> <br />
                 <div style={guideTextStyle}>Rotate ↺</div>
             </div>
-            <div style={guideBlockStyle}>
+            <div style={guideBlockStyle} onClick={() => keydownCallback({code: "KeyX"})}>
                 <Key char={"x"} keyHeight={keyHeight} />
                 <Key char={"↑"} keyHeight={keyHeight} /> <br />
                 <div style={guideTextStyle}>Rotate ↻</div>
             </div>
-            <div style={guideBlockStyle}>
+            <div style={guideBlockStyle} onClick={() => keydownCallback({code: "Space"})}>
                 <Key char={"space"} keyHeight={keyHeight} /> <br />
                 <div style={guideTextStyle}>Drop</div>
             </div>
@@ -97,7 +102,7 @@ export const Key = React.memo(
         } as const;
 
         return (
-            <div style={keyStyle}>
+            <div style={keyStyle} >
                 <div style={keyTextStyle}>{char}</div>
             </div>
         );

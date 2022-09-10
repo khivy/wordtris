@@ -2,6 +2,8 @@
 
 (✿◠‿◠) [Play here!](https://khivy.github.io/wordtris/) ✧♡(◕‿◕✿)
 
+(It works on mobile!!)
+
 # Roadmap
 
 - Fix non-determinism bugs

@@ -41,22 +41,31 @@ export const Keys = React.memo(({ totalSize }: { totalSize: number }) => {
         color: BOARD_CELL_COLOR,
     } as const;
 
+    const guideTextStyle = {
+        display: "flex",
+        alignItems: "center",
+    } as const;
+
     return (
         <div style={containerStyle}>
             <div style={{ display: "flex" }}>
                 <Key char={"←"} keyHeight={keyHeight} />
                 <Key char={"↓"} keyHeight={keyHeight} />
-                <Key char={"→"} keyHeight={keyHeight} /> Move
+                <Key char={"→"} keyHeight={keyHeight} />{" "}
+                <div style={guideTextStyle}>Move</div>
             </div>
             <div style={{ display: "flex" }}>
-                <Key char={"z"} keyHeight={keyHeight} /> Rotate ↺
+                <Key char={"z"} keyHeight={keyHeight} />{" "}
+                <div style={guideTextStyle}>Rotate ↺</div>
             </div>
             <div style={{ display: "flex" }}>
                 <Key char={"x"} keyHeight={keyHeight} />
-                <Key char={"↑"} keyHeight={keyHeight} /> Rotate ↻
+                <Key char={"↑"} keyHeight={keyHeight} />{" "}
+                <div style={guideTextStyle}>Rotate ↻</div>
             </div>
             <div style={{ display: "flex" }}>
-                <Key char={"space"} keyHeight={keyHeight} /> Drop
+                <Key char={"space"} keyHeight={keyHeight} />{" "}
+                <div style={guideTextStyle}>Drop</div>
             </div>
         </div>
     );

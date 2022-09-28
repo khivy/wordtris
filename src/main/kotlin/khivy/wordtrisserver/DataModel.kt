@@ -33,7 +33,7 @@ data class Score (
 
 @Entity
 data class Name(
-    @Column(name = "name", nullable = false, length = 25)
+    @Column(name = "name", nullable = false, length = NAME_LENGTH_MAX)
     val name: String,
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

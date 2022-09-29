@@ -1,8 +1,8 @@
 package khivy.wordtrisserver
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,25 +12,37 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.OffsetDateTime
 
 @Repository
-interface ScoreRepository : CrudRepository<Score, Long> {
+interface ScoreRepository : JpaRepository<Score, Long> {
     @Query(
         value = """
-        SELECT * FROM Score as S
+        SELECT * FROM Score
         WHERE name_id IN
-            (SELECT name_id
+            (SELECT id
              FROM Name
              WHERE ip_fk = :ip);
     """, nativeQuery = true
     )
     fun findScoresWithGivenIpNative(@Param("ip") ip: String): List<Score>
+
+    @Query(
+        value = """
+        SELECT * FROM Score
+        WHERE name_id IN
+            (SELECT id
+             FROM Name
+             WHERE ip_fk = :ip
+             AND name = :name);
+    """, nativeQuery = true
+    )
+    fun findScoresWithGivenIpAndNameNative(@Param("ip") ip: String, @Param("name") name: String): List<Score>
 }
 
 @Repository
-interface NameRepository : CrudRepository<Name, Long> {
+interface NameRepository : JpaRepository<Name, Long> {
 }
 
 @Repository
-interface IpRepository : CrudRepository<Ip, Long> {
+interface IpRepository : JpaRepository<Ip, Long> {
 }
 
 class PlayerSubmissionData(
@@ -74,30 +86,38 @@ class RestController {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        saveScore(data)
+        saveScoreAndFlush(data)
 
-        // Evicts the lowest score(s).
+        // Evicts the lowest score(s) that match the IP & Name combination.
+        val scoresMatchingIpAndName = scoreRepository.findScoresWithGivenIpAndNameNative(data.ip, data.name)
+        evictLowestScoresFrom(scoresMatchingIpAndName, scoresMatchingIpAndName.size - 1)
+
+        // Evicts the lowest score(s) from the IP.
         val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
-        if (scoresMatchingIp.size < MAX_SCORES_PER_IP) {
-            saveScore(data)
+        if (scoresMatchingIp.size <= MAX_SCORES_PER_IP) {
             return ResponseEntity(HttpStatus.ACCEPTED);
         }
-        val scoresMatchingIpSorted = scoresMatchingIp.sortedBy { score -> score.score }
-        val allScoresToRemove = scoresMatchingIpSorted
-            .take(scoresMatchingIp.size - MAX_SCORES_PER_IP)
-            .map { score -> score.name_id }
-        nameRepository.deleteAllById(allScoresToRemove) // TODO: Assert that it cascades.
+        evictLowestScoresFrom(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
 
         return ResponseEntity(HttpStatus.ACCEPTED);
     }
 
-    fun saveScore(data: PlayerSubmissionData) {
+    fun saveScoreAndFlush(data: PlayerSubmissionData) {
         val ip = Ip(data.ip)
-        ipRepository.save(ip)
+        ipRepository.saveAndFlush(ip)
         val name = Name(data.name, ip)
-        nameRepository.save(name)
+        nameRepository.saveAndFlush(name)
         val score = Score(data.score, name, OffsetDateTime.now())
-        scoreRepository.save(score)
+        scoreRepository.saveAndFlush(score)
+    }
+
+    fun evictLowestScoresFrom(possibleScoresToEvict: List<Score>, numToEvict: Int) {
+        if (numToEvict <= 0) return
+        val sorted = possibleScoresToEvict.sortedBy { score -> score.score }
+        val allScoresToRemove = sorted
+            .take(numToEvict)
+            .map { score -> score.name_id }
+        nameRepository.deleteAllByIdInBatch(allScoresToRemove) // TODO: Assert that it cascades.
     }
 
     @RequestMapping("/clear")

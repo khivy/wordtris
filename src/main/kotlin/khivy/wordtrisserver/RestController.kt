@@ -74,23 +74,20 @@ class RestController {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
+        saveScore(data)
 
+        // Evicts the lowest score(s).
+        val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
         if (scoresMatchingIp.size < MAX_SCORES_PER_IP) {
             saveScore(data)
             return ResponseEntity(HttpStatus.ACCEPTED);
         }
+        val scoresMatchingIpSorted = scoresMatchingIp.sortedBy { score -> score.score }
+        val allScoresToRemove = scoresMatchingIpSorted
+            .take(scoresMatchingIp.size - MAX_SCORES_PER_IP)
+            .map { score -> score.name_id }
+        nameRepository.deleteAllById(allScoresToRemove) // TODO: Assert that it cascades.
 
-        val lowestPresentScore = scoresMatchingIp
-            .reduce { score1, score2 -> if (score1.score < score2.score) score1 else score2 }
-
-        if (data.score < lowestPresentScore.score) {
-            return ResponseEntity(HttpStatus.ACCEPTED);
-        }
-
-        // Evicts the lowest score.
-        nameRepository.deleteById(lowestPresentScore.name_id) // TODO: Assert that it cascades.
-        saveScore(data)
         return ResponseEntity(HttpStatus.ACCEPTED);
     }
 

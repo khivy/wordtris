@@ -13,6 +13,16 @@ import java.time.OffsetDateTime
 
 @Repository
 interface ScoreRepository : CrudRepository<Score, Long> {
+    @Query(
+        value = """
+        SELECT * FROM Score as S
+        WHERE name_id IN
+            (SELECT name_id
+             FROM Name
+             WHERE ip_fk = :ip);
+    """, nativeQuery = true
+    )
+    fun findScoresWithGivenIpNative(@Param("ip") ip: String): List<Score>
 }
 
 @Repository
@@ -59,17 +69,38 @@ class RestController {
     @PutMapping(value = ["/score"])
     @ResponseBody
     fun updateScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
+        // Ignores request if name is too long.
         if (NAME_LENGTH_MAX < data.name.length) {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        var ip = Ip(data.ip)
-        ipRepository.save(ip)
-        var name = Name(data.name, ip)
-        nameRepository.save(name)
-        var score = Score(data.score, name, OffsetDateTime.now())
-        scoreRepository.save(score)
+        val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
+
+        if (scoresMatchingIp.size < MAX_SCORES_PER_IP) {
+            saveScore(data)
+            return ResponseEntity(HttpStatus.ACCEPTED);
+        }
+
+        val lowestPresentScore = scoresMatchingIp
+            .reduce { score1, score2 -> if (score1.score < score2.score) score1 else score2 }
+
+        if (data.score < lowestPresentScore.score) {
+            return ResponseEntity(HttpStatus.ACCEPTED);
+        }
+
+        // Evicts the lowest score.
+        nameRepository.deleteById(lowestPresentScore.name_id) // TODO: Assert that it cascades.
+        saveScore(data)
         return ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    fun saveScore(data: PlayerSubmissionData) {
+        val ip = Ip(data.ip)
+        ipRepository.save(ip)
+        val name = Name(data.name, ip)
+        nameRepository.save(name)
+        val score = Score(data.score, name, OffsetDateTime.now())
+        scoreRepository.save(score)
     }
 
     @RequestMapping("/clear")

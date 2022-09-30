@@ -1,7 +1,7 @@
 package khivy.wordtrisserver
 
-import PlayerSubmissionDataKt
 import PlayerSubmissionDataOuterClass.PlayerSubmissionData
+import com.google.protobuf.ByteString
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -76,6 +76,7 @@ class RestController {
     @PutMapping(value = ["/score"])
     @ResponseBody
     fun updateScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
+        data.wordsList.forEach{println(it)}
         // Ignores request if name is too long.
         if (NAME_LENGTH_MAX < data.name.length) {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
@@ -95,6 +96,21 @@ class RestController {
         evictLowestScoresFrom(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
 
         return ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping(value = ["/test"])
+    fun test() {
+        var test = PlayerSubmissionData.newBuilder()
+        test.setScore(41)
+        test.setName("abc")
+        test.setIp("192")
+        test.addAllWords(listOf(ByteString.copyFromUtf8("words")))
+        test.setChecksum(ByteString.copyFromUtf8("checksum"))
+        var message = test.build()
+        println(message)
+
+        this.updateScore(message)
+
     }
 
     fun saveScoreAndFlush(data: PlayerSubmissionData) {

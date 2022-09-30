@@ -1,5 +1,7 @@
 package khivy.wordtrisserver
 
+import PlayerSubmissionDataKt
+import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -44,13 +46,6 @@ interface NameRepository : JpaRepository<Name, Long> {
 @Repository
 interface IpRepository : JpaRepository<Ip, Long> {
 }
-
-class PlayerSubmissionData(
-    var score: Byte,
-    var name: String,
-    var ip: String,
-    var checksum: String
-)
 
 @RestController
 class RestController {

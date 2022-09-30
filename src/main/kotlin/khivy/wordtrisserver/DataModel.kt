@@ -17,7 +17,7 @@ data class Ip(
 
 @Entity
 data class Score (
-    var score: Byte,
+    var score: Int,
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @MapsId

@@ -4,6 +4,6 @@ message PlayerSubmissionData {
   int32 score = 1;
   string name = 2;
   string ip = 3;
-  repeated bytes words = 4;
+  bytes words = 4;
   bytes checksum = 5;
 }

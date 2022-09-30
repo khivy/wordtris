@@ -72,70 +72,22 @@ object PlayerSubmissionDataKt {
     }
 
     /**
-     * An uninstantiable, behaviorless type to represent the field in
-     * generics.
+     * <code>bytes words = 4;</code>
      */
-    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
-    class WordsProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    var words: com.google.protobuf.ByteString
+      @JvmName("getWords")
+      get() = _builder.getWords()
+      @JvmName("setWords")
+      set(value) {
+        _builder.setWords(value)
+      }
     /**
-     * <code>repeated bytes words = 4;</code>
+     * <code>bytes words = 4;</code>
      */
-     val words: com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>
-      @kotlin.jvm.JvmSynthetic
-      get() = com.google.protobuf.kotlin.DslList(
-        _builder.getWordsList()
-      )
-    /**
-     * <code>repeated bytes words = 4;</code>
-     * @param value The words to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("addWords")
-    fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.add(value: com.google.protobuf.ByteString) {
-      _builder.addWords(value)
-    }/**
-     * <code>repeated bytes words = 4;</code>
-     * @param value The words to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("plusAssignWords")
-    @Suppress("NOTHING_TO_INLINE")
-    inline operator fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.plusAssign(value: com.google.protobuf.ByteString) {
-      add(value)
-    }/**
-     * <code>repeated bytes words = 4;</code>
-     * @param values The words to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("addAllWords")
-    fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.addAll(values: kotlin.collections.Iterable<com.google.protobuf.ByteString>) {
-      _builder.addAllWords(values)
-    }/**
-     * <code>repeated bytes words = 4;</code>
-     * @param values The words to add.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("plusAssignAllWords")
-    @Suppress("NOTHING_TO_INLINE")
-    inline operator fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.plusAssign(values: kotlin.collections.Iterable<com.google.protobuf.ByteString>) {
-      addAll(values)
-    }/**
-     * <code>repeated bytes words = 4;</code>
-     * @param index The index to set the value at.
-     * @param value The words to set.
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("setWords")
-    operator fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.set(index: kotlin.Int, value: com.google.protobuf.ByteString) {
-      _builder.setWords(index, value)
-    }/**
-     * <code>repeated bytes words = 4;</code>
-     */
-    @kotlin.jvm.JvmSynthetic
-    @kotlin.jvm.JvmName("clearWords")
-    fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, WordsProxy>.clear() {
+    fun clearWords() {
       _builder.clearWords()
     }
+
     /**
      * <code>bytes checksum = 5;</code>
      */

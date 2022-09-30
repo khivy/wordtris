@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
+import java.security.MessageDigest
 import java.time.OffsetDateTime
 
 @Repository
@@ -76,10 +77,15 @@ class RestController {
     @PutMapping(value = ["/score"])
     @ResponseBody
     fun updateScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
-        data.wordsList.forEach{println(it)}
+        // Verify checksum.
+        val md = MessageDigest.getInstance("SHA-256")
+        if (!data.checksum.toByteArray().contentEquals(md.digest(data.words.toByteArray()))) {
+            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        }
+
         // Ignores request if name is too long.
         if (NAME_LENGTH_MAX < data.name.length) {
-            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
 
         saveScoreAndFlush(data)
@@ -91,11 +97,11 @@ class RestController {
         // Evicts the lowest score(s) from the IP.
         val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
         if (scoresMatchingIp.size <= MAX_SCORES_PER_IP) {
-            return ResponseEntity(HttpStatus.ACCEPTED);
+            return ResponseEntity(HttpStatus.ACCEPTED)
         }
         evictLowestScoresFrom(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
 
-        return ResponseEntity(HttpStatus.ACCEPTED);
+        return ResponseEntity(HttpStatus.ACCEPTED)
     }
 
     @GetMapping(value = ["/test"])
@@ -104,13 +110,11 @@ class RestController {
         test.setScore(41)
         test.setName("abc")
         test.setIp("192")
-        test.addAllWords(listOf(ByteString.copyFromUtf8("words")))
+        test.setWords(ByteString.copyFromUtf8("words"))
         test.setChecksum(ByteString.copyFromUtf8("checksum"))
         var message = test.build()
-        println(message)
 
         this.updateScore(message)
-
     }
 
     fun saveScoreAndFlush(data: PlayerSubmissionData) {

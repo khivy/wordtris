@@ -47,21 +47,10 @@ public final class PlayerSubmissionDataOuterClass {
         getIpBytes();
 
     /**
-     * <code>repeated bytes words = 4;</code>
-     * @return A list containing the words.
+     * <code>bytes words = 4;</code>
+     * @return The words.
      */
-    java.util.List<com.google.protobuf.ByteString> getWordsList();
-    /**
-     * <code>repeated bytes words = 4;</code>
-     * @return The count of words.
-     */
-    int getWordsCount();
-    /**
-     * <code>repeated bytes words = 4;</code>
-     * @param index The index of the element to return.
-     * @return The words at the given index.
-     */
-    com.google.protobuf.ByteString getWords(int index);
+    com.google.protobuf.ByteString getWords();
 
     /**
      * <code>bytes checksum = 5;</code>
@@ -84,7 +73,7 @@ public final class PlayerSubmissionDataOuterClass {
     private PlayerSubmissionData() {
       name_ = "";
       ip_ = "";
-      words_ = java.util.Collections.emptyList();
+      words_ = com.google.protobuf.ByteString.EMPTY;
       checksum_ = com.google.protobuf.ByteString.EMPTY;
     }
 
@@ -108,7 +97,6 @@ public final class PlayerSubmissionDataOuterClass {
       if (extensionRegistry == null) {
         throw new java.lang.NullPointerException();
       }
-      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -137,11 +125,8 @@ public final class PlayerSubmissionDataOuterClass {
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                words_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              words_.add(input.readBytes());
+
+              words_ = input.readBytes();
               break;
             }
             case 42: {
@@ -166,9 +151,6 @@ public final class PlayerSubmissionDataOuterClass {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          words_ = java.util.Collections.unmodifiableList(words_); // C
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -274,30 +256,14 @@ public final class PlayerSubmissionDataOuterClass {
     }
 
     public static final int WORDS_FIELD_NUMBER = 4;
-    private java.util.List<com.google.protobuf.ByteString> words_;
+    private com.google.protobuf.ByteString words_;
     /**
-     * <code>repeated bytes words = 4;</code>
-     * @return A list containing the words.
+     * <code>bytes words = 4;</code>
+     * @return The words.
      */
     @java.lang.Override
-    public java.util.List<com.google.protobuf.ByteString>
-        getWordsList() {
+    public com.google.protobuf.ByteString getWords() {
       return words_;
-    }
-    /**
-     * <code>repeated bytes words = 4;</code>
-     * @return The count of words.
-     */
-    public int getWordsCount() {
-      return words_.size();
-    }
-    /**
-     * <code>repeated bytes words = 4;</code>
-     * @param index The index of the element to return.
-     * @return The words at the given index.
-     */
-    public com.google.protobuf.ByteString getWords(int index) {
-      return words_.get(index);
     }
 
     public static final int CHECKSUM_FIELD_NUMBER = 5;
@@ -334,8 +300,8 @@ public final class PlayerSubmissionDataOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(ip_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, ip_);
       }
-      for (int i = 0; i < words_.size(); i++) {
-        output.writeBytes(4, words_.get(i));
+      if (!words_.isEmpty()) {
+        output.writeBytes(4, words_);
       }
       if (!checksum_.isEmpty()) {
         output.writeBytes(5, checksum_);
@@ -359,14 +325,9 @@ public final class PlayerSubmissionDataOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(ip_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, ip_);
       }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < words_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(words_.get(i));
-        }
-        size += dataSize;
-        size += 1 * getWordsList().size();
+      if (!words_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, words_);
       }
       if (!checksum_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
@@ -393,8 +354,8 @@ public final class PlayerSubmissionDataOuterClass {
           .equals(other.getName())) return false;
       if (!getIp()
           .equals(other.getIp())) return false;
-      if (!getWordsList()
-          .equals(other.getWordsList())) return false;
+      if (!getWords()
+          .equals(other.getWords())) return false;
       if (!getChecksum()
           .equals(other.getChecksum())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
@@ -414,10 +375,8 @@ public final class PlayerSubmissionDataOuterClass {
       hash = (53 * hash) + getName().hashCode();
       hash = (37 * hash) + IP_FIELD_NUMBER;
       hash = (53 * hash) + getIp().hashCode();
-      if (getWordsCount() > 0) {
-        hash = (37 * hash) + WORDS_FIELD_NUMBER;
-        hash = (53 * hash) + getWordsList().hashCode();
-      }
+      hash = (37 * hash) + WORDS_FIELD_NUMBER;
+      hash = (53 * hash) + getWords().hashCode();
       hash = (37 * hash) + CHECKSUM_FIELD_NUMBER;
       hash = (53 * hash) + getChecksum().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -559,8 +518,8 @@ public final class PlayerSubmissionDataOuterClass {
 
         ip_ = "";
 
-        words_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        words_ = com.google.protobuf.ByteString.EMPTY;
+
         checksum_ = com.google.protobuf.ByteString.EMPTY;
 
         return this;
@@ -589,14 +548,9 @@ public final class PlayerSubmissionDataOuterClass {
       @java.lang.Override
       public PlayerSubmissionDataOuterClass.PlayerSubmissionData buildPartial() {
         PlayerSubmissionDataOuterClass.PlayerSubmissionData result = new PlayerSubmissionDataOuterClass.PlayerSubmissionData(this);
-        int from_bitField0_ = bitField0_;
         result.score_ = score_;
         result.name_ = name_;
         result.ip_ = ip_;
-        if (((bitField0_ & 0x00000001) != 0)) {
-          words_ = java.util.Collections.unmodifiableList(words_);
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
         result.words_ = words_;
         result.checksum_ = checksum_;
         onBuilt();
@@ -658,15 +612,8 @@ public final class PlayerSubmissionDataOuterClass {
           ip_ = other.ip_;
           onChanged();
         }
-        if (!other.words_.isEmpty()) {
-          if (words_.isEmpty()) {
-            words_ = other.words_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-          } else {
-            ensureWordsIsMutable();
-            words_.addAll(other.words_);
-          }
-          onChanged();
+        if (other.getWords() != com.google.protobuf.ByteString.EMPTY) {
+          setWords(other.getWords());
         }
         if (other.getChecksum() != com.google.protobuf.ByteString.EMPTY) {
           setChecksum(other.getChecksum());
@@ -699,7 +646,6 @@ public final class PlayerSubmissionDataOuterClass {
         }
         return this;
       }
-      private int bitField0_;
 
       private int score_ ;
       /**
@@ -884,87 +830,36 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
 
-      private java.util.List<com.google.protobuf.ByteString> words_ = java.util.Collections.emptyList();
-      private void ensureWordsIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
-          words_ = new java.util.ArrayList<com.google.protobuf.ByteString>(words_);
-          bitField0_ |= 0x00000001;
-         }
-      }
+      private com.google.protobuf.ByteString words_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>repeated bytes words = 4;</code>
-       * @return A list containing the words.
+       * <code>bytes words = 4;</code>
+       * @return The words.
        */
-      public java.util.List<com.google.protobuf.ByteString>
-          getWordsList() {
-        return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(words_) : words_;
+      @java.lang.Override
+      public com.google.protobuf.ByteString getWords() {
+        return words_;
       }
       /**
-       * <code>repeated bytes words = 4;</code>
-       * @return The count of words.
-       */
-      public int getWordsCount() {
-        return words_.size();
-      }
-      /**
-       * <code>repeated bytes words = 4;</code>
-       * @param index The index of the element to return.
-       * @return The words at the given index.
-       */
-      public com.google.protobuf.ByteString getWords(int index) {
-        return words_.get(index);
-      }
-      /**
-       * <code>repeated bytes words = 4;</code>
-       * @param index The index to set the value at.
+       * <code>bytes words = 4;</code>
        * @param value The words to set.
        * @return This builder for chaining.
        */
-      public Builder setWords(
-          int index, com.google.protobuf.ByteString value) {
+      public Builder setWords(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  ensureWordsIsMutable();
-        words_.set(index, value);
+  
+        words_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes words = 4;</code>
-       * @param value The words to add.
-       * @return This builder for chaining.
-       */
-      public Builder addWords(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureWordsIsMutable();
-        words_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated bytes words = 4;</code>
-       * @param values The words to add.
-       * @return This builder for chaining.
-       */
-      public Builder addAllWords(
-          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
-        ensureWordsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, words_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated bytes words = 4;</code>
+       * <code>bytes words = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearWords() {
-        words_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
+        words_ = getDefaultInstance().getWords();
         onChanged();
         return this;
       }
@@ -1071,7 +966,7 @@ public final class PlayerSubmissionDataOuterClass {
     java.lang.String[] descriptorData = {
       "\n\032PlayerSubmissionData.proto\"`\n\024PlayerSu" +
       "bmissionData\022\r\n\005score\030\001 \001(\005\022\014\n\004name\030\002 \001(" +
-      "\t\022\n\n\002ip\030\003 \001(\t\022\r\n\005words\030\004 \003(\014\022\020\n\010checksum" +
+      "\t\022\n\n\002ip\030\003 \001(\t\022\r\n\005words\030\004 \001(\014\022\020\n\010checksum" +
       "\030\005 \001(\014b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor

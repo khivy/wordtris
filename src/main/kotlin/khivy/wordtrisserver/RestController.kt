@@ -4,6 +4,7 @@ import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import com.google.protobuf.ByteString
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.config.ConfigDataException
 import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -15,6 +16,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Repository
+import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
@@ -22,13 +24,18 @@ import java.security.MessageDigest
 import java.time.OffsetDateTime
 
 @Value("\${REDIS_HOST:localhost}")
-var redis_host = "localhost"
+var REDIS_HOST: String? = null
+
+@Value("\${REDIS_PORT}")
+var REDIS_PORT: Int? = null
 
 @Bean
 fun jedisConnectionFactory(): JedisConnectionFactory {
+    Assert.notNull(REDIS_HOST, "\$REDIS_HOST could not be read.")
+    Assert.notNull(REDIS_PORT, "\$REDIS_PORT could not be read.")
     val config = RedisStandaloneConfiguration()
-    config.hostName = redis_host
-    config.port = 6379
+    config.hostName = REDIS_HOST!!
+    config.port = REDIS_PORT!!
     return JedisConnectionFactory(config)
 }
 

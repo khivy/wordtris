@@ -3,16 +3,50 @@ package khivy.wordtrisserver
 import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import com.google.protobuf.ByteString
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
+import org.springframework.data.redis.core.RedisHash
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
+import java.io.Serializable
 import java.security.MessageDigest
 import java.time.OffsetDateTime
+
+@Value("\${REDIS_HOST:localhost}")
+var redis_host = "localhost"
+
+@Bean
+fun jedisConnectionFactory(): JedisConnectionFactory {
+    val config = RedisStandaloneConfiguration()
+    config.hostName = redis_host
+    config.port = 6379
+    return JedisConnectionFactory(config)
+}
+
+@Bean
+fun redisTemplate(): RedisTemplate<String?, Any?>? {
+    val template: RedisTemplate<String?, Any?> = RedisTemplate()
+    template.setConnectionFactory(jedisConnectionFactory())
+    return template
+}
+
+@RedisHash("lowest_leader_score")
+data class LowestLeaderScore(
+    val score: Int,
+) : Serializable {
+}
+
+@Repository
+interface LowestLeaderScoreRepository : JpaRepository<LowestLeaderScore?, String?>
 
 @Repository
 interface ScoreRepository : JpaRepository<Score, Long> {
@@ -59,6 +93,9 @@ class RestController {
 
     @Autowired
     lateinit var ipRepository: IpRepository
+
+    @Autowired
+    lateinit var lowestLeaderScoreRepository: LowestLeaderScoreRepository
 
     @RequestMapping("/save")
     fun save(): String {
@@ -133,6 +170,11 @@ class RestController {
             .take(numToEvict)
             .map { score -> score.name_id }
         nameRepository.deleteAllByIdInBatch(allScoresToRemove) // TODO: Assert that it cascades.
+    }
+
+    @PutMapping(value = ["/lowest"])
+    fun updateLowestLeader() {
+        lowestLeaderScoreRepository.save(LowestLeaderScore(50))
     }
 
     @RequestMapping("/clear")

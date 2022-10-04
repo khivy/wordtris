@@ -33,6 +33,7 @@ dependencies {
     implementation("redis.clients:jedis:4.2.3")
     implementation("org.springframework.data:spring-data-redis:2.7.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("io.lettuce:lettuce-core:6.2.0.RELEASE")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("mysql:mysql-connector-java")

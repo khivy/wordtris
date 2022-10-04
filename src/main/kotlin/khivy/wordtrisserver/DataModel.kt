@@ -1,9 +1,12 @@
-package khivy.wordtrisserver
+package khivy.wordtrisserver.datamodel
 
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import java.time.OffsetDateTime
 import javax.persistence.*
+import java.io.Serializable
+import khivy.wordtrisserver.setup.*
+
 
 @Entity
 data class Ip(
@@ -48,4 +51,12 @@ data class Name(
     @OneToOne(mappedBy = "name_fk", cascade = [CascadeType.ALL])
     @PrimaryKeyJoinColumn
     private var score: Score? = null
+}
+
+
+@Entity
+data class LowestLeaderScore(
+    @Id
+    val score: Int,
+) : Serializable {
 }

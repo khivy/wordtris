@@ -1,4 +1,4 @@
-package khivy.wordtrisserver
+package khivy.wordtrisserver.rest
 
 import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import com.google.protobuf.ByteString
@@ -22,72 +22,14 @@ import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
 import java.security.MessageDigest
 import java.time.OffsetDateTime
+import org.springframework.data.annotation.Id
+import khivy.wordtrisserver.datamodel.*
+import khivy.wordtrisserver.setup.*
+import khivy.wordtrisserver.repositories.ip.IpRepository
+import khivy.wordtrisserver.repositories.name.NameRepository
+import khivy.wordtrisserver.repositories.score.ScoreRepository
+import khivy.wordtrisserver.repositories.lls.*
 
-@Value("\${REDIS_HOST:localhost}")
-var REDIS_HOST: String? = null
-
-@Value("\${REDIS_PORT}")
-var REDIS_PORT: Int? = null
-
-@Bean
-fun jedisConnectionFactory(): JedisConnectionFactory {
-    Assert.notNull(REDIS_HOST, "\$REDIS_HOST could not be read.")
-    Assert.notNull(REDIS_PORT, "\$REDIS_PORT could not be read.")
-    val config = RedisStandaloneConfiguration()
-    config.hostName = REDIS_HOST!!
-    config.port = REDIS_PORT!!
-    return JedisConnectionFactory(config)
-}
-
-@Bean
-fun redisTemplate(): RedisTemplate<String?, Any?>? {
-    val template: RedisTemplate<String?, Any?> = RedisTemplate()
-    template.setConnectionFactory(jedisConnectionFactory())
-    return template
-}
-
-@RedisHash("lowest_leader_score")
-data class LowestLeaderScore(
-    val score: Int,
-) : Serializable {
-}
-
-@Repository
-interface LowestLeaderScoreRepository : JpaRepository<LowestLeaderScore?, String?>
-
-@Repository
-interface ScoreRepository : JpaRepository<Score, Long> {
-    @Query(
-        value = """
-        SELECT * FROM Score
-        WHERE name_id IN
-            (SELECT id
-             FROM Name
-             WHERE ip_fk = :ip);
-    """, nativeQuery = true
-    )
-    fun findScoresWithGivenIpNative(@Param("ip") ip: String): List<Score>
-
-    @Query(
-        value = """
-        SELECT * FROM Score
-        WHERE name_id IN
-            (SELECT id
-             FROM Name
-             WHERE ip_fk = :ip
-             AND name = :name);
-    """, nativeQuery = true
-    )
-    fun findScoresWithGivenIpAndNameNative(@Param("ip") ip: String, @Param("name") name: String): List<Score>
-}
-
-@Repository
-interface NameRepository : JpaRepository<Name, Long> {
-}
-
-@Repository
-interface IpRepository : JpaRepository<Ip, Long> {
-}
 
 @RestController
 class RestController {

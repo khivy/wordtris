@@ -13,7 +13,7 @@ data class Ip(
     @Id
     @Column(nullable = false)
     val ip: String
-) {
+) : Serializable {
     @OneToMany(mappedBy = "ip_fk")
     private var names: MutableSet<Name> = mutableSetOf()
 }
@@ -28,7 +28,7 @@ data class Score (
     val name_fk: Name,
     @Column(name = "created_at")
     var created_at: OffsetDateTime
-) {
+) : Serializable {
     @Id
     @Column(name = "name_id")
     var name_id: Long = 0
@@ -42,7 +42,7 @@ data class Name(
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ip_fk", nullable = false)
     val ip_fk: Ip,
-) {
+): Serializable  {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -51,12 +51,4 @@ data class Name(
     @OneToOne(mappedBy = "name_fk", cascade = [CascadeType.ALL])
     @PrimaryKeyJoinColumn
     private var score: Score? = null
-}
-
-
-@Entity
-data class LowestLeaderScore(
-    @Id
-    val score: Int,
-) : Serializable {
 }

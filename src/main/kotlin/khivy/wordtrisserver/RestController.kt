@@ -3,37 +3,24 @@ package khivy.wordtrisserver.rest
 import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import com.google.protobuf.ByteString
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.context.config.ConfigDataException
-import org.springframework.context.annotation.Bean
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
-import org.springframework.data.redis.core.RedisHash
-import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Repository
-import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
-import java.io.Serializable
 import java.security.MessageDigest
 import java.time.OffsetDateTime
-import org.springframework.data.annotation.Id
 import khivy.wordtrisserver.datamodel.*
 import khivy.wordtrisserver.setup.*
 import khivy.wordtrisserver.repositories.ip.IpRepository
 import khivy.wordtrisserver.repositories.name.NameRepository
 import khivy.wordtrisserver.repositories.score.ScoreRepository
-import khivy.wordtrisserver.repositories.lls.*
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.stereotype.Service
 
 
-@RestController
-class RestController {
-
+@Service
+class DataService {
     @Autowired
     lateinit var scoreRepository: ScoreRepository
 
@@ -42,66 +29,6 @@ class RestController {
 
     @Autowired
     lateinit var ipRepository: IpRepository
-
-    @Autowired
-    lateinit var lowestLeaderScoreRepository: LowestLeaderScoreRepository
-
-    @RequestMapping("/save")
-    fun save(): String {
-        return "Done"
-    }
-
-    @RequestMapping("/findallips")
-    fun findAllIps() = ipRepository.findAll()
-
-    @RequestMapping("/findallnames")
-    fun findAllNames() = nameRepository.findAll()
-
-    @RequestMapping("/findallscores")
-    fun findAllScores() = scoreRepository.findAll()
-
-    @PutMapping(value = ["/score"])
-    @ResponseBody
-    fun updateScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
-        // Verify checksum.
-        val md = MessageDigest.getInstance("SHA-256")
-        if (!data.checksum.toByteArray().contentEquals(md.digest(data.words.toByteArray()))) {
-            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
-        }
-
-        // Ignores request if name is too long.
-        if (NAME_LENGTH_MAX < data.name.length) {
-            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
-        }
-
-        saveScoreAndFlush(data)
-
-        // Evicts the lowest score(s) that match the IP & Name combination.
-        val scoresMatchingIpAndName = scoreRepository.findScoresWithGivenIpAndNameNative(data.ip, data.name)
-        evictLowestScoresFrom(scoresMatchingIpAndName, scoresMatchingIpAndName.size - 1)
-
-        // Evicts the lowest score(s) from the IP.
-        val scoresMatchingIp = scoreRepository.findScoresWithGivenIpNative(data.ip)
-        if (scoresMatchingIp.size <= MAX_SCORES_PER_IP) {
-            return ResponseEntity(HttpStatus.ACCEPTED)
-        }
-        evictLowestScoresFrom(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
-
-        return ResponseEntity(HttpStatus.ACCEPTED)
-    }
-
-    @GetMapping(value = ["/test"])
-    fun test() {
-        var test = PlayerSubmissionData.newBuilder()
-        test.setScore(41)
-        test.setName("abc")
-        test.setIp("192")
-        test.setWords(ByteString.copyFromUtf8("words"))
-        test.setChecksum(ByteString.copyFromUtf8("checksum"))
-        var message = test.build()
-
-        this.updateScore(message)
-    }
 
     fun saveScoreAndFlush(data: PlayerSubmissionData) {
         val ip = Ip(data.ip)
@@ -112,7 +39,7 @@ class RestController {
         scoreRepository.saveAndFlush(score)
     }
 
-    fun evictLowestScoresFrom(possibleScoresToEvict: List<Score>, numToEvict: Int) {
+    fun evictLowestScoresFromList(possibleScoresToEvict: List<Score>, numToEvict: Int) {
         if (numToEvict <= 0) return
         val sorted = possibleScoresToEvict.sortedBy { score -> score.score }
         val allScoresToRemove = sorted
@@ -120,16 +47,118 @@ class RestController {
             .map { score -> score.name_id }
         nameRepository.deleteAllByIdInBatch(allScoresToRemove) // TODO: Assert that it cascades.
     }
+}
 
-    @PutMapping(value = ["/lowest"])
-    fun updateLowestLeader() {
-        lowestLeaderScoreRepository.save(LowestLeaderScore(50))
+@Service
+class CacheService {
+
+    @Autowired
+    lateinit var dataService: DataService
+
+    @Cacheable("leaders")
+    fun getLeaders(): List<Score> {
+        return dataService.scoreRepository.findLeadersNative(MAX_LEADERS_ON_BOARD)
+    }
+
+    @CacheEvict("leaders")
+    fun evictLeaders() {}
+
+    fun getLowestLeaderScoreInt(): Int {
+        val leaders = getLeaders()
+        return if (leaders.size < MAX_LEADERS_ON_BOARD) {
+            0
+        } else {
+            getLeaders().reduce{ a, b -> if (a.score < b.score) a else b }.score
+        }
+    }
+}
+
+@RestController
+class RestController {
+
+    @Autowired
+    lateinit var dataService: DataService
+
+    @Autowired
+    lateinit var cacheService: CacheService
+
+    @RequestMapping("/save")
+    fun save(): String {
+        return "Done"
+    }
+
+    @RequestMapping("/findallips")
+    fun findAllIps() = dataService.ipRepository.findAll()
+
+    @RequestMapping("/findallnames")
+    fun findAllNames() = dataService.nameRepository.findAll()
+
+    @RequestMapping("/findallscores")
+    fun findAllScores() = dataService.scoreRepository.findAll()
+
+    @PutMapping(value = ["/submitscore"])
+    @ResponseBody
+    fun submitScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
+        // Verify checksum.
+        val md = MessageDigest.getInstance("SHA-256")
+        val wordsByteArray = data.words.toByteArray()
+        if (wordsByteArray.size != data.score || !data.checksum.toByteArray().contentEquals(md.digest(wordsByteArray))) {
+            println("Did not accept score. Given hash: ${md.digest(wordsByteArray)}")
+            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        }
+
+        // Ignores request if name is too long.
+        if (NAME_LENGTH_MAX < data.name.length) {
+            return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        }
+
+        dataService.saveScoreAndFlush(data)
+
+        // Evicts the lowest score(s) that match the IP & Name combination.
+        val scoresMatchingIpAndName = dataService.scoreRepository.findScoresWithGivenIpAndNameNative(data.ip, data.name)
+        dataService.evictLowestScoresFromList(scoresMatchingIpAndName, scoresMatchingIpAndName.size - 1)
+
+        // Evicts the lowest score(s) from the IP.
+        val scoresMatchingIp = dataService.scoreRepository.findScoresWithGivenIpNative(data.ip)
+        if (MAX_SCORES_PER_IP < scoresMatchingIp.size) {
+            dataService.evictLowestScoresFromList(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
+        }
+
+        // Evict cached leaders if this score is a new leader, so that on the next leaderboard request it is submitted.
+        if (cacheService.getLowestLeaderScoreInt() < data.score) {
+            cacheService.evictLeaders()
+        }
+
+        return ResponseEntity(HttpStatus.ACCEPTED)
+    }
+
+    @GetMapping(value = ["/dummyaddscore"])
+    fun test() {
+        var test = PlayerSubmissionData.newBuilder()
+        test.setScore(40)
+        test.setName("testnew")
+        test.setIp("193")
+        test.setWords(ByteString.copyFromUtf8("words"))
+        test.setChecksum(ByteString.copyFromUtf8("[B@35a374d7"))
+        var message = test.build()
+
+        this.submitScore(message)
+    }
+
+    @RequestMapping("/getleaders")
+    fun getLeaders() {
+        cacheService.getLeaders()
+    }
+
+    @RequestMapping("/evictleaders")
+    fun evictLeaders() {
+        cacheService.evictLeaders()
     }
 
     @RequestMapping("/clear")
     fun removeAll() {
-        ipRepository.deleteAll()
-        nameRepository.deleteAll()
-        scoreRepository.deleteAll()
+        dataService.ipRepository.deleteAll()
+        dataService.nameRepository.deleteAll()
+        dataService.scoreRepository.deleteAll()
     }
 }

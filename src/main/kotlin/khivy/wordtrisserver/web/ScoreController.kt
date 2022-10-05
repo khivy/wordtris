@@ -1,80 +1,18 @@
-package khivy.wordtrisserver.rest
+package khivy.wordtrisserver.web
 
-import PlayerSubmissionDataOuterClass.PlayerSubmissionData
 import com.google.protobuf.ByteString
+import khivy.wordtrisserver.services.CacheService
+import khivy.wordtrisserver.services.score.DataService
+import khivy.wordtrisserver.setup.MAX_SCORES_PER_IP
+import khivy.wordtrisserver.setup.NAME_LENGTH_MAX
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.bind.annotation.RestController
 import java.security.MessageDigest
-import java.time.OffsetDateTime
-import khivy.wordtrisserver.datamodel.*
-import khivy.wordtrisserver.setup.*
-import khivy.wordtrisserver.repositories.ip.IpRepository
-import khivy.wordtrisserver.repositories.name.NameRepository
-import khivy.wordtrisserver.repositories.score.ScoreRepository
-import org.springframework.cache.annotation.CacheEvict
-import org.springframework.cache.annotation.Cacheable
-import org.springframework.stereotype.Service
-
-
-@Service
-class DataService {
-    @Autowired
-    lateinit var scoreRepository: ScoreRepository
-
-    @Autowired
-    lateinit var nameRepository: NameRepository
-
-    @Autowired
-    lateinit var ipRepository: IpRepository
-
-    fun saveScoreAndFlush(data: PlayerSubmissionData) {
-        val ip = Ip(data.ip)
-        ipRepository.saveAndFlush(ip)
-        val name = Name(data.name, ip)
-        nameRepository.saveAndFlush(name)
-        val score = Score(data.score, name, OffsetDateTime.now())
-        scoreRepository.saveAndFlush(score)
-    }
-
-    fun evictLowestScoresFromList(possibleScoresToEvict: List<Score>, numToEvict: Int) {
-        if (numToEvict <= 0) return
-        val sorted = possibleScoresToEvict.sortedBy { score -> score.score }
-        val allScoresToRemove = sorted
-            .take(numToEvict)
-            .map { score -> score.name_id }
-        nameRepository.deleteAllByIdInBatch(allScoresToRemove) // TODO: Assert that it cascades.
-    }
-}
-
-@Service
-class CacheService {
-
-    @Autowired
-    lateinit var dataService: DataService
-
-    @Cacheable("leaders")
-    fun getLeaders(): List<Score> {
-        return dataService.scoreRepository.findLeadersNative(MAX_LEADERS_ON_BOARD)
-    }
-
-    @CacheEvict("leaders")
-    fun evictLeaders() {}
-
-    fun getLowestLeaderScoreInt(): Int {
-        val leaders = getLeaders()
-        return if (leaders.size < MAX_LEADERS_ON_BOARD) {
-            0
-        } else {
-            getLeaders().reduce{ a, b -> if (a.score < b.score) a else b }.score
-        }
-    }
-}
 
 @RestController
-class RestController {
+class ScoreController {
 
     @Autowired
     lateinit var dataService: DataService
@@ -98,7 +36,7 @@ class RestController {
 
     @PutMapping(value = ["/submitscore"])
     @ResponseBody
-    fun submitScore(@RequestBody data: PlayerSubmissionData): ResponseEntity<HttpStatus> {
+    fun submitScore(@RequestBody data: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
         // Verify checksum.
         val md = MessageDigest.getInstance("SHA-256")
         val wordsByteArray = data.words.toByteArray()
@@ -134,7 +72,7 @@ class RestController {
 
     @GetMapping(value = ["/dummyaddscore"])
     fun test() {
-        var test = PlayerSubmissionData.newBuilder()
+        var test = PlayerSubmissionDataOuterClass.PlayerSubmissionData.newBuilder()
         test.setScore(40)
         test.setName("testnew")
         test.setIp("193")

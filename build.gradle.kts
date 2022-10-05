@@ -54,7 +54,7 @@ protobuf {
         artifact = "com.google.protobuf:protoc:3.21.6"
     }
 
-    generatedFilesBaseDir = "$projectDir/src/main/kotlin/khivy/wordtrisserver/gen/"
+    generatedFilesBaseDir = "$projectDir/src/main/kotlin/khivy/wordtrisserver/protobuf_gen/"
 
     generateProtoTasks {
         ofSourceSet("main").forEach {

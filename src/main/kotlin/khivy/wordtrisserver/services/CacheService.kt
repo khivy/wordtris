@@ -6,9 +6,11 @@ import khivy.wordtrisserver.setup.MAX_LEADERS_ON_BOARD
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.EnableCaching
 import org.springframework.stereotype.Service
 
 @Service
+@EnableCaching
 class CacheService {
 
     @Autowired

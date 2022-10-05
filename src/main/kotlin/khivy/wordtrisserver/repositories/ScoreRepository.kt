@@ -38,7 +38,7 @@ interface ScoreRepository : JpaRepository<Score, Long> {
         SELECT *
         FROM score
         ORDER BY score DESC
-        LIMIT :amount;
+        LIMIT :amount
     """, nativeQuery = true
     )
     fun findLeadersNative(@Param("amount") amount: Int): List<Score>

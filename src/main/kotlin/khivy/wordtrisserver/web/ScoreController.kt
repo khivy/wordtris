@@ -1,6 +1,7 @@
 package khivy.wordtrisserver.web
 
 import com.google.protobuf.ByteString
+import khivy.wordtrisserver.datamodel.Score
 import khivy.wordtrisserver.services.CacheService
 import khivy.wordtrisserver.services.score.DataService
 import khivy.wordtrisserver.setup.MAX_SCORES_PER_IP
@@ -84,8 +85,8 @@ class ScoreController {
     }
 
     @RequestMapping("/getleaders")
-    fun getLeaders() {
-        cacheService.getLeaders()
+    fun getLeaders(): List<Score> {
+        return cacheService.getLeaders()
     }
 
     @RequestMapping("/evictleaders")

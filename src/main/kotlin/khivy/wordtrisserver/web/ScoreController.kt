@@ -7,10 +7,13 @@ import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import khivy.wordtrisserver.datamodel.Score
 import khivy.wordtrisserver.services.CacheService
+import khivy.wordtrisserver.services.ProfanityFilterService
 import khivy.wordtrisserver.services.score.DataService
 import khivy.wordtrisserver.setup.MAX_SCORES_PER_IP
 import khivy.wordtrisserver.setup.NAME_LENGTH_MAX
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -27,11 +30,14 @@ class ScoreController {
     @Autowired
     lateinit var cacheService: CacheService
 
+    @Autowired
+    lateinit var profanityFilterService: ProfanityFilterService
+
     lateinit var bucket: Bucket
 
     @Autowired
     fun ScoreController() {
-        val limit: Bandwidth = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)))
+        val limit: Bandwidth = Bandwidth.classic(25, Refill.greedy(25, Duration.ofMinutes(1)))
         this.bucket = Bucket.builder()
             .addLimit(limit)
             .build()
@@ -57,7 +63,11 @@ class ScoreController {
         if (!bucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
         }
-        
+
+        if (profanityFilterService.containsProfanity(data.name)) {
+            return ResponseEntity(HttpStatus.PRECONDITION_FAILED)
+        }
+
         // Verify checksum.
         val md = MessageDigest.getInstance("SHA-256")
         val wordsByteArray = data.words.toByteArray()

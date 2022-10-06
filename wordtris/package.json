@@ -26,6 +26,7 @@
         "react-app-polyfill": "^3.0.0",
         "react-dom": "^18.2.0",
         "react-spring": "^9.5.2",
+        "ts-proto": "^1.126.1",
         "web-vitals": "^2.1.4",
         "xstate": "^4.32.1"
     },

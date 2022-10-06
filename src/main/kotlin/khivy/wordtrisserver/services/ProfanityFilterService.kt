@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
-import java.time.Duration
 
 @Service
 class ProfanityFilterService {
@@ -25,7 +24,7 @@ class ProfanityFilterService {
 
     fun containsProfanity(word: String): Boolean {
         for (i in word.indices) {
-            for (j in i+1..word.length) {
+            for (j in i + 1..word.length) {
                 if (word.substring(i, j) in bannedWords) {
                     return true
                 }

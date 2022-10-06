@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.stereotype.Service
 
+
 @Service
 @EnableCaching
 class CacheService {
@@ -22,14 +23,15 @@ class CacheService {
     }
 
     @CacheEvict("leaders")
-    fun evictLeaders() {}
+    fun evictLeaders() {
+    }
 
     fun getLowestLeaderScoreInt(): Int {
         val leaders = getLeaders()
         return if (leaders.size < MAX_LEADERS_ON_BOARD) {
             0
         } else {
-            getLeaders().reduce{ a, b -> if (a.score < b.score) a else b }.score
+            getLeaders().reduce { a, b -> if (a.score < b.score) a else b }.score
         }
     }
 }

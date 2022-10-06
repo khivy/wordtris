@@ -12,8 +12,6 @@ import khivy.wordtrisserver.services.score.DataService
 import khivy.wordtrisserver.setup.MAX_SCORES_PER_IP
 import khivy.wordtrisserver.setup.NAME_LENGTH_MAX
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -71,7 +69,9 @@ class ScoreController {
         // Verify checksum.
         val md = MessageDigest.getInstance("SHA-256")
         val wordsByteArray = data.words.toByteArray()
-        if (wordsByteArray.size != data.score || !data.checksum.toByteArray().contentEquals(md.digest(wordsByteArray))) {
+        if (wordsByteArray.size != data.score || !data.checksum.toByteArray()
+                .contentEquals(md.digest(wordsByteArray))
+        ) {
             println("Did not accept score. Given hash: ${md.digest(wordsByteArray)}")
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }

@@ -19,7 +19,7 @@ data class Ip(
 }
 
 @Entity
-data class Score (
+data class Score(
     var score: Int,
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -42,7 +42,7 @@ data class Name(
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ip_fk", nullable = false)
     val ip_fk: Ip,
-): Serializable  {
+) : Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

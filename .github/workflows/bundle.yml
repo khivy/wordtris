@@ -21,7 +21,7 @@ jobs:
           cache-bin: true
 
       - name: Install
-        run: bun install
+        run: bun install --cwd wordtris
 
       - name: Bundle
-        run: bun bun
+        run: bun bun --cwd wordtris

@@ -20,4 +20,4 @@ jobs:
           deno-version: vx.x.x
 
       - name: Lint
-        run: deno lint
+        run: deno lint wordtris/src wordtris/test

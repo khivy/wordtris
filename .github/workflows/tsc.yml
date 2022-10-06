@@ -21,8 +21,8 @@ jobs:
           cache-bin: true
 
       - name: Install
-        run: bun install
+        run: bun install --cwd wordtris/
 
       - name: Type Check
-        run: bun tsc
+        run: bun --cwd wordtris/ tsc
 

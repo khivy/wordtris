@@ -20,5 +20,5 @@ jobs:
           deno-version: vx.x.x
 
       - name: Format
-        run: deno fmt --check
+        run: deno fmt --check wordtris/src wordtris/test
 

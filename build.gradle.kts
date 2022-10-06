@@ -32,6 +32,7 @@ dependencies {
     implementation("org.springframework.data:spring-data-bom:2021.2.3")
     implementation("redis.clients:jedis:4.2.3")
     implementation("org.springframework.data:spring-data-redis:2.7.3")
+    implementation("com.bucket4j:bucket4j-core:8.1.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     implementation("io.lettuce:lettuce-core:6.2.0.RELEASE")
     runtimeOnly("com.h2database:h2")

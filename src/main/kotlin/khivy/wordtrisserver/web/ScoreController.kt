@@ -1,6 +1,10 @@
 package khivy.wordtrisserver.web
 
+import PlayerSubmissionDataOuterClass
 import com.google.protobuf.ByteString
+import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.Bucket
+import io.github.bucket4j.Refill
 import khivy.wordtrisserver.datamodel.Score
 import khivy.wordtrisserver.services.CacheService
 import khivy.wordtrisserver.services.score.DataService
@@ -11,6 +15,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.security.MessageDigest
+import java.time.Duration
+
 
 @RestController
 class ScoreController {
@@ -20,6 +26,16 @@ class ScoreController {
 
     @Autowired
     lateinit var cacheService: CacheService
+
+    lateinit var bucket: Bucket
+
+    @Autowired
+    fun ScoreController() {
+        val limit: Bandwidth = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)))
+        this.bucket = Bucket.builder()
+            .addLimit(limit)
+            .build()
+    }
 
     @RequestMapping("/save")
     fun save(): String {
@@ -38,6 +54,10 @@ class ScoreController {
     @PutMapping(value = ["/submitscore"])
     @ResponseBody
     fun submitScore(@RequestBody data: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
+        if (!bucket.tryConsume(1)) {
+            return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        }
+        
         // Verify checksum.
         val md = MessageDigest.getInstance("SHA-256")
         val wordsByteArray = data.words.toByteArray()
@@ -85,8 +105,11 @@ class ScoreController {
     }
 
     @RequestMapping("/getleaders")
-    fun getLeaders(): List<Score> {
-        return cacheService.getLeaders()
+    fun getLeaders(): ResponseEntity<List<Score>> {
+        if (!bucket.tryConsume(1)) {
+            return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        }
+        return ResponseEntity(cacheService.getLeaders(), HttpStatus.ACCEPTED)
     }
 
     @RequestMapping("/evictleaders")

@@ -1,57 +1,59 @@
 {
-    "name": "wordtris",
-    "version": "0.1.2",
-    "description": "tetris but with words",
-    "keywords": [
-        "game",
-        "tetris"
-    ],
-    "homepage": "https://khivy.github.io/wordtris/",
-    "bugs": "https://github.com/khivy/wordtris/issues",
-    "license": "MIT",
-    "contributors": [
-        {
-            "name": "Ivy Raine"
-        },
-        {
-            "name": "Khyber Sen",
-            "email": "kkysen@gmail.com"
-        }
-    ],
-    "type": "module",
-    "browser": "src/index.tsx",
-    "repository": "github:khivy/wordtris",
-    "dependencies": {
-        "react": "^18.2.0",
-        "react-app-polyfill": "^3.0.0",
-        "react-dom": "^18.2.0",
-        "react-spring": "^9.5.2",
-        "ts-proto": "^1.126.1",
-        "web-vitals": "^2.1.4",
-        "xstate": "^4.32.1"
+  "name": "wordtris",
+  "version": "0.1.2",
+  "description": "tetris but with words",
+  "keywords": [
+    "game",
+    "tetris"
+  ],
+  "homepage": "https://khivy.github.io/wordtris/",
+  "bugs": "https://github.com/khivy/wordtris/issues",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Ivy Raine"
     },
-    "eslintConfig": {
-        "extends": [
-            "react-app"
-        ]
-    },
-    "devDependencies": {
-        "react-refresh": "0.10.0",
-        "typescript": "latest",
-        "@types/react": "^18.0.15",
-        "@types/react-dom": "^18.0.6"
-    },
-    "browserslist": {
-        "production": [
-            "defaults and supports es6-module"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "scripts": {
-        "build": "TSC_COMPILE_ON_ERROR=true react-scripts build"
+    {
+      "name": "Khyber Sen",
+      "email": "kkysen@gmail.com"
     }
+  ],
+  "type": "module",
+  "browser": "src/index.tsx",
+  "repository": "github:khivy/wordtris",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "fast-sha256": "^1.3.0",
+    "react": "^18.2.0",
+    "react-app-polyfill": "^3.0.0",
+    "react-dom": "^18.2.0",
+    "react-spring": "^9.5.2",
+    "ts-proto": "^1.126.1",
+    "web-vitals": "^2.1.4",
+    "xstate": "^4.32.1"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "react-refresh": "0.10.0",
+    "typescript": "latest"
+  },
+  "browserslist": {
+    "production": [
+      "defaults and supports es6-module"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "scripts": {
+    "build": "TSC_COMPILE_ON_ERROR=true react-scripts build"
+  }
 }

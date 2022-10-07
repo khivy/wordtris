@@ -7,12 +7,12 @@ export interface PlayerSubmissionData {
   score: number;
   name: string;
   ip: string;
-  words: Uint8Array;
+  words: string[];
   checksum: Uint8Array;
 }
 
 function createBasePlayerSubmissionData(): PlayerSubmissionData {
-  return { score: 0, name: "", ip: "", words: new Uint8Array(), checksum: new Uint8Array() };
+  return { score: 0, name: "", ip: "", words: [], checksum: new Uint8Array() };
 }
 
 export const PlayerSubmissionData = {
@@ -26,8 +26,8 @@ export const PlayerSubmissionData = {
     if (message.ip !== "") {
       writer.uint32(26).string(message.ip);
     }
-    if (message.words.length !== 0) {
-      writer.uint32(34).bytes(message.words);
+    for (const v of message.words) {
+      writer.uint32(34).string(v!);
     }
     if (message.checksum.length !== 0) {
       writer.uint32(42).bytes(message.checksum);
@@ -52,7 +52,7 @@ export const PlayerSubmissionData = {
           message.ip = reader.string();
           break;
         case 4:
-          message.words = reader.bytes();
+          message.words.push(reader.string());
           break;
         case 5:
           message.checksum = reader.bytes();
@@ -70,7 +70,7 @@ export const PlayerSubmissionData = {
       score: isSet(object.score) ? Number(object.score) : 0,
       name: isSet(object.name) ? String(object.name) : "",
       ip: isSet(object.ip) ? String(object.ip) : "",
-      words: isSet(object.words) ? bytesFromBase64(object.words) : new Uint8Array(),
+      words: Array.isArray(object?.words) ? object.words.map((e: any) => String(e)) : [],
       checksum: isSet(object.checksum) ? bytesFromBase64(object.checksum) : new Uint8Array(),
     };
   },
@@ -80,8 +80,11 @@ export const PlayerSubmissionData = {
     message.score !== undefined && (obj.score = Math.round(message.score));
     message.name !== undefined && (obj.name = message.name);
     message.ip !== undefined && (obj.ip = message.ip);
-    message.words !== undefined &&
-      (obj.words = base64FromBytes(message.words !== undefined ? message.words : new Uint8Array()));
+    if (message.words) {
+      obj.words = message.words.map((e) => e);
+    } else {
+      obj.words = [];
+    }
     message.checksum !== undefined &&
       (obj.checksum = base64FromBytes(message.checksum !== undefined ? message.checksum : new Uint8Array()));
     return obj;
@@ -92,7 +95,7 @@ export const PlayerSubmissionData = {
     message.score = object.score ?? 0;
     message.name = object.name ?? "";
     message.ip = object.ip ?? "";
-    message.words = object.words ?? new Uint8Array();
+    message.words = object.words?.map((e) => e) || [];
     message.checksum = object.checksum ?? new Uint8Array();
     return message;
   },

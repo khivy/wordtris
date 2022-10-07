@@ -6,7 +6,7 @@ import "./index.css";
 import { GameLoop } from "./GameLoop";
 import { reportWebVitals } from "./reportWebVitals";
 import { StrictMode } from "react";
-import { test } from "./util/WebUtil";
+import { test } from "./util/webUtil";
 
 test()
 const root = ReactDOM.createRoot(document.getElementById("root")!);

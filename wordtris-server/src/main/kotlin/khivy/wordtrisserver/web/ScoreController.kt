@@ -1,7 +1,6 @@
 package khivy.wordtrisserver.web
 
 import PlayerSubmissionDataOuterClass
-import com.google.protobuf.ByteString
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
@@ -55,63 +54,53 @@ class ScoreController {
     @RequestMapping("/findallscores")
     fun findAllScores() = dataService.scoreRepository.findAll()
 
-    @PutMapping(value = ["/submitscore"])
+    @PutMapping(value = ["/submitscore"], consumes = ["application/x-protobuf"])
     @ResponseBody
-    fun submitScore(@RequestBody data: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
+    fun submitScore(@RequestBody body: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
+
         if (!bucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
         }
 
-        if (profanityFilterService.containsProfanity(data.name)) {
+        if (profanityFilterService.containsProfanity(body.name)) {
             return ResponseEntity(HttpStatus.PRECONDITION_FAILED)
         }
 
         // Verify checksum.
         val md = MessageDigest.getInstance("SHA-256")
-        val wordsByteArray = data.words.toByteArray()
-        if (wordsByteArray.size != data.score || !data.checksum.toByteArray()
-                .contentEquals(md.digest(wordsByteArray))
-        ) {
-            println("Did not accept score. Given hash: ${md.digest(wordsByteArray)}")
+        val theirChecksum = body.checksum.toByteArray()
+        val myChecksum = md.digest(body.wordsList.joinTo(StringBuilder(), separator = " ").toString().toByteArray())
+        if (body.wordsList.size != body.score || !myChecksum.contentEquals(theirChecksum)) {
+            println("""Did not accept score:
+                |Either given checksum: ${theirChecksum.contentHashCode()}!=${myChecksum.contentHashCode()}
+                |or given score: ${body.score}!=${body.wordsList.size}
+            """.trimMargin())
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
 
         // Ignores request if name is too long.
-        if (NAME_LENGTH_MAX < data.name.length) {
+        if (NAME_LENGTH_MAX < body.name.length) {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
 
-        dataService.saveScoreAndFlush(data)
+        dataService.saveScoreAndFlush(body)
 
         // Evicts the lowest score(s) that match the IP & Name combination.
-        val scoresMatchingIpAndName = dataService.scoreRepository.findScoresWithGivenIpAndNameNative(data.ip, data.name)
+        val scoresMatchingIpAndName = dataService.scoreRepository.findScoresWithGivenIpAndNameNative(body.ip, body.name)
         dataService.evictLowestScoresFromList(scoresMatchingIpAndName, scoresMatchingIpAndName.size - 1)
 
         // Evicts the lowest score(s) from the IP.
-        val scoresMatchingIp = dataService.scoreRepository.findScoresWithGivenIpNative(data.ip)
+        val scoresMatchingIp = dataService.scoreRepository.findScoresWithGivenIpNative(body.ip)
         if (MAX_SCORES_PER_IP < scoresMatchingIp.size) {
             dataService.evictLowestScoresFromList(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
         }
 
         // Evict cached leaders if this score is a new leader, so that on the next leaderboard request it is submitted.
-        if (cacheService.getLowestLeaderScoreInt() < data.score) {
+        if (cacheService.getLowestLeaderScoreInt() < body.score) {
             cacheService.evictLeaders()
         }
 
         return ResponseEntity(HttpStatus.ACCEPTED)
-    }
-
-    @GetMapping(value = ["/dummyaddscore"])
-    fun test() {
-        var test = PlayerSubmissionDataOuterClass.PlayerSubmissionData.newBuilder()
-        test.setScore(40)
-        test.setName("testnew")
-        test.setIp("193")
-        test.setWords(ByteString.copyFromUtf8("words"))
-        test.setChecksum(ByteString.copyFromUtf8("[B@35a374d7"))
-        var message = test.build()
-
-        this.submitScore(message)
     }
 
     @RequestMapping("/getleaders")

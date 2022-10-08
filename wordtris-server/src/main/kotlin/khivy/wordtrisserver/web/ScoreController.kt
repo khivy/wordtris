@@ -45,20 +45,6 @@ class ScoreController {
             .build()
     }
 
-    @RequestMapping("/save")
-    fun save(): String {
-        return "Done"
-    }
-
-    @RequestMapping("/findallips")
-    fun findAllIps() = dataService.ipRepository.findAll()
-
-    @RequestMapping("/findallnames")
-    fun findAllNames() = dataService.nameRepository.findAll()
-
-    @RequestMapping("/findallscores")
-    fun findAllScores() = dataService.scoreRepository.findAll()
-
     @PutMapping(value = ["/submitscore"], consumes = ["application/x-protobuf"])
     @ResponseBody
     fun submitScore(@RequestBody body: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
@@ -122,17 +108,5 @@ class ScoreController {
 
         val body = cacheService.getLeaders().map{ LeaderboardResponse(it.score, it.name_fk.name) }
         return ResponseEntity(body, HttpStatus.ACCEPTED)
-    }
-
-    @RequestMapping("/evictleaders")
-    fun evictLeaders() {
-        cacheService.evictLeaders()
-    }
-
-    @RequestMapping("/clear")
-    fun removeAll() {
-        dataService.ipRepository.deleteAll()
-        dataService.nameRepository.deleteAll()
-        dataService.scoreRepository.deleteAll()
     }
 }

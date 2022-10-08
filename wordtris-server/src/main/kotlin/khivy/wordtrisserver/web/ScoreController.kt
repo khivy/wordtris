@@ -4,7 +4,6 @@ import PlayerSubmissionDataOuterClass
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
-import khivy.wordtrisserver.datamodel.Score
 import khivy.wordtrisserver.services.CacheService
 import khivy.wordtrisserver.services.ProfanityFilterService
 import khivy.wordtrisserver.services.score.DataService
@@ -103,12 +102,20 @@ class ScoreController {
         return ResponseEntity(HttpStatus.ACCEPTED)
     }
 
-    @RequestMapping("/getleaders")
-    fun getLeaders(): ResponseEntity<List<Score>> {
+    data class LeaderboardResponse(
+        val score: Int,
+        val name: String,
+    )
+
+    @RequestMapping("/leaderboard")
+    @ResponseBody
+    fun getLeaderboard(): ResponseEntity<List<LeaderboardResponse>> {
         if (!bucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
         }
-        return ResponseEntity(cacheService.getLeaders(), HttpStatus.ACCEPTED)
+
+        val body = cacheService.getLeaders().map{ LeaderboardResponse(it.score, it.name_fk.name) }
+        return ResponseEntity(body, HttpStatus.ACCEPTED)
     }
 
     @RequestMapping("/evictleaders")

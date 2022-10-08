@@ -22,13 +22,17 @@ function submitScore (
             headers: {
                 'Content-Type': 'application/x-protobuf'},
             body: data,
-        })
-        .then(res => {
-                return res
+        });
+}
+
+function getLeaders(): Promise<Response> {
+    return fetch("http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
+        {
+            method: "GET",
+            headers: {
+                Accept: 'application/json',
             },
-            err => {
-                return err
-            })
+        });
 }
 
 function isAsciiOnly (str: string) {
@@ -63,10 +67,15 @@ async function testFailureInvalidScore () {
     return await submitScore(words.length+1, "SampleName", "127.0.0.1/32", words, hash(wordsAsUInt8Array));
 }
 
+async function testGetLeaders () {
+    return await getLeaders();
+}
+
 function runTests() {
     testFailureInvalidScore().then(res => console.log(res.status === 406));
     testFailureInvalidChecksum().then(res => console.log(res.status === 406));
     testSuccess().then(res => console.log(res.status === 202));
+    testGetLeaders().then(res => console.log(res.status === 202));
 }
 
-runTests()
+runTests();

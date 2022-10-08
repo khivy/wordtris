@@ -23,5 +23,8 @@ jobs:
       - name: Install
         run: bun install --cwd wordtris/
 
-      - name: Unit Tests
+      - name: Run cellTest.ts
         run: bun wordtris/test/cellTest.ts
+
+      - name: Run webTest.ts
+        run: bun wordtris/test/webTest.ts

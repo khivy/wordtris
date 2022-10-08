@@ -36,44 +36,15 @@ export function getLeaders(): Promise<Response> {
 }
 
 function isAsciiOnly (str: string) {
-    for (var i = 0; i < str.length; i++)
+    for (let i = 0; i < str.length; i++)
         if (str.charCodeAt(i) > 255)
             return false;
     return true;
 }
 
-function serializeWordsArray (words: Array<String>) {
+export function serializeWordsArray (words: Array<String>) {
     const joined = words.join(' ')
     console.assert(isAsciiOnly(joined), "Error: Given list of words isn't ASCII-only!")
     const serialized = Uint8Array.from(joined.split('').map(letter => letter.charCodeAt(0)));
     return serialized
 }
-
-async function testSuccess () {
-    let words = ["hag", "fish"];
-    return await submitScore(2, "SampleName", "127.0.0.1/32", words);
-}
-
-async function testFailureInvalidChecksum () {
-    let words = ["hag", "fish"];
-    let falseWordsAsUInt8Array = serializeWordsArray(["hag", "fish", "fish"]);
-    return await submitScore(2, "SampleName", "127.0.0.1/32", words, hash(falseWordsAsUInt8Array));
-}
-
-async function testFailureInvalidScore () {
-    let words = ["hag", "fish"];
-    return await submitScore(words.length+1, "SampleName", "127.0.0.1/32", words);
-}
-
-async function testGetLeaders () {
-    return await getLeaders();
-}
-
-function runTests() {
-    testFailureInvalidScore().then(res => console.log(res.status === 406));
-    testFailureInvalidChecksum().then(res => console.log(res.status === 406));
-    testSuccess().then(res => console.log(res.status === 202));
-    testGetLeaders().then(res => console.log(res.status === 202));
-}
-
-runTests();

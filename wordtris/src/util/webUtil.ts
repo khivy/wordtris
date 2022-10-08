@@ -1,19 +1,19 @@
 import { PlayerSubmissionData } from "../protobuf_gen/PlayerSubmissionData";
 import { hash } from "fast-sha256";
 
-function submitScore (
+export function submitScore (
     score: number,
     name: string,
     ip: string,
     words: string[],
-    checksum: Uint8Array
+    checksum?: Uint8Array
 ): Promise<Response> {
-    let data = PlayerSubmissionData.encode({
+    const data = PlayerSubmissionData.encode({
         score,
         name,
         ip,
         words,
-        checksum
+        checksum: checksum ? checksum! : hash(serializeWordsArray(words))
     }).finish();
 
     return fetch("http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/submitscore",
@@ -25,7 +25,7 @@ function submitScore (
         });
 }
 
-function getLeaders(): Promise<Response> {
+export function getLeaders(): Promise<Response> {
     return fetch("http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
         {
             method: "GET",
@@ -51,8 +51,7 @@ function serializeWordsArray (words: Array<String>) {
 
 async function testSuccess () {
     let words = ["hag", "fish"];
-    let wordsAsUInt8Array = serializeWordsArray(words);
-    return await submitScore(2, "SampleName", "127.0.0.1/32", words, hash(wordsAsUInt8Array));
+    return await submitScore(2, "SampleName", "127.0.0.1/32", words);
 }
 
 async function testFailureInvalidChecksum () {
@@ -63,8 +62,7 @@ async function testFailureInvalidChecksum () {
 
 async function testFailureInvalidScore () {
     let words = ["hag", "fish"];
-    let wordsAsUInt8Array = serializeWordsArray(words);
-    return await submitScore(words.length+1, "SampleName", "127.0.0.1/32", words, hash(wordsAsUInt8Array));
+    return await submitScore(words.length+1, "SampleName", "127.0.0.1/32", words);
 }
 
 async function testGetLeaders () {

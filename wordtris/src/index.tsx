@@ -8,7 +8,7 @@ import { reportWebVitals } from "./reportWebVitals";
 import { StrictMode } from "react";
 import { test } from "./util/webUtil";
 
-test()
+test();
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
     <StrictMode>

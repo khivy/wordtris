@@ -29,13 +29,19 @@ class ScoreController {
     @Autowired
     lateinit var profanityFilterService: ProfanityFilterService
 
-    lateinit var bucket: Bucket
+    lateinit var submitScoreBucket: Bucket
+    lateinit var getLeaderboardBucket: Bucket
 
     @Autowired
     fun ScoreController() {
-        val limit: Bandwidth = Bandwidth.classic(25, Refill.greedy(25, Duration.ofMinutes(1)))
-        this.bucket = Bucket.builder()
-            .addLimit(limit)
+        val submitScoreLimit: Bandwidth = Bandwidth.classic(8, Refill.greedy(8, Duration.ofMinutes(1)))
+        this.submitScoreBucket = Bucket.builder()
+            .addLimit(submitScoreLimit)
+            .build()
+
+        val getLeaderboardBucket: Bandwidth = Bandwidth.classic(25, Refill.greedy(25, Duration.ofMinutes(1)))
+        this.getLeaderboardBucket = Bucket.builder()
+            .addLimit(getLeaderboardBucket)
             .build()
     }
 
@@ -57,7 +63,7 @@ class ScoreController {
     @ResponseBody
     fun submitScore(@RequestBody body: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
 
-        if (!bucket.tryConsume(1)) {
+        if (!submitScoreBucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
         }
 
@@ -110,7 +116,7 @@ class ScoreController {
     @RequestMapping("/leaderboard")
     @ResponseBody
     fun getLeaderboard(): ResponseEntity<List<LeaderboardResponse>> {
-        if (!bucket.tryConsume(1)) {
+        if (!getLeaderboardBucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
         }
 

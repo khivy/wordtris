@@ -59,6 +59,7 @@ import {
 import { UserCell } from "./UserCell";
 import { Header } from "./components/Header";
 import { Prompt } from "./components/Prompt";
+import { getLeaders } from "./util/webUtil";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.

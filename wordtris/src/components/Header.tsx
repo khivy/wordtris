@@ -1,8 +1,10 @@
 import * as React from "react";
 import { BOARD_CELL_COLOR } from "../setup";
-import { ReactNode } from "react";
+import { useEffect } from "react";
+import { getLeaders } from "../util/webUtil";
 
 export const Header = React.memo(() => {
+
     const outerStyle = {
         zIndex: 20,
         display: "flex",
@@ -18,30 +20,30 @@ export const Header = React.memo(() => {
         marginRight: "2vmin",
     } as const;
 
+    const leaderboardTitle = "▼ Toggle Leaderboard";
     return (
-        <span style={outerStyle}>
+        <div style={outerStyle}>
             <div>
-                <Title/>
+                <GameTitle/>
             </div>
             <div style={toggleContainerStyle}>
                 <div style={adjustTogglePositionStyle}>
-                    <Toggle title={"Leaders"}>HI</Toggle>
+                    <LeaderboardToggle title={leaderboardTitle}/>
                 </div>
             </div>
-        </span>
+        </div>
     );
 });
 
-export const Title = React.memo(() => {
+export const GameTitle = React.memo(() => {
     const containerStyle = {
-        background: "red",
         marginTop: "3vmin",
         marginLeft: "2vmin",
         zIndex: 20,
     } as const;
 
     const textStyle = {
-        fontSize: "30px",
+        fontSize: "4vmin",
         textTransform: "uppercase",
         fontWeight: "bolder",
         color: BOARD_CELL_COLOR,
@@ -61,30 +63,63 @@ export const Title = React.memo(() => {
     );
 });
 
-export const Toggle = React.memo(
-    ({ children, title }: {
-        children: ReactNode[],
+export const LeaderboardToggle = React.memo(
+    ({ title }: {
         title: string,
     }) => {
         const [isVisible, setIsVisible] = React.useState(false);
+        const [leaders, setLeaders] = React.useState([] as const);
+
+        useEffect(() => {
+            fetch(
+                "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
+                {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                    },
+                },
+            )
+                .then((response) => response.json())
+                .then((data) => setLeaders(data));
+        }, []);
 
         const staticToggleStyle = {
             cursor: "pointer",
+            color: BOARD_CELL_COLOR,
+            fontSize: "3vmin",
+            textAlign: "right",
         } as const;
 
         const toggleStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             border: "none",
-            background: "blue",
         } as const;
 
+        const leaderboardRowStyle = {
+            background: "brown"
+        } as const;
+
+        const leaderboardRows = leaders.map((leader: {name: string, score: number}, index: number) => {
+            return <div key={index} style={leaderboardRowStyle}>
+                <span style={{float: "left"}}>
+                    {leader.name}
+                </span> <span style={{float: "right"}}>
+                    {leader.score}
+                </span>
+                <div style={{ clear: "both" }}/>
+            </div>
+        });
+
         return (
-            <div style={staticToggleStyle} onClick={() => {
-                setIsVisible(prev => !prev)
-            }}>
-                {title}
+            <div>
+                <div style={staticToggleStyle} onClick={() => {
+                    setIsVisible(prev => !prev)
+                }} >
+                    {title}
+                </div>
                 <div style={toggleStyle}>
-                    {children}
+                    <>{leaderboardRows}</>
                 </div>
             </div>
         );

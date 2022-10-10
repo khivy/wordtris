@@ -25,6 +25,9 @@ export const GameOverOverlay = React.memo(
             zIndex: 2,
             color: MENU_TEXT_COLOR,
             fontSize: "200%",
+            background: "rgba(0, 0, 0, 0.5)",
+            padding: UNIVERSAL_BORDER_RADIUS,
+            borderRadius: UNIVERSAL_BORDER_RADIUS,
         } as const;
 
         return (

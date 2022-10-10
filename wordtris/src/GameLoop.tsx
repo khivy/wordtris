@@ -60,11 +60,12 @@ import { Header } from "./components/Header";
 import { Prompt } from "./components/Prompt";
 import { getLeaders } from "./util/webUtil";
 import { GameSidePanel } from "./components/GameSidePanel";
+import { PersonalHighScore } from "./components/PersonalHighScore";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
 const stateMachine = createMachine({
-    initial: "startingGame",
+    initial: "gameOver",
     states: {
         startingGame: { on: { START: "countdown" } },
         countdown: { on: { DONE: "spawningBlock" } },
@@ -852,8 +853,8 @@ export function GameLoop() {
     const gameOverTextStyle = {
         color: "white",
         fontSize: LARGE_TEXT_SIZE,
-        WebkitTextStroke: "0.2vmin",
-        WebkitTextStrokeColor: BOARD_CELL_COLOR,
+        // WebkitTextStroke: "0.2vmin",
+        // WebkitTextStrokeColor: BOARD_CELL_COLOR,
     } as const;
 
     return (
@@ -887,8 +888,9 @@ export function GameLoop() {
                             <BoardCells
                                 boardCellMatrix={boardCellMatrix}
                             />
-                            <GameOverOverlay isVisible={isGameOverVisible}>
+                            <GameOverOverlay isVisible={true}>
                                 <div style={gameOverTextStyle}>Game Over</div>
+                                <PersonalHighScore/>
                                 <PlayAgainButton stateHandler={stateHandler}/>
                             </GameOverOverlay>
                         </div>

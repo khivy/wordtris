@@ -54,5 +54,4 @@ export const WordList = React.memo(
             </div>
         </>
     }
-
 );

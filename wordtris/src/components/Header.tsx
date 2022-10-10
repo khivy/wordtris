@@ -1,7 +1,7 @@
 import * as React from "react";
 import { BOARD_CELL_COLOR } from "../setup";
-import { useEffect } from "react";
 import { getLeaders } from "../util/webUtil";
+import { Leaderboard } from "./Leaderboard";
 
 export const Header = React.memo(() => {
 
@@ -68,21 +68,6 @@ export const LeaderboardToggle = React.memo(
         title: string,
     }) => {
         const [isVisible, setIsVisible] = React.useState(false);
-        const [leaders, setLeaders] = React.useState([] as const);
-
-        useEffect(() => {
-            fetch(
-                "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
-                {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                    },
-                },
-            )
-                .then((response) => response.json())
-                .then((data) => setLeaders(data));
-        }, []);
 
         const staticToggleStyle = {
             cursor: "pointer",
@@ -96,21 +81,6 @@ export const LeaderboardToggle = React.memo(
             border: "none",
         } as const;
 
-        const leaderboardRowStyle = {
-            background: "brown"
-        } as const;
-
-        const leaderboardRows = leaders.map((leader: {name: string, score: number}, index: number) => {
-            return <div key={index} style={leaderboardRowStyle}>
-                <span style={{float: "left"}}>
-                    {leader.name}
-                </span> <span style={{float: "right"}}>
-                    {leader.score}
-                </span>
-                <div style={{ clear: "both" }}/>
-            </div>
-        });
-
         return (
             <div>
                 <div style={staticToggleStyle} onClick={() => {
@@ -119,7 +89,7 @@ export const LeaderboardToggle = React.memo(
                     {title}
                 </div>
                 <div style={toggleStyle}>
-                    <>{leaderboardRows}</>
+                    <Leaderboard/>
                 </div>
             </div>
         );

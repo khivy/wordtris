@@ -22,7 +22,7 @@ export const framesPerSecLimit = 60;
 export const frameStep = 1000 / framesPerSecLimit;
 
 /* The amount of time it takes before a block locks in place. */
-export const lockMax = 1500;
+export const lockMax = 1200;
 export const matchAnimLength = 750;
 export const groundExitPenaltyRate = 250;
 export const countdownTotalSecs = 3;

@@ -53,7 +53,7 @@ export const WordList = React.memo(
                     </span>
                     ]
                 </div>
-                <article style={scrollBoxStyle}>
+                <div style={scrollBoxStyle}>
                     <>
                         {displayedWords.map((word, i) => (
                             // Invert the key to keep scroll bar at bottom if set to bottom.
@@ -66,7 +66,7 @@ export const WordList = React.memo(
                             </div>
                         ))}
                     </>
-                </article>
+                </div>
             </div>
         );
     },

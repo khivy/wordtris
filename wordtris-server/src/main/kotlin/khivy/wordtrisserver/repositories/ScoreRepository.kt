@@ -11,33 +11,31 @@ import khivy.wordtrisserver.datamodel.*
 interface ScoreRepository : JpaRepository<Score, Long> {
     @Query(
         value = """
-        SELECT * FROM Score
-        WHERE name_id IN
-            (SELECT id
-             FROM Name
-             WHERE ip_fk = :ip);
+            SELECT *
+            FROM Score as s, Name as n
+            WHERE s.name_id = n.id
+            AND n.ip_fk = :ip
     """, nativeQuery = true
     )
     fun findScoresWithGivenIpNative(@Param("ip") ip: String): List<Score>
 
     @Query(
         value = """
-        SELECT * FROM Score
-        WHERE name_id IN
-            (SELECT id
-             FROM Name
-             WHERE ip_fk = :ip
-             AND name = :name);
+            SELECT *
+            FROM Score as s, Name as n
+            WHERE s.name_id = n.id
+            AND n.ip_fk = :ip
+            AND n.name = :name
     """, nativeQuery = true
     )
     fun findScoresWithGivenIpAndNameNative(@Param("ip") ip: String, @Param("name") name: String): List<Score>
 
     @Query(
         value = """
-        SELECT *
-        FROM score
-        ORDER BY score DESC
-        LIMIT :amount
+            SELECT *
+            FROM score
+            ORDER BY score DESC
+            LIMIT :amount
     """, nativeQuery = true
     )
     fun findLeadersNative(@Param("amount") amount: Int): List<Score>

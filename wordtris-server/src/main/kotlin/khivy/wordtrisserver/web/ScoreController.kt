@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.security.MessageDigest
 import java.time.Duration
+import javax.servlet.http.HttpServletRequest
 
 
 @RestController
@@ -31,6 +32,7 @@ class ScoreController {
 
     lateinit var submitScoreBucket: Bucket
     lateinit var getLeaderboardBucket: Bucket
+    lateinit var getPlayerScoreBucket: Bucket
 
     @Autowired
     fun ScoreController() {
@@ -39,9 +41,14 @@ class ScoreController {
             .addLimit(submitScoreLimit)
             .build()
 
-        val getLeaderboardBucket: Bandwidth = Bandwidth.classic(25, Refill.greedy(25, Duration.ofMinutes(1)))
+        val getLeaderboardLimit: Bandwidth = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)))
         this.getLeaderboardBucket = Bucket.builder()
-            .addLimit(getLeaderboardBucket)
+            .addLimit(getLeaderboardLimit)
+            .build()
+
+        val getPlayerScoreLimit: Bandwidth = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)))
+        this.getPlayerScoreBucket = Bucket.builder()
+            .addLimit(getPlayerScoreLimit)
             .build()
     }
 
@@ -107,6 +114,21 @@ class ScoreController {
         }
 
         val body = cacheService.getLeaders().map{ LeaderboardResponse(it.score, it.name_fk.name) }
+        return ResponseEntity(body, HttpStatus.ACCEPTED)
+    }
+
+    data class PlayerScoreResponse(
+        val score: Int,
+    )
+
+    @RequestMapping("/score")
+    @ResponseBody
+    fun getPlayerScore(request: HttpServletRequest): ResponseEntity<List<PlayerScoreResponse>> {
+        if (!getPlayerScoreBucket.tryConsume(1)) {
+            return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        }
+
+        val body = dataService.scoreRepository.findScoresWithGivenIpNative(request.remoteAddr).map{ PlayerScoreResponse(it.score) }
         return ResponseEntity(body, HttpStatus.ACCEPTED)
     }
 }

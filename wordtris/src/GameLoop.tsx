@@ -23,7 +23,6 @@ import {
 } from "./util/playerUtil";
 import { createBoard, getGroundHeight } from "./util/boardUtil";
 import { BoardCell } from "./util/BoardCell";
-import { WordList } from "./components/WordList";
 import { useInterval } from "./util/useInterval";
 import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import { CountdownOverlay } from "./components/CountdownOverlay";
@@ -60,6 +59,7 @@ import { UserCell } from "./UserCell";
 import { Header } from "./components/Header";
 import { Prompt } from "./components/Prompt";
 import { getLeaders } from "./util/webUtil";
+import { GameSidePanel } from "./components/GameSidePanel";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -889,11 +889,10 @@ export function GameLoop() {
                             />
                             <GameOverOverlay isVisible={isGameOverVisible}>
                                 <div style={gameOverTextStyle}>Game Over</div>
-                                <PlayAgainButton stateHandler={stateHandler}>
-                                </PlayAgainButton>
+                                <PlayAgainButton stateHandler={stateHandler}/>
                             </GameOverOverlay>
                         </div>
-                        <WordList displayedWords={matchedWords} />
+                        <GameSidePanel displayedWords={matchedWords} />
                     </div>
                 </Prompt>
             </div>

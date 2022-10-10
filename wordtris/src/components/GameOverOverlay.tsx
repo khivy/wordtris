@@ -14,6 +14,7 @@ export const GameOverOverlay = React.memo(
             isVisible: boolean;
         },
     ) => {
+
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: "absolute",
@@ -25,6 +26,7 @@ export const GameOverOverlay = React.memo(
             color: MENU_TEXT_COLOR,
             fontSize: "200%",
         } as const;
+
         return (
             <div style={divStyle}>
                 <>

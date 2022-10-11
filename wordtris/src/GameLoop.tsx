@@ -23,7 +23,6 @@ import {
 } from "./util/playerUtil";
 import { createBoard, getGroundHeight } from "./util/boardUtil";
 import { BoardCell } from "./util/BoardCell";
-import { WordList } from "./components/WordList";
 import { useInterval } from "./util/useInterval";
 import { GameOverOverlay, PlayAgainButton } from "./components/GameOverOverlay";
 import { CountdownOverlay } from "./components/CountdownOverlay";
@@ -59,6 +58,9 @@ import {
 import { UserCell } from "./UserCell";
 import { Header } from "./components/Header";
 import { Prompt } from "./components/Prompt";
+import { getLeaders } from "./util/webUtil";
+import { GameSidePanel } from "./components/GameSidePanel";
+import { PersonalHighScore } from "./components/PersonalHighScore";
 
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
@@ -196,6 +198,10 @@ export function GameLoop() {
 
     const [validWords, setValidWords] = useState(new Set());
 
+    const [leaders, setLeaders] = React.useState(
+        [] as Array<{ name: string; score: number }>,
+    );
+
     useEffect(() => {
         dispatchPlayer({ type: "resetPlayer" });
         // Fetch validWords during countdown.
@@ -205,7 +211,17 @@ export function GameLoop() {
             .then((res) => res.text())
             .then((res) => res.split("\n"))
             .then((data) => setValidWords(new Set(data)));
+
+        updateLeaders();
     }, []);
+
+    function updateLeaders() {
+        getLeaders()
+            .then((response) => response.json())
+            .then((data) => {
+                setLeaders(data);
+            });
+    }
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(
         createBoard(BOARD_ROWS, BOARD_COLS),
@@ -236,6 +252,7 @@ export function GameLoop() {
     const [groundExitPenalty, setGroundExitPenalty] = useState(0);
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
+    const [localHighScore, setLocalHighScore] = useState(0);
 
     const [
         fallingBoardLettersBeforeAndAfter,
@@ -516,6 +533,9 @@ export function GameLoop() {
                 setIsPlayerMovementEnabled(false);
                 // Signal Game Over.
                 setGameOverVisibility(true);
+                setLocalHighScore((prev) =>
+                    prev < matchedWords.length ? matchedWords.length : prev
+                );
                 stateHandler.send("BLOCKED");
             }
 
@@ -851,13 +871,14 @@ export function GameLoop() {
     const gameOverTextStyle = {
         color: "white",
         fontSize: LARGE_TEXT_SIZE,
-        WebkitTextStroke: "0.2vmin",
-        WebkitTextStrokeColor: BOARD_CELL_COLOR,
+        textAlign: "center",
+        // WebkitTextStroke: "0.2vmin",
+        // WebkitTextStrokeColor: BOARD_CELL_COLOR,
     } as const;
 
     return (
         <div style={pageStyle}>
-            <Header />
+            <Header refreshCallback={updateLeaders} leaders={leaders} />
             <div style={containerStyle}>
                 <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>
@@ -888,11 +909,16 @@ export function GameLoop() {
                             />
                             <GameOverOverlay isVisible={isGameOverVisible}>
                                 <div style={gameOverTextStyle}>Game Over</div>
-                                <PlayAgainButton stateHandler={stateHandler}>
-                                </PlayAgainButton>
+                                <PersonalHighScore
+                                    localHighScore={localHighScore}
+                                />
+                                <PlayAgainButton
+                                    stateHandler={stateHandler}
+                                    words={matchedWords}
+                                />
                             </GameOverOverlay>
                         </div>
-                        <WordList displayedWords={matchedWords} />
+                        <GameSidePanel displayedWords={matchedWords} />
                     </div>
                 </Prompt>
             </div>

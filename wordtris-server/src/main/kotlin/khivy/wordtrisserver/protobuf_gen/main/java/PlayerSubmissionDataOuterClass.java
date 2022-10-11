@@ -35,36 +35,24 @@ public final class PlayerSubmissionDataOuterClass {
         getNameBytes();
 
     /**
-     * <code>string ip = 3;</code>
-     * @return The ip.
-     */
-    java.lang.String getIp();
-    /**
-     * <code>string ip = 3;</code>
-     * @return The bytes for ip.
-     */
-    com.google.protobuf.ByteString
-        getIpBytes();
-
-    /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @return A list containing the words.
      */
     java.util.List<java.lang.String>
         getWordsList();
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @return The count of words.
      */
     int getWordsCount();
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param index The index of the element to return.
      * @return The words at the given index.
      */
     java.lang.String getWords(int index);
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param index The index of the value to return.
      * @return The bytes of the words at the given index.
      */
@@ -72,7 +60,7 @@ public final class PlayerSubmissionDataOuterClass {
         getWordsBytes(int index);
 
     /**
-     * <code>bytes checksum = 5;</code>
+     * <code>bytes checksum = 4;</code>
      * @return The checksum.
      */
     com.google.protobuf.ByteString getChecksum();
@@ -91,7 +79,6 @@ public final class PlayerSubmissionDataOuterClass {
     }
     private PlayerSubmissionData() {
       name_ = "";
-      ip_ = "";
       words_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       checksum_ = com.google.protobuf.ByteString.EMPTY;
     }
@@ -140,12 +127,6 @@ public final class PlayerSubmissionDataOuterClass {
             }
             case 26: {
               java.lang.String s = input.readStringRequireUtf8();
-
-              ip_ = s;
-              break;
-            }
-            case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 words_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
@@ -153,7 +134,7 @@ public final class PlayerSubmissionDataOuterClass {
               words_.add(s);
               break;
             }
-            case 42: {
+            case 34: {
 
               checksum_ = input.readBytes();
               break;
@@ -244,48 +225,10 @@ public final class PlayerSubmissionDataOuterClass {
       }
     }
 
-    public static final int IP_FIELD_NUMBER = 3;
-    private volatile java.lang.Object ip_;
-    /**
-     * <code>string ip = 3;</code>
-     * @return The ip.
-     */
-    @java.lang.Override
-    public java.lang.String getIp() {
-      java.lang.Object ref = ip_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        ip_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string ip = 3;</code>
-     * @return The bytes for ip.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getIpBytes() {
-      java.lang.Object ref = ip_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        ip_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int WORDS_FIELD_NUMBER = 4;
+    public static final int WORDS_FIELD_NUMBER = 3;
     private com.google.protobuf.LazyStringList words_;
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @return A list containing the words.
      */
     public com.google.protobuf.ProtocolStringList
@@ -293,14 +236,14 @@ public final class PlayerSubmissionDataOuterClass {
       return words_;
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @return The count of words.
      */
     public int getWordsCount() {
       return words_.size();
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param index The index of the element to return.
      * @return The words at the given index.
      */
@@ -308,7 +251,7 @@ public final class PlayerSubmissionDataOuterClass {
       return words_.get(index);
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param index The index of the value to return.
      * @return The bytes of the words at the given index.
      */
@@ -317,10 +260,10 @@ public final class PlayerSubmissionDataOuterClass {
       return words_.getByteString(index);
     }
 
-    public static final int CHECKSUM_FIELD_NUMBER = 5;
+    public static final int CHECKSUM_FIELD_NUMBER = 4;
     private com.google.protobuf.ByteString checksum_;
     /**
-     * <code>bytes checksum = 5;</code>
+     * <code>bytes checksum = 4;</code>
      * @return The checksum.
      */
     @java.lang.Override
@@ -348,14 +291,11 @@ public final class PlayerSubmissionDataOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, name_);
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(ip_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, ip_);
-      }
       for (int i = 0; i < words_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, words_.getRaw(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, words_.getRaw(i));
       }
       if (!checksum_.isEmpty()) {
-        output.writeBytes(5, checksum_);
+        output.writeBytes(4, checksum_);
       }
       unknownFields.writeTo(output);
     }
@@ -373,9 +313,6 @@ public final class PlayerSubmissionDataOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, name_);
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(ip_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, ip_);
-      }
       {
         int dataSize = 0;
         for (int i = 0; i < words_.size(); i++) {
@@ -386,7 +323,7 @@ public final class PlayerSubmissionDataOuterClass {
       }
       if (!checksum_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, checksum_);
+          .computeBytesSize(4, checksum_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -407,8 +344,6 @@ public final class PlayerSubmissionDataOuterClass {
           != other.getScore()) return false;
       if (!getName()
           .equals(other.getName())) return false;
-      if (!getIp()
-          .equals(other.getIp())) return false;
       if (!getWordsList()
           .equals(other.getWordsList())) return false;
       if (!getChecksum()
@@ -428,8 +363,6 @@ public final class PlayerSubmissionDataOuterClass {
       hash = (53 * hash) + getScore();
       hash = (37 * hash) + NAME_FIELD_NUMBER;
       hash = (53 * hash) + getName().hashCode();
-      hash = (37 * hash) + IP_FIELD_NUMBER;
-      hash = (53 * hash) + getIp().hashCode();
       if (getWordsCount() > 0) {
         hash = (37 * hash) + WORDS_FIELD_NUMBER;
         hash = (53 * hash) + getWordsList().hashCode();
@@ -573,8 +506,6 @@ public final class PlayerSubmissionDataOuterClass {
 
         name_ = "";
 
-        ip_ = "";
-
         words_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
         checksum_ = com.google.protobuf.ByteString.EMPTY;
@@ -608,7 +539,6 @@ public final class PlayerSubmissionDataOuterClass {
         int from_bitField0_ = bitField0_;
         result.score_ = score_;
         result.name_ = name_;
-        result.ip_ = ip_;
         if (((bitField0_ & 0x00000001) != 0)) {
           words_ = words_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
@@ -668,10 +598,6 @@ public final class PlayerSubmissionDataOuterClass {
         }
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
-          onChanged();
-        }
-        if (!other.getIp().isEmpty()) {
-          ip_ = other.ip_;
           onChanged();
         }
         if (!other.words_.isEmpty()) {
@@ -824,82 +750,6 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
 
-      private java.lang.Object ip_ = "";
-      /**
-       * <code>string ip = 3;</code>
-       * @return The ip.
-       */
-      public java.lang.String getIp() {
-        java.lang.Object ref = ip_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          ip_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string ip = 3;</code>
-       * @return The bytes for ip.
-       */
-      public com.google.protobuf.ByteString
-          getIpBytes() {
-        java.lang.Object ref = ip_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          ip_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string ip = 3;</code>
-       * @param value The ip to set.
-       * @return This builder for chaining.
-       */
-      public Builder setIp(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        ip_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string ip = 3;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearIp() {
-        
-        ip_ = getDefaultInstance().getIp();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string ip = 3;</code>
-       * @param value The bytes for ip to set.
-       * @return This builder for chaining.
-       */
-      public Builder setIpBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        ip_ = value;
-        onChanged();
-        return this;
-      }
-
       private com.google.protobuf.LazyStringList words_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureWordsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
@@ -908,7 +758,7 @@ public final class PlayerSubmissionDataOuterClass {
          }
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @return A list containing the words.
        */
       public com.google.protobuf.ProtocolStringList
@@ -916,14 +766,14 @@ public final class PlayerSubmissionDataOuterClass {
         return words_.getUnmodifiableView();
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @return The count of words.
        */
       public int getWordsCount() {
         return words_.size();
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param index The index of the element to return.
        * @return The words at the given index.
        */
@@ -931,7 +781,7 @@ public final class PlayerSubmissionDataOuterClass {
         return words_.get(index);
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param index The index of the value to return.
        * @return The bytes of the words at the given index.
        */
@@ -940,7 +790,7 @@ public final class PlayerSubmissionDataOuterClass {
         return words_.getByteString(index);
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param index The index to set the value at.
        * @param value The words to set.
        * @return This builder for chaining.
@@ -956,7 +806,7 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param value The words to add.
        * @return This builder for chaining.
        */
@@ -971,7 +821,7 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param values The words to add.
        * @return This builder for chaining.
        */
@@ -984,7 +834,7 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearWords() {
@@ -994,7 +844,7 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
       /**
-       * <code>repeated string words = 4;</code>
+       * <code>repeated string words = 3;</code>
        * @param value The bytes of the words to add.
        * @return This builder for chaining.
        */
@@ -1012,7 +862,7 @@ public final class PlayerSubmissionDataOuterClass {
 
       private com.google.protobuf.ByteString checksum_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes checksum = 5;</code>
+       * <code>bytes checksum = 4;</code>
        * @return The checksum.
        */
       @java.lang.Override
@@ -1020,7 +870,7 @@ public final class PlayerSubmissionDataOuterClass {
         return checksum_;
       }
       /**
-       * <code>bytes checksum = 5;</code>
+       * <code>bytes checksum = 4;</code>
        * @param value The checksum to set.
        * @return This builder for chaining.
        */
@@ -1034,7 +884,7 @@ public final class PlayerSubmissionDataOuterClass {
         return this;
       }
       /**
-       * <code>bytes checksum = 5;</code>
+       * <code>bytes checksum = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearChecksum() {
@@ -1110,10 +960,10 @@ public final class PlayerSubmissionDataOuterClass {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\032PlayerSubmissionData.proto\"`\n\024PlayerSu" +
+      "\n\032PlayerSubmissionData.proto\"T\n\024PlayerSu" +
       "bmissionData\022\r\n\005score\030\001 \001(\005\022\014\n\004name\030\002 \001(" +
-      "\t\022\n\n\002ip\030\003 \001(\t\022\r\n\005words\030\004 \003(\t\022\020\n\010checksum" +
-      "\030\005 \001(\014b\006proto3"
+      "\t\022\r\n\005words\030\003 \003(\t\022\020\n\010checksum\030\004 \001(\014b\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1124,7 +974,7 @@ public final class PlayerSubmissionDataOuterClass {
     internal_static_PlayerSubmissionData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_PlayerSubmissionData_descriptor,
-        new java.lang.String[] { "Score", "Name", "Ip", "Words", "Checksum", });
+        new java.lang.String[] { "Score", "Name", "Words", "Checksum", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

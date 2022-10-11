@@ -22,7 +22,7 @@ export const framesPerSecLimit = 60;
 export const frameStep = 1000 / framesPerSecLimit;
 
 /* The amount of time it takes before a block locks in place. */
-export const lockMax = 1500;
+export const lockMax = 1200;
 export const matchAnimLength = 750;
 export const groundExitPenaltyRate = 250;
 export const countdownTotalSecs = 3;
@@ -39,6 +39,10 @@ export const MATCH_COLOR = "#FFEA00";
 export const MATCH_TEXT_COLOR = BOARD_CELL_COLOR;
 export const MENU_TEXT_COLOR = "#FFFFFF";
 export const BOARD_CELL_TEXT_COLOR = "#EBF5EE";
+export const LEADERBOARD_HEADER_COLOR = "#f5bd90";
+export const LEADERBOARD_ROW_COLOR_1 = "#f7ece4";
+export const LEADERBOARD_ROW_COLOR_2 = "#f7caa6";
+export const REFRESH_BUTTON_COLOR = "#609c76";
 
 export const UNIVERSAL_BORDER_RADIUS = "1vmin";
 export const CELL_SIZE = "7vmin";

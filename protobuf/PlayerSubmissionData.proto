@@ -3,7 +3,6 @@ syntax = "proto3";
 message PlayerSubmissionData {
   int32 score = 1;
   string name = 2;
-  string ip = 3;
-  repeated string words = 4;
-  bytes checksum = 5;
+  repeated string words = 3;
+  bytes checksum = 4;
 }

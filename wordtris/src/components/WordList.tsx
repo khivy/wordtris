@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
     BOARD_CELL_COLOR,
-    MENU_TEXT_COLOR,
     NORMAL_TEXT_SIZE,
     PLAYER_COLOR,
     SMALL_TEXT_SIZE,
@@ -19,19 +18,10 @@ export const WordList = React.memo(
             fontStyle: "italic",
         } as const;
 
-        const outerStyle = {
-            display: "flex",
-            flexDirection: "column",
-            color: MENU_TEXT_COLOR,
-            paddingLeft: UNIVERSAL_BORDER_RADIUS,
-            paddingRight: UNIVERSAL_BORDER_RADIUS,
-            marginBottom: UNIVERSAL_BORDER_RADIUS,
-        } as const;
-
         const scrollBoxStyle = {
             flex: "auto",
             overflowY: "auto",
-            height: "0px",
+            height: 0,
         } as const;
 
         const titleStyle = {
@@ -45,15 +35,15 @@ export const WordList = React.memo(
         } as const;
 
         return (
-            <div style={outerStyle}>
+            <>
                 <div className={"with-text-style"} style={titleStyle}>
-                    MATCHES [
+                    Matches [
                     <span className={"with-text-style"} style={pointsStyle}>
                         {displayedWords.length}
                     </span>
                     ]
                 </div>
-                <article style={scrollBoxStyle}>
+                <div style={scrollBoxStyle}>
                     <>
                         {displayedWords.map((word, i) => (
                             // Invert the key to keep scroll bar at bottom if set to bottom.
@@ -66,8 +56,8 @@ export const WordList = React.memo(
                             </div>
                         ))}
                     </>
-                </article>
-            </div>
+                </div>
+            </>
         );
     },
 );

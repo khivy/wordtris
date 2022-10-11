@@ -4,14 +4,12 @@ import { hash } from "fast-sha256";
 export function submitScore(
     score: number,
     name: string,
-    ip: string,
     words: string[],
     checksum?: Uint8Array,
 ): Promise<Response> {
     const data = PlayerSubmissionData.encode({
         score,
         name,
-        ip,
         words,
         checksum: checksum ? checksum! : hash(serializeWordsArray(words)),
     }).finish();
@@ -59,4 +57,16 @@ export function serializeWordsArray(words: Array<String>) {
         joined.split("").map((letter) => letter.charCodeAt(0)),
     );
     return serialized;
+}
+
+export function getPlayerScores() {
+    return fetch(
+        "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/score",
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        },
+    );
 }

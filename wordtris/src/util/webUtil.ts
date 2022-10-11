@@ -59,7 +59,7 @@ export function serializeWordsArray(words: Array<String>) {
     return serialized;
 }
 
-function getPlayerScores() {
+export function getPlayerScores() {
     return fetch(
         "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/score",
         {

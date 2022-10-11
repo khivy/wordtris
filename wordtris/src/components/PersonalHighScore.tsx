@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { NORMAL_TEXT_SIZE } from "../setup";
+import { getPlayerScores } from "../util/webUtil";
 
 export const PersonalHighScore = React.memo(
     ({localHighScore}: {localHighScore: number}) => {
@@ -8,15 +9,7 @@ export const PersonalHighScore = React.memo(
         const [remoteHighScore, setRemoteHighScore] = React.useState(0);
 
         useEffect(() => {
-            fetch(
-                "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/score",
-                {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                    },
-                },
-            )
+            getPlayerScores()
                 .then((response) => response.json())
                 .then((data: Array<{score: number}>) => {
                     if (data.length <= 0) {

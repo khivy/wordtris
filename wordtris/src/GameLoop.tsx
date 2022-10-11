@@ -210,19 +210,11 @@ export function GameLoop() {
             .then((res) => res.split("\n"))
             .then((data) => setValidWords(new Set(data)));
 
-        fetchLeaders();
+        updateLeaders();
         }, []);
 
-    function fetchLeaders() {
-        fetch(
-            "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
-            {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                },
-            },
-        )
+    function updateLeaders() {
+        getLeaders()
             .then((response) => response.json())
             .then((data) => {
                 setLeaders(data)
@@ -882,7 +874,7 @@ export function GameLoop() {
 
     return (
         <div style={pageStyle}>
-            <Header refreshCallback={fetchLeaders} leaders={leaders}/>
+            <Header refreshCallback={updateLeaders} leaders={leaders}/>
             <div style={containerStyle}>
                 <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>

@@ -102,6 +102,7 @@ export const LeaderboardToggle = React.memo(
 
         const toggleStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
+            marginRight: "1.5vmin",
             border: "none",
         } as const;
 

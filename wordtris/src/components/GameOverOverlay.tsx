@@ -62,7 +62,6 @@ export const PlayAgainButton = React.memo(
 
         const handleChange = event => {
             setName(event.target.value);
-            console.log(typeof event.target.value)
         };
 
         return (
@@ -77,11 +76,13 @@ export const PlayAgainButton = React.memo(
                     className={"with-text-style"}
                     style={buttonStyle}
                     onClick={() => {
-                        submitScore(words.length, name, words);
+                        if (0 < name.length) {
+                            submitScore(words.length, name, words);
+                        }
                         stateHandler.send("RESTART");
                     }}
                 >
-                    Play Again
+                    {0 < name.length ? "Submit & Play Again" : "Play Again"}
                 </div>
             </>
         );

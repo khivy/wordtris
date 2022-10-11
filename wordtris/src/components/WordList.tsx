@@ -16,7 +16,6 @@ export const WordList = React.memo(
         const scrollBoxStyle = {
             flex: "auto",
             overflowY: "auto",
-            justifyContent: "flex-end",
             height: 0,
         } as const;
 
@@ -32,7 +31,7 @@ export const WordList = React.memo(
 
         return <>
             <div className={"with-text-style"} style={titleStyle}>
-                MATCHES [
+                Matches [
                 <span className={"with-text-style"} style={pointsStyle}>
                         {displayedWords.length}
                     </span>

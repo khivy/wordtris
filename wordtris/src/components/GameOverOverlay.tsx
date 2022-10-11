@@ -52,6 +52,7 @@ export const PlayAgainButton = React.memo(
         };
 
         const formStyle = {
+            textAlign: "center",
             size: "20",
             fontSize: SMALL_TEXT_SIZE,
             placeholder: "Enter name",
@@ -70,6 +71,7 @@ export const PlayAgainButton = React.memo(
                     <input type="text"
                            placeholder={"Enter player name"}
                            onChange={handleChange}
+                           maxLength={10}
                            style={formStyle}/>
                 </form>
                 <div

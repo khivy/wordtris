@@ -1,5 +1,10 @@
 import * as React from "react";
-import { BOARD_CELL_COLOR } from "../setup";
+import {
+    BOARD_CELL_COLOR,
+    LEADERBOARD_HEADER_COLOR,
+    SMALL_TEXT_SIZE,
+    UNIVERSAL_BORDER_RADIUS
+} from "../setup";
 import { getLeaders } from "../util/webUtil";
 import { Leaderboard } from "./Leaderboard";
 
@@ -7,13 +12,12 @@ export const Header = React.memo(() => {
 
     const outerStyle = {
         display: "flex",
-        background: "red",
         // The following options prevent the flex from filling & blocking the page from clicks.
         zIndex: 1,
         maxHeight: "0px",
     } as const;
 
-    const leaderboardTitle = "▼ Toggle Leaderboard";
+    const leaderboardTitle = "⮛ Toggle Leaderboard";
     return (
         <div style={outerStyle}>
             <div>
@@ -62,21 +66,28 @@ export const LeaderboardToggle = React.memo(
             zIndex: 30,
             height: "100vh",
             marginLeft: "auto",
-            background:"red",
             maxHeight: "0px",
         } as const;
 
         const adjustTogglePositionStyle = {
             marginTop: "3vmin",
             marginRight: "2vmin",
+            maxHeight: "0px",
+            background:"red",
         } as const;
 
         const staticToggleStyle = {
             zIndex: 20,
             cursor: "pointer",
+            fontWeight: "bold",
+            textAlign: "center",
+            fontSize: SMALL_TEXT_SIZE,
+            background: LEADERBOARD_HEADER_COLOR,
             color: BOARD_CELL_COLOR,
-            fontSize: "3vmin",
-            textAlign: "right",
+            paddingTop: "0.5vmin",
+            paddingLeft: "1vmin",
+            paddingRight: "2vmin",
+            borderRadius: UNIVERSAL_BORDER_RADIUS,
         } as const;
 
         const toggleStyle = {
@@ -88,13 +99,11 @@ export const LeaderboardToggle = React.memo(
 
             <div style={toggleContainerStyle}>
                 <div style={adjustTogglePositionStyle}>
-                    <div>
-                        <div style={staticToggleStyle} onClick={() => { setIsVisible(prev => !prev) }} >
-                            {title}
-                        </div>
-                        <div style={toggleStyle}>
-                            <Leaderboard/>
-                        </div>
+                    <div style={staticToggleStyle} onClick={() => { setIsVisible(prev => !prev) }} >
+                        {title}
+                    </div>
+                    <div style={toggleStyle}>
+                        <Leaderboard/>
                     </div>
                 </div>
             </div>

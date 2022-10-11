@@ -1,14 +1,17 @@
 import * as React from "react";
 import {
     BOARD_CELL_COLOR,
-    LEADERBOARD_HEADER_COLOR,
+    LEADERBOARD_HEADER_COLOR, REFRESH_BUTTON_COLOR,
     SMALL_TEXT_SIZE,
     UNIVERSAL_BORDER_RADIUS
 } from "../setup";
 import { getLeaders } from "../util/webUtil";
 import { Leaderboard } from "./Leaderboard";
 
-export const Header = React.memo(() => {
+export const Header = React.memo(({refreshCallback, leaders}: {
+    refreshCallback: () => void,
+    leaders: Array<{name: string, score: number}>,
+}) => {
 
     const outerStyle = {
         display: "flex",
@@ -23,7 +26,7 @@ export const Header = React.memo(() => {
             <div>
                 <GameTitle/>
             </div>
-            <LeaderboardToggle title={leaderboardTitle}/>
+            <LeaderboardToggle title={leaderboardTitle} refreshCallback={refreshCallback} leaders={leaders}/>
         </div>
     );
 });
@@ -57,8 +60,10 @@ export const GameTitle = React.memo(() => {
 });
 
 export const LeaderboardToggle = React.memo(
-    ({ title }: {
+    ({ title, refreshCallback, leaders }: {
         title: string,
+        refreshCallback: () => void,
+        leaders: Array<{name: string, score: number}>,
     }) => {
         const [isVisible, setIsVisible] = React.useState(false);
 
@@ -86,8 +91,9 @@ export const LeaderboardToggle = React.memo(
             color: BOARD_CELL_COLOR,
             paddingTop: "0.5vmin",
             paddingLeft: "1vmin",
-            paddingRight: "2vmin",
-            borderRadius: UNIVERSAL_BORDER_RADIUS,
+            paddingRight: "1vmin",
+            borderTopLeftRadius: UNIVERSAL_BORDER_RADIUS,
+            borderBottomLeftRadius: UNIVERSAL_BORDER_RADIUS
         } as const;
 
         const toggleStyle = {
@@ -95,15 +101,29 @@ export const LeaderboardToggle = React.memo(
             border: "none",
         } as const;
 
+        const refreshStyle = {
+            background: REFRESH_BUTTON_COLOR,
+            paddingTop: "1vmin",
+            paddingRight: "2vmin",
+            paddingLeft: "2vmin",
+            borderTopRightRadius: UNIVERSAL_BORDER_RADIUS,
+            borderBottomRightRadius: UNIVERSAL_BORDER_RADIUS,
+            color: "white",
+            cursor: "pointer",
+            textAlign: "center",
+            fontSize: SMALL_TEXT_SIZE,
+        } as const;
+
         return (
 
             <div style={toggleContainerStyle}>
                 <div style={adjustTogglePositionStyle}>
-                    <div style={staticToggleStyle} onClick={() => { setIsVisible(prev => !prev) }} >
-                        {title}
+                    <div style={{display: "flex", marginRight: "1.5vmin",}}>
+                        <div onClick={() => { setIsVisible(prev => !prev) }} style={staticToggleStyle} >{title}</div>
+                        <div onClick={() => {refreshCallback()}} style={refreshStyle}>⟳</div>
                     </div>
                     <div style={toggleStyle}>
-                        <Leaderboard/>
+                        <Leaderboard leaders={leaders}/>
                     </div>
                 </div>
             </div>

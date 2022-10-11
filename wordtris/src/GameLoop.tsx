@@ -198,6 +198,8 @@ export function GameLoop() {
 
     const [validWords, setValidWords] = useState(new Set());
 
+    const [leaders, setLeaders] = React.useState([] as Array<{name: string, score: number}>);
+
     useEffect(() => {
         dispatchPlayer({ type: "resetPlayer" });
         // Fetch validWords during countdown.
@@ -207,7 +209,25 @@ export function GameLoop() {
             .then((res) => res.text())
             .then((res) => res.split("\n"))
             .then((data) => setValidWords(new Set(data)));
-    }, []);
+
+        fetchLeaders();
+        }, []);
+
+    function fetchLeaders() {
+        fetch(
+            "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            },
+        )
+            .then((response) => response.json())
+            .then((data) => {
+                setLeaders(data)
+            });
+    }
 
     const [boardCellMatrix, setBoardCellMatrix] = useState(
         createBoard(BOARD_ROWS, BOARD_COLS),
@@ -862,7 +882,7 @@ export function GameLoop() {
 
     return (
         <div style={pageStyle}>
-            <Header />
+            <Header refreshCallback={fetchLeaders} leaders={leaders}/>
             <div style={containerStyle}>
                 <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>

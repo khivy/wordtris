@@ -42,6 +42,7 @@ export const BOARD_CELL_TEXT_COLOR = "#EBF5EE";
 export const LEADERBOARD_HEADER_COLOR = "#f5bd90";
 export const LEADERBOARD_ROW_COLOR_1 = "#f7ece4";
 export const LEADERBOARD_ROW_COLOR_2 = "#f7caa6";
+export const REFRESH_BUTTON_COLOR = "#609c76";
 
 export const UNIVERSAL_BORDER_RADIUS = "1vmin";
 export const CELL_SIZE = "7vmin";

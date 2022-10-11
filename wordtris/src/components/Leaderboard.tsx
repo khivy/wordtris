@@ -6,24 +6,7 @@ import {
 } from "../setup";
 
 export const Leaderboard = React.memo(
-    () => {
-        const [leaders, setLeaders] = React.useState([] as const);
-
-        useEffect(() => {
-            fetch(
-                "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
-                {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                    },
-                },
-            )
-                .then((response) => response.json())
-                .then((data) => {
-                    setLeaders(data)
-                });
-        }, []);
+    ({leaders}: {leaders: Array<{name: string, score: number}>}) => {
 
         const leaderboardRowStyle = {
             borderRadius: UNIVERSAL_BORDER_RADIUS,

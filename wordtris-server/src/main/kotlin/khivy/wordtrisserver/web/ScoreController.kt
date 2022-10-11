@@ -54,7 +54,7 @@ class ScoreController {
 
     @PutMapping(value = ["/submitscore"], consumes = ["application/x-protobuf"])
     @ResponseBody
-    fun submitScore(@RequestBody body: PlayerSubmissionDataOuterClass.PlayerSubmissionData): ResponseEntity<HttpStatus> {
+    fun submitScore(@RequestBody body: PlayerSubmissionDataOuterClass.PlayerSubmissionData, request: HttpServletRequest): ResponseEntity<HttpStatus> {
 
         if (!submitScoreBucket.tryConsume(1)) {
             return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
@@ -81,14 +81,14 @@ class ScoreController {
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
 
-        dataService.saveScoreAndFlush(body)
+        dataService.saveScoreAndFlush(request.remoteAddr, body)
 
         // Evicts the lowest score(s) that match the IP & Name combination.
-        val scoresMatchingIpAndName = dataService.scoreRepository.findScoresWithGivenIpAndNameNative(body.ip, body.name)
+        val scoresMatchingIpAndName = dataService.scoreRepository.findScoresWithGivenIpAndNameNative(request.remoteAddr, body.name)
         dataService.evictLowestScoresFromList(scoresMatchingIpAndName, scoresMatchingIpAndName.size - 1)
 
         // Evicts the lowest score(s) from the IP.
-        val scoresMatchingIp = dataService.scoreRepository.findScoresWithGivenIpNative(body.ip)
+        val scoresMatchingIp = dataService.scoreRepository.findScoresWithGivenIpNative(request.remoteAddr)
         if (MAX_SCORES_PER_IP < scoresMatchingIp.size) {
             dataService.evictLowestScoresFromList(scoresMatchingIp, scoresMatchingIp.size - MAX_SCORES_PER_IP)
         }

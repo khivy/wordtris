@@ -55,30 +55,13 @@ object PlayerSubmissionDataKt {
     }
 
     /**
-     * <code>string ip = 3;</code>
-     */
-    var ip: kotlin.String
-      @JvmName("getIp")
-      get() = _builder.getIp()
-      @JvmName("setIp")
-      set(value) {
-        _builder.setIp(value)
-      }
-    /**
-     * <code>string ip = 3;</code>
-     */
-    fun clearIp() {
-      _builder.clearIp()
-    }
-
-    /**
      * An uninstantiable, behaviorless type to represent the field in
      * generics.
      */
     @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
     class WordsProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @return A list containing the words.
      */
      val words: com.google.protobuf.kotlin.DslList<kotlin.String, WordsProxy>
@@ -87,7 +70,7 @@ object PlayerSubmissionDataKt {
         _builder.getWordsList()
       )
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param value The words to add.
      */
     @kotlin.jvm.JvmSynthetic
@@ -96,7 +79,7 @@ object PlayerSubmissionDataKt {
       _builder.addWords(value)
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param value The words to add.
      */
     @kotlin.jvm.JvmSynthetic
@@ -106,7 +89,7 @@ object PlayerSubmissionDataKt {
       add(value)
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param values The words to add.
      */
     @kotlin.jvm.JvmSynthetic
@@ -115,7 +98,7 @@ object PlayerSubmissionDataKt {
       _builder.addAllWords(values)
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param values The words to add.
      */
     @kotlin.jvm.JvmSynthetic
@@ -125,7 +108,7 @@ object PlayerSubmissionDataKt {
       addAll(values)
     }
     /**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      * @param index The index to set the value at.
      * @param value The words to set.
      */
@@ -134,7 +117,7 @@ object PlayerSubmissionDataKt {
     operator fun com.google.protobuf.kotlin.DslList<kotlin.String, WordsProxy>.set(index: kotlin.Int, value: kotlin.String) {
       _builder.setWords(index, value)
     }/**
-     * <code>repeated string words = 4;</code>
+     * <code>repeated string words = 3;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("clearWords")
@@ -142,7 +125,7 @@ object PlayerSubmissionDataKt {
       _builder.clearWords()
     }
     /**
-     * <code>bytes checksum = 5;</code>
+     * <code>bytes checksum = 4;</code>
      */
     var checksum: com.google.protobuf.ByteString
       @JvmName("getChecksum")
@@ -152,7 +135,7 @@ object PlayerSubmissionDataKt {
         _builder.setChecksum(value)
       }
     /**
-     * <code>bytes checksum = 5;</code>
+     * <code>bytes checksum = 4;</code>
      */
     fun clearChecksum() {
       _builder.clearChecksum()

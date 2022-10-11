@@ -65,7 +65,7 @@ import { PersonalHighScore } from "./components/PersonalHighScore";
 // Terminology: https://tetris.fandom.com/wiki/Glossary
 // Declaration of game states.
 const stateMachine = createMachine({
-    initial: "gameOver",
+    initial: "startingGame",
     states: {
         startingGame: { on: { START: "countdown" } },
         countdown: { on: { DONE: "spawningBlock" } },
@@ -853,6 +853,7 @@ export function GameLoop() {
     const gameOverTextStyle = {
         color: "white",
         fontSize: LARGE_TEXT_SIZE,
+        textAlign: "center",
         // WebkitTextStroke: "0.2vmin",
         // WebkitTextStrokeColor: BOARD_CELL_COLOR,
     } as const;
@@ -888,10 +889,10 @@ export function GameLoop() {
                             <BoardCells
                                 boardCellMatrix={boardCellMatrix}
                             />
-                            <GameOverOverlay isVisible={true}>
+                            <GameOverOverlay isVisible={isGameOverVisible}>
                                 <div style={gameOverTextStyle}>Game Over</div>
                                 <PersonalHighScore/>
-                                <PlayAgainButton stateHandler={stateHandler}/>
+                                <PlayAgainButton stateHandler={stateHandler} words={matchedWords}/>
                             </GameOverOverlay>
                         </div>
                         <GameSidePanel displayedWords={matchedWords} />

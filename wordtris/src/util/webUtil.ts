@@ -4,14 +4,12 @@ import { hash } from "fast-sha256";
 export function submitScore(
     score: number,
     name: string,
-    ip: string,
     words: string[],
     checksum?: Uint8Array,
 ): Promise<Response> {
     const data = PlayerSubmissionData.encode({
         score,
         name,
-        ip,
         words,
         checksum: checksum ? checksum! : hash(serializeWordsArray(words)),
     }).finish();

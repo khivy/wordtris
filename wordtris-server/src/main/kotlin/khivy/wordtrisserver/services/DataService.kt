@@ -20,8 +20,8 @@ class DataService {
     @Autowired
     lateinit var ipRepository: IpRepository
 
-    fun saveScoreAndFlush(data: PlayerSubmissionDataOuterClass.PlayerSubmissionData) {
-        val ip = Ip(data.ip)
+    fun saveScoreAndFlush(ip: String, data: PlayerSubmissionDataOuterClass.PlayerSubmissionData) {
+        val ip = Ip(ip)
         ipRepository.saveAndFlush(ip)
         val name = Name(data.name, ip)
         nameRepository.saveAndFlush(name)

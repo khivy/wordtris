@@ -49,7 +49,7 @@ export const PlayAgainButton = React.memo(
             textAlign: "center",
             marginTop: "0.4vmin",
             fontSize: NORMAL_TEXT_SIZE,
-        };
+        } as const;
 
         const formStyle = {
             textAlign: "center",

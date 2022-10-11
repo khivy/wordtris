@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { NORMAL_TEXT_SIZE } from "../setup";
 
 export const PersonalHighScore = React.memo(
-    () => {
+    ({localHighScore}: {localHighScore: number}) => {
 
-        const [highScore, setHighScore] = React.useState(0 as const);
+        const [remoteHighScore, setRemoteHighScore] = React.useState(0);
 
         useEffect(() => {
             fetch(
@@ -18,12 +18,11 @@ export const PersonalHighScore = React.memo(
                 },
             )
                 .then((response) => response.json())
-                .then((data) => {
-                    // console.log(data)
+                .then((data: Array<{score: number}>) => {
                     if (data.length <= 0) {
                         return;
                     }
-                    setHighScore(data.score)
+                    setRemoteHighScore(data.sort().at(-1)!.score);
                 });
         }, []);
 
@@ -34,7 +33,7 @@ export const PersonalHighScore = React.memo(
 
         return (
         <div style={textStyle}>
-            High score: {highScore}
+            High score: {localHighScore < remoteHighScore ? remoteHighScore : localHighScore}
         </div>
         );
     });

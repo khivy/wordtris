@@ -238,6 +238,7 @@ export function GameLoop() {
     const [groundExitPenalty, setGroundExitPenalty] = useState(0);
 
     const [didInstantDrop, setDidInstantDrop] = useState(false);
+    const [localHighScore, setLocalHighScore] = useState(0);
 
     const [
         fallingBoardLettersBeforeAndAfter,
@@ -518,6 +519,7 @@ export function GameLoop() {
                 setIsPlayerMovementEnabled(false);
                 // Signal Game Over.
                 setGameOverVisibility(true);
+                setLocalHighScore(prev => prev < matchedWords.length ? matchedWords.length : prev);
                 stateHandler.send("BLOCKED");
             }
 
@@ -891,7 +893,7 @@ export function GameLoop() {
                             />
                             <GameOverOverlay isVisible={isGameOverVisible}>
                                 <div style={gameOverTextStyle}>Game Over</div>
-                                <PersonalHighScore/>
+                                <PersonalHighScore localHighScore={localHighScore}/>
                                 <PlayAgainButton stateHandler={stateHandler} words={matchedWords}/>
                             </GameOverOverlay>
                         </div>

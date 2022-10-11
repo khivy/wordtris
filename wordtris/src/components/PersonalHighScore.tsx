@@ -4,14 +4,13 @@ import { NORMAL_TEXT_SIZE } from "../setup";
 import { getPlayerScores } from "../util/webUtil";
 
 export const PersonalHighScore = React.memo(
-    ({localHighScore}: {localHighScore: number}) => {
-
+    ({ localHighScore }: { localHighScore: number }) => {
         const [remoteHighScore, setRemoteHighScore] = React.useState(0);
 
         useEffect(() => {
             getPlayerScores()
                 .then((response) => response.json())
-                .then((data: Array<{score: number}>) => {
+                .then((data: Array<{ score: number }>) => {
                     if (data.length <= 0) {
                         return;
                     }
@@ -25,8 +24,11 @@ export const PersonalHighScore = React.memo(
         } as const;
 
         return (
-        <div style={textStyle}>
-            High score: {localHighScore < remoteHighScore ? remoteHighScore : localHighScore}
-        </div>
+            <div style={textStyle}>
+                High score: {localHighScore < remoteHighScore
+                    ? remoteHighScore
+                    : localHighScore}
+            </div>
         );
-    });
+    },
+);

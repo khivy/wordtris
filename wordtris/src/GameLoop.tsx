@@ -198,7 +198,9 @@ export function GameLoop() {
 
     const [validWords, setValidWords] = useState(new Set());
 
-    const [leaders, setLeaders] = React.useState([] as Array<{name: string, score: number}>);
+    const [leaders, setLeaders] = React.useState(
+        [] as Array<{ name: string; score: number }>,
+    );
 
     useEffect(() => {
         dispatchPlayer({ type: "resetPlayer" });
@@ -211,13 +213,13 @@ export function GameLoop() {
             .then((data) => setValidWords(new Set(data)));
 
         updateLeaders();
-        }, []);
+    }, []);
 
     function updateLeaders() {
         getLeaders()
             .then((response) => response.json())
             .then((data) => {
-                setLeaders(data)
+                setLeaders(data);
             });
     }
 
@@ -531,7 +533,9 @@ export function GameLoop() {
                 setIsPlayerMovementEnabled(false);
                 // Signal Game Over.
                 setGameOverVisibility(true);
-                setLocalHighScore(prev => prev < matchedWords.length ? matchedWords.length : prev);
+                setLocalHighScore((prev) =>
+                    prev < matchedWords.length ? matchedWords.length : prev
+                );
                 stateHandler.send("BLOCKED");
             }
 
@@ -874,7 +878,7 @@ export function GameLoop() {
 
     return (
         <div style={pageStyle}>
-            <Header refreshCallback={updateLeaders} leaders={leaders}/>
+            <Header refreshCallback={updateLeaders} leaders={leaders} />
             <div style={containerStyle}>
                 <Prompt keydownCallback={handleKeydown}>
                     <div style={appStyle}>
@@ -905,8 +909,13 @@ export function GameLoop() {
                             />
                             <GameOverOverlay isVisible={isGameOverVisible}>
                                 <div style={gameOverTextStyle}>Game Over</div>
-                                <PersonalHighScore localHighScore={localHighScore}/>
-                                <PlayAgainButton stateHandler={stateHandler} words={matchedWords}/>
+                                <PersonalHighScore
+                                    localHighScore={localHighScore}
+                                />
+                                <PlayAgainButton
+                                    stateHandler={stateHandler}
+                                    words={matchedWords}
+                                />
                             </GameOverOverlay>
                         </div>
                         <GameSidePanel displayedWords={matchedWords} />

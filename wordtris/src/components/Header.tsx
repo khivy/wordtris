@@ -1,18 +1,18 @@
 import * as React from "react";
 import {
     BOARD_CELL_COLOR,
-    LEADERBOARD_HEADER_COLOR, REFRESH_BUTTON_COLOR,
+    LEADERBOARD_HEADER_COLOR,
+    REFRESH_BUTTON_COLOR,
     SMALL_TEXT_SIZE,
-    UNIVERSAL_BORDER_RADIUS
+    UNIVERSAL_BORDER_RADIUS,
 } from "../setup";
 import { getLeaders } from "../util/webUtil";
 import { Leaderboard } from "./Leaderboard";
 
-export const Header = React.memo(({refreshCallback, leaders}: {
-    refreshCallback: () => void,
-    leaders: Array<{name: string, score: number}>,
+export const Header = React.memo(({ refreshCallback, leaders }: {
+    refreshCallback: () => void;
+    leaders: Array<{ name: string; score: number }>;
 }) => {
-
     const outerStyle = {
         display: "flex",
         // The following options prevent the flex from filling & blocking the page from clicks.
@@ -24,9 +24,13 @@ export const Header = React.memo(({refreshCallback, leaders}: {
     return (
         <div style={outerStyle}>
             <div>
-                <GameTitle/>
+                <GameTitle />
             </div>
-            <LeaderboardToggle title={leaderboardTitle} refreshCallback={refreshCallback} leaders={leaders}/>
+            <LeaderboardToggle
+                title={leaderboardTitle}
+                refreshCallback={refreshCallback}
+                leaders={leaders}
+            />
         </div>
     );
 });
@@ -61,9 +65,9 @@ export const GameTitle = React.memo(() => {
 
 export const LeaderboardToggle = React.memo(
     ({ title, refreshCallback, leaders }: {
-        title: string,
-        refreshCallback: () => void,
-        leaders: Array<{name: string, score: number}>,
+        title: string;
+        refreshCallback: () => void;
+        leaders: Array<{ name: string; score: number }>;
     }) => {
         const [isVisible, setIsVisible] = React.useState(false);
 
@@ -78,7 +82,7 @@ export const LeaderboardToggle = React.memo(
             marginTop: "3vmin",
             marginRight: "2vmin",
             maxHeight: "0px",
-            background:"red",
+            background: "red",
         } as const;
 
         const staticToggleStyle = {
@@ -93,7 +97,7 @@ export const LeaderboardToggle = React.memo(
             paddingLeft: "1vmin",
             paddingRight: "1vmin",
             borderTopLeftRadius: UNIVERSAL_BORDER_RADIUS,
-            borderBottomLeftRadius: UNIVERSAL_BORDER_RADIUS
+            borderBottomLeftRadius: UNIVERSAL_BORDER_RADIUS,
         } as const;
 
         const toggleStyle = {
@@ -115,15 +119,28 @@ export const LeaderboardToggle = React.memo(
         } as const;
 
         return (
-
             <div style={toggleContainerStyle}>
                 <div style={adjustTogglePositionStyle}>
-                    <div style={{display: "flex", marginRight: "1.5vmin",}}>
-                        <div onClick={() => { setIsVisible(prev => !prev) }} style={staticToggleStyle} >{title}</div>
-                        <div onClick={() => {refreshCallback()}} style={refreshStyle}>⟳</div>
+                    <div style={{ display: "flex", marginRight: "1.5vmin" }}>
+                        <div
+                            onClick={() => {
+                                setIsVisible((prev) => !prev);
+                            }}
+                            style={staticToggleStyle}
+                        >
+                            {title}
+                        </div>
+                        <div
+                            onClick={() => {
+                                refreshCallback();
+                            }}
+                            style={refreshStyle}
+                        >
+                            ⟳
+                        </div>
                     </div>
                     <div style={toggleStyle}>
-                        <Leaderboard leaders={leaders}/>
+                        <Leaderboard leaders={leaders} />
                     </div>
                 </div>
             </div>

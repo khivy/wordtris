@@ -1,6 +1,12 @@
 import * as React from "react";
 import { ReactNode, useState } from "react";
-import { MENU_TEXT_COLOR, NORMAL_TEXT_SIZE, PLAYER_COLOR, SMALL_TEXT_SIZE, UNIVERSAL_BORDER_RADIUS, } from "../setup";
+import {
+    MENU_TEXT_COLOR,
+    NORMAL_TEXT_SIZE,
+    PLAYER_COLOR,
+    SMALL_TEXT_SIZE,
+    UNIVERSAL_BORDER_RADIUS,
+} from "../setup";
 import { submitScore } from "../util/webUtil";
 
 export const GameOverOverlay = React.memo(
@@ -10,7 +16,6 @@ export const GameOverOverlay = React.memo(
             isVisible: boolean;
         },
     ) => {
-
         const divStyle = {
             visibility: isVisible ? "visible" as const : "hidden" as const,
             position: "absolute",
@@ -37,8 +42,12 @@ export const GameOverOverlay = React.memo(
 );
 
 export const PlayAgainButton = React.memo(
-    ({ stateHandler, words }: { stateHandler: { send: (arg0: string) => void }, words: string[] }) => {
-
+    (
+        { stateHandler, words }: {
+            stateHandler: { send: (arg0: string) => void };
+            words: string[];
+        },
+    ) => {
         const buttonStyle = {
             cursor: "pointer",
             border: "none",
@@ -61,18 +70,20 @@ export const PlayAgainButton = React.memo(
 
         const [name, setName] = useState("" as string);
 
-        const handleChange = event => {
+        const handleChange = (event) => {
             setName(event.target.value);
         };
 
         return (
             <>
                 <form>
-                    <input type="text"
-                           placeholder={"Enter player name"}
-                           onChange={handleChange}
-                           maxLength={10}
-                           style={formStyle}/>
+                    <input
+                        type="text"
+                        placeholder={"Enter player name"}
+                        onChange={handleChange}
+                        maxLength={10}
+                        style={formStyle}
+                    />
                 </form>
                 <div
                     className={"with-text-style"}

@@ -4,7 +4,6 @@ import { WordList } from "./WordList";
 
 export const GameSidePanel = React.memo(
     ({ displayedWords }: { displayedWords: string[] }) => {
-
         const outerStyle = {
             display: "flex",
             flexDirection: "column",
@@ -16,7 +15,7 @@ export const GameSidePanel = React.memo(
 
         return (
             <div style={outerStyle}>
-                <WordList displayedWords={displayedWords}/>
+                <WordList displayedWords={displayedWords} />
             </div>
         );
     },

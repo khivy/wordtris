@@ -15,7 +15,7 @@ export function submitScore(
     }).finish();
 
     return fetch(
-        "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/submitscore",
+        "https://wordtris-server.com/submitscore",
         {
             method: "PUT",
             headers: {
@@ -28,7 +28,7 @@ export function submitScore(
 
 export function getLeaders(): Promise<Response> {
     return fetch(
-        "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/leaderboard",
+        "https://wordtris-server.com/leaderboard",
         {
             method: "GET",
             headers: {
@@ -61,7 +61,7 @@ export function serializeWordsArray(words: Array<String>) {
 
 export function getPlayerScores() {
     return fetch(
-        "http://wordtris-lb-932541632.us-west-1.elb.amazonaws.com/score",
+        "https://wordtris-server.com/leaderboard",
         {
             method: "GET",
             headers: {

@@ -6,16 +6,16 @@ services:
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localhost}
       PGDATA: /data/postgres
     volumes:
        - postgres:/data/postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
     networks:
       - postgres
     restart: unless-stopped
-  
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
@@ -31,6 +31,21 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+
+  wordtris-server:
+    image: wordtris-server
+    network_mode: "host"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-password}
+      POSTGRES_HOST: ${POSTGRES_HOST:-localhost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      REDIS_HOST: ${REDIS_HOST:-localhost}
+      REDIS_PORT: ${REDIS_PORT:-6379}
 
 networks:
   postgres:

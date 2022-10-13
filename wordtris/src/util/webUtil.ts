@@ -36,6 +36,37 @@ export function getLeaders(): Promise<Response> {
             },
         },
     );
+
+    // fetch(
+    //     "http://wordtris-server.com/leaderboard",
+    //     {
+    //         method: "GET",
+    //         headers: {
+    //             Accept: "application/json",
+    //         },
+    //     },
+    // );
+
+    // this is the only one that works
+    // fetch(
+    //     "https://wordtris-server.com/leaderboard",
+    //     {
+    //         method: "GET",
+    //         headers: {
+    //             Accept: "application/json",
+    //         },
+    //     },
+    // )
+
+    // return fetch(
+    //     "https://ec2-52-53-159-237.us-west-1.compute.amazonaws.com/leaderboard",
+    //     {
+    //         method: "GET",
+    //         headers: {
+    //             Accept: "application/json",
+    //         },
+    //     },
+    // );
 }
 
 function isAsciiOnly(str: string) {

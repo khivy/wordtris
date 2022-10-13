@@ -10,6 +10,7 @@ RUN chmod +x ./gradlew
 
 RUN ./gradlew bootJar --info  -x extractProto -x generateProto -x extractTestProto
 VOLUME /tmp
-COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
-
+#RUN rm build/libs/*-plain.jar
+#COPY build/libs/*.jar app.jar
+RUN ls
+ENTRYPOINT ["java","-jar","build/libs/*.jar"]

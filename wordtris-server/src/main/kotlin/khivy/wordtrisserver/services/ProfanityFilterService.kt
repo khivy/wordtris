@@ -1,25 +1,31 @@
 package khivy.wordtrisserver.services
 
-import io.github.bucket4j.Bandwidth
-import io.github.bucket4j.Bucket
-import io.github.bucket4j.Refill
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
+import org.springframework.util.FileCopyUtils
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import kotlin.system.exitProcess
+
 
 @Service
 class ProfanityFilterService {
-
-    @Autowired
-    private lateinit var resourceLoader: ResourceLoader
 
     lateinit var bannedWords: Set<String>
 
     @Autowired
     fun ProfanityFilterService() {
-        val fileResource: Resource = resourceLoader.getResource("classpath:banned_words.txt")
-        this.bannedWords = fileResource.file.readText().split('\n').toSet()
+        var data = ""
+        val cpr = ClassPathResource("banned_words.txt")
+        try {
+            val bdata = FileCopyUtils.copyToByteArray(cpr.inputStream)
+            data = String(bdata, StandardCharsets.UTF_8)
+        } catch (e: IOException) {
+            println("Error: Could not read profanity file. Exiting.")
+            exitProcess(1)
+        }
+        this.bannedWords = data.split('\n').toSet()
     }
 
     fun containsProfanity(word: String): Boolean {

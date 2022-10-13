@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest
 
 
 @RestController
+@CrossOrigin(origins = ["*"])
 class ScoreController {
 
     @Autowired

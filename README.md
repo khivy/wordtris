@@ -2,17 +2,22 @@
 
 (✿◠‿◠) [Play here!](https://khivy.github.io/wordtris/) ✧♡(◕‿◕✿)
 
-(It works on mobile!!)
+![](img/wordtris_demo.jpg)
 
 # Deploying the server
-First, set any environment vars described in `wordtris-server/docker-compose.yml`
+First set any environment vars described in `wordtris-server/docker-compose.yml`
 
-Then run the following:
+Then make sure your Redis and Postgres server(s) are configured.
+
+Lastly run the following:
 ```shell
 docker-compose up -d
 ```
 Note: it may take a while due to the Docker image building a new .jar. If you intend to run the above command 
 multiple times I recommend following the comments in the `wordtris-server/Dockerfile`.
+
+# Systems Diagram
+![](img/wordtris_stack.jpg)
 
 # Development
 For contributing, I recommend using the following to hot reload the server:

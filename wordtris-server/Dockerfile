@@ -12,5 +12,4 @@ VOLUME /tmp
 # If you'd rather build a jar separately, comment out the above block and uncomment the line below.
 #COPY build/libs/*.jar app.jar
 
-RUN ls
-ENTRYPOINT ["java","-jar","build/libs/*.jar"]
+ENTRYPOINT ["java","-jar","build/libs/app.jar"]

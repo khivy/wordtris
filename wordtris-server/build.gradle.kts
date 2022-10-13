@@ -5,6 +5,10 @@ group = "khivy"
 version = "1.0.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+tasks.getByName<Jar>("bootJar") {
+    this.archiveFileName.set("app.jar")
+}
+
 plugins {
     id("org.springframework.boot") version "2.7.4"
     id("io.spring.dependency-management") version "1.0.14.RELEASE"

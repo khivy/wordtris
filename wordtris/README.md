@@ -1,8 +1,7 @@
 # Tetris + words!
 
-(✿◠‿◠) [Play here!](https://khivy.github.io/wordtris/) ✧♡(◕‿◕✿)
-
-(It works on mobile!!)
+(✿◠‿◠) [Play here!](https://khivy.github.io/wordtris/) ✧♡(◕‿◕✿) (It works on mobile!!)
+Update: The leaderboard server is now shut off because I can no longer pay for it 😓
 
 # Roadmap
 
